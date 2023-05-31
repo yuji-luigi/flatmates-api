@@ -1,0 +1,50 @@
+{
+  "ts-node": {
+    "files": true
+    // "transpileOnly": true //  if you want to use ts-node without type checking
+  },
+
+  "compilerOptions": {
+    // "strict": false,
+    // "noEmit": false,
+    // "noEmitOnError": false,
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2021",
+    "noImplicitAny": true,
+    "skipLibCheck": true,
+    // "rootDir": "/",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": ".",
+    "isolatedModules": true,
+    "paths": {
+      "*": ["./node_modules/*", "./src/types/*"],
+      "@src": ["src"],
+      "@src/*": ["src/*"]
+    }
+  },
+  "include": ["./src/**/*", "./src/types/*.d.ts", "./**/*.ts", "src/**/*"]
+  // "exclude": ["node_modules"]
+  // "compilerOptions": {
+  //     "target": "es5",
+  //     // "lib": ["dom", "dom.iterable", "esnext"],
+  //     // "allowJs": true,
+  //     "skipLibCheck": true,
+  //     "strict": true,
+  //     "forceConsistentCasingInFileNames": true,
+  //     "noEmit": true,
+  //     "esModuleInterop": true,
+  //     "module": "esnext",
+  //     "moduleResolution": "node",
+  //     "resolveJsonModule": true,
+  //     "isolatedModules": true,
+  //     "jsx": "preserve",
+  //     "incremental": true
+  //   },
+  //   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  //   "exclude": ["node_modules"]
+}

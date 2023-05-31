@@ -1,0 +1,10 @@
+
+.eslintignore
+.eslintrc
+.prettierrc
+postman.http
+**.http
+.github
+
+node_modules/
+dist/

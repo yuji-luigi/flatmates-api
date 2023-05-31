@@ -1,0 +1,19 @@
+version: "3.4"
+
+services:
+  api:
+    build:
+      context: .
+      target:  development
+    env_file:
+      - ./.env
+      
+    # volumes:
+      # - ./:/usr/src/app # copy all the file from the selected dir to the container dir. also node_modules.
+      # - /usr/src/app/node_modules # Don't sync this as bind mount. node_module dir will be kept as anonynous volume, meaning that docker manage keeping data, even after container is removed.
+      # - /usr/src/app/package-lock.json
+
+    ports:
+      - 5000:5000
+    command: node ./dist/server.js
+      
