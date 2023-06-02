@@ -35,6 +35,13 @@ export const maintainerSchema = new Schema<MaintainerInterface>(
       ref: 'uploads',
       autopopulate: true
     },
+    spaces: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'spaces',
+        autopopulate: true
+      }
+    ],
     description: String,
     address: String,
     // organizations: [

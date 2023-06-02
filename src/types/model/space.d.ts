@@ -25,7 +25,7 @@ interface ISpace extends MongooseBaseModel<ISpace, ISpace> {
   organization: string | IOrganization | null;
   /** decides if everyone in the world can see or only under the organization. */
   isPublic: boolean;
-  maintainers: IMaintainer[];
+  // maintainers: IMaintainer[];
 
   getParent(): Promise<ISpace | null | undefined>;
 }

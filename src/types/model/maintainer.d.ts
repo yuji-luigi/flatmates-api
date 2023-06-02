@@ -11,6 +11,7 @@ interface MaintainerInterface extends MongooseBaseModel<null, null> {
   description: string;
   address: string;
   isIndividual: boolean;
+  spaces: ISpace[];
   // organizations: IOrganization[];
   // spaces: ISpaces[];
   createdBy: string | IUser;

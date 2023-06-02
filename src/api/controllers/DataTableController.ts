@@ -105,6 +105,7 @@ export const sendLinkedChildrenWithPaginationToClient = async (req: Request, res
     const entity = req.params.entity || getEntityFromOriginalUrl(req.originalUrl);
     // const children = await mongoose.model(entity).find({parentId: parentId});x
     req.query.parentId = parentId;
+
     const data = await aggregateWithPagination(req.query, entity);
     res.status(httpStatus.OK).json({
       success: true,

@@ -55,12 +55,12 @@ export const spacesSchema = new Schema<ISpace, SpaceModel, ISpaceMethods>(
         autopopulate: true
       }
     ],
-    maintainers: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'maintainers'
-      }
-    ],
+    // maintainers: [
+    //   {
+    //     type: Schema.Types.ObjectId,
+    //     ref: 'maintainers'
+    //   }
+    // ],
     organization: {
       type: Schema.Types.ObjectId,
       ref: 'organizations'

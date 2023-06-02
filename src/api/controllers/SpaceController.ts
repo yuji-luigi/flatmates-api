@@ -53,9 +53,9 @@ export const sendMainSpacesWithPaginationToClient = async (req: RequestCustom, r
     // const limit = 10;
 
     //  TODO: use req.query for querying in find method and paginating. maybe need to delete field to query in find method
-    const { query } = req;
+    // const { query } = req;
 
-    const data = await aggregateWithPagination(query, entity);
+    const data = await aggregateWithPagination(req.query, entity);
 
     res.status(httpStatus.OK).json({
       success: true,

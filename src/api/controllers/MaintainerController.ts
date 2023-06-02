@@ -27,8 +27,9 @@ export const createMaintainer = async (req: RequestCustom, res: Response) => {
 
     const space = await Space.findById(req.space);
     if (space) {
-      space.maintainers.push(newMaintainer);
-      await space.save();
+      newMaintainer.spaces.push(space);
+      // space.maintainers.push(newMaintainer);
+      // await space.save();
     }
     await newMaintainer.save();
     const data = await Maintainer.find({ _id: { $in: organization.maintainers } });

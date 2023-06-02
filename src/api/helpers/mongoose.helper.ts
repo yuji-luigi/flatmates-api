@@ -44,10 +44,15 @@ export async function aggregateWithPagination(query: any, entity: string): Promi
   if (query.parentId) {
     query.parentId = new mongoose.Types.ObjectId(query.parentId);
   }
+  const validFields = Object.keys(mongoose.model(entity).schema.paths);
 
   for (const key in query) {
-    query[key] === 'true' ? (query[key] = true) : query[key];
-    query[key] === 'false' ? (query[key] = false) : query[key];
+    if (!validFields.includes(key)) {
+      delete query[key];
+    } else {
+      query[key] === 'true' ? (query[key] = true) : query[key];
+      query[key] === 'false' ? (query[key] = false) : query[key];
+    }
   }
 
   const data = await mongoose.model(entity).aggregate<ResultAggregateWithPagination>([
