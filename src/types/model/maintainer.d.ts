@@ -1,4 +1,4 @@
-interface MaintainerInterface extends MongooseBaseModel<null, null> {
+interface MaintainerInterface extends MongooseBaseModel<null, null>, LoginInstance {
   name: string;
   company: string;
   cover?: IUpload | string;
@@ -12,6 +12,8 @@ interface MaintainerInterface extends MongooseBaseModel<null, null> {
   address: string;
   isIndividual: boolean;
   spaces: ISpace[];
+  password: string;
+  isInSpace: boolean;
   // organizations: IOrganization[];
   // spaces: ISpaces[];
   createdBy: string | IUser;

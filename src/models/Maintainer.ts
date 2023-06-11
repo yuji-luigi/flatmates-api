@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
-
+import bcrypt from 'bcrypt';
+import Space from './Space';
 const { Schema } = mongoose;
 
 export const maintainerSchema = new Schema<MaintainerInterface>(
@@ -35,6 +36,9 @@ export const maintainerSchema = new Schema<MaintainerInterface>(
       ref: 'uploads',
       autopopulate: true
     },
+    password: {
+      type: String
+    },
     spaces: [
       {
         type: Schema.Types.ObjectId,
@@ -44,6 +48,7 @@ export const maintainerSchema = new Schema<MaintainerInterface>(
     ],
     description: String,
     address: String,
+    isInSpace: Boolean,
     // organizations: [
     //   {
     //     type: Schema.Types.ObjectId,
@@ -71,7 +76,25 @@ export const maintainerSchema = new Schema<MaintainerInterface>(
     timestamps: true
   }
 );
-
+maintainerSchema.pre('save', async function save(next) {
+  try {
+    if (this.isModified('password')) {
+      const rounds = 10;
+      const hash = await bcrypt.hash(this.password, rounds);
+      this.password = hash;
+    }
+    if (this.isModified('spaces')) {
+      console.log('spaces are modified: Maintainer.ts');
+      const stringifiedSpaces = this.spaces.map((space) => space.toString());
+      const setSpaces = [...new Set(stringifiedSpaces)];
+      const spaces = await Space.find({ _id: { $in: setSpaces } }).lean();
+      this.spaces = spaces;
+    }
+    return next();
+  } catch (error) {
+    return next(error);
+  }
+});
 maintainerSchema.statics = {};
 
 maintainerSchema.plugin(autoPopulate);

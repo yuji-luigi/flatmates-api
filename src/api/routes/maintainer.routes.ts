@@ -7,6 +7,8 @@ router.get('/test/test', (req, res) => res.send('API is working: maintainer.rout
 router.get('/with-pagination', isLoggedIn(), maintainerCtrl.sendMaintainersWithPaginationToClient);
 
 router.post('/with-pagination', isLoggedIn(), maintainerCtrl.createMaintainer);
+router.put('/:idMongoose', isLoggedIn(), maintainerCtrl.updateMaintainerById);
+// router.put('/', is)
 
 // router.get('/:maintenanceId', isLoggedIn(), maintenanceCtrl.sendSingleMaintenanceToFrondEnd);
 // // todo: available only certain entities

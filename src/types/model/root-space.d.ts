@@ -1,4 +1,6 @@
 interface ISpace extends MongooseBaseModel<ISpace, ISpace> {
+  cover: IUpload;
+  avatar: IUpload;
   /** to show @top level in frontend */
   isHead: boolean;
   /** meaning that this is the end of the chain of spaces.

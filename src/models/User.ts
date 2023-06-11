@@ -23,50 +23,50 @@ const { jwtSecret /* , jwtExpirationInterval  */ } = vars;
 
 /** UserModel static methods*/
 
-interface IUserDocument {
-  // _id: ObjectId;
-  avatar?: IUpload;
-  name?: string | undefined;
-  surname?: string | undefined;
-  phone?: string | undefined;
-  email?: string | undefined;
-  password: string;
-  /** will be only super_admin and user. will use adminOf field to check if user is admin of an space.
-   */
-  role?: userRoles;
-  adminOf?: ISpace[] | [];
-  bookmarks?: string[]; // consider if populate too much (threads and contents in threads)
-  wallet?: string;
-  userSetting: string | boolean;
-  last_login?: Date;
-  rootSpaces?: ISpace[] | [];
-  // modules?: modules;
-  // organizations: IOrganization[] | [];
-  organization: IOrganization | null | undefined;
+// interface IUserDocument {
+//   _id: ObjectId;
+//   avatar?: IUpload;
+//   name?: string | undefined;
+//   surname?: string | undefined;
+//   phone?: string | undefined;
+//   email?: string | undefined;
+//   password: string;
+//   /** will be only super_admin and user. will use adminOf field to check if user is admin of an space.
+//    */
+//   role?: userRoles;
+//   adminOf?: ISpace[] | [];
+//   bookmarks?: string[]; // consider if populate too much (threads and contents in threads)
+//   wallet?: string;
+//   userSetting: string | boolean;
+//   last_login?: Date;
+//   rootSpaces?: ISpace[] | [];
+//   // modules?: modules;
+//   // organizations: IOrganization[] | [];
+//   organization: IOrganization | null | undefined;
+//   cover: IUpload;
+//   _update?: {
+//     password?: Buffer | string;
+//   };
+//   token(): () => string;
+//   hasOrganization: (organizationId: string) => Promise<boolean>;
+//   isAdminOrganization: (organizationId: string) => Promise<boolean>;
+//   getOrganizations: () => Promise<IOrganization[]>;
+//   isSuperAdmin: () => boolean;
+//   passwordMatches: (password: string) => boolean;
+//   findAndGenerateToken: (body: IUserDocument) => Promise<{
+//     user: UserModel;
+//     accessToken: string;
+//   }>;
+//   /*   roles: string[] | any;
+//    */
+// }
 
-  _update?: {
-    password?: Buffer | string;
-  };
-  token(): () => string;
-  hasOrganization: (organizationId: string) => Promise<boolean>;
-  isAdminOrganization: (organizationId: string) => Promise<boolean>;
-  getOrganizations: () => Promise<IOrganization[]>;
-  isSuperAdmin: () => boolean;
-  passwordMatches: (password: string) => boolean;
-  findAndGenerateToken: (body: IUserDocument) => Promise<{
-    user: UserModel;
-    accessToken: string;
-  }>;
-  /*   roles: string[] | any;
-   */
-}
-
-interface UserModel extends Model<IUserDocument> {
+interface UserModel extends Model<IUser> {
   // roles: USER_ROLES_ENUM;
   passwordMatches: (password: string) => boolean;
-  findAndGenerateToken: (body: IUserDocument) => Promise<{
+  findAndGenerateToken: (body: IUser) => Promise<{
     // user: UserModel;
-    user: IUserDocument;
+    user: IUser;
     accessToken: string;
   }>;
   hasOrganization: (organizationId: string) => Promise<boolean>;
@@ -77,7 +77,7 @@ interface UserModel extends Model<IUserDocument> {
   isAdminOrganization: (organizationId: string) => Promise<boolean>;
 }
 
-export const userSchema = new Schema<IUserDocument, UserModel>(
+export const userSchema = new Schema<IUser, UserModel>(
   {
     name: {
       type: String,
@@ -89,6 +89,11 @@ export const userSchema = new Schema<IUserDocument, UserModel>(
       default: ''
     },
     avatar: {
+      type: Schema.Types.ObjectId,
+      ref: 'uploads',
+      autopopulate: true
+    },
+    cover: {
       type: Schema.Types.ObjectId,
       ref: 'uploads',
       autopopulate: true
@@ -324,6 +329,6 @@ userSchema.statics = {
 userSchema.plugin(autopopulate);
 
 // const UserSchema = mongoose.model('users', userSchema) as unknown;
-const UserSchema = model<IUserDocument, UserModel>('users', userSchema);
+const UserSchema = model<IUser, UserModel>('users', userSchema);
 export default UserSchema;
 // export default UserSchema as UserModel<Model<IUserDocument>>;

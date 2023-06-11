@@ -61,8 +61,11 @@ export const sendMaintainersWithPaginationToClient = async (req: RequestCustom, 
     for (const maintainer of maintainers) {
       typeof maintainer.avatar === 'object' && (await maintainer.avatar.setUrl());
       typeof maintainer.cover === 'object' && (await maintainer.cover.setUrl());
+
+      if (maintainer.spaces.includes(req.cookies.spaceId)) {
+        maintainer.isInSpace = true;
+      }
     }
-    //  TODO: use req.query for querying in find method and paginating. maybe need to delete field to query in find method
 
     res.status(httpStatus.OK).json({
       success: true,
@@ -77,7 +80,34 @@ export const sendMaintainersWithPaginationToClient = async (req: RequestCustom, 
   }
 };
 
+export async function updateMaintainerById(req: RequestCustom, res: Response) {
+  try {
+    const { idMongoose } = req.params;
+    const entity = 'maintainers';
+    const foundModel = await Maintainer.findById(idMongoose);
+
+    foundModel.set(req.body);
+    if (req.body.spaces?.length) {
+      foundModel.spaces.push(...req.body.spaces);
+    }
+
+    const updatedModel = await foundModel.save();
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: _MSG.OBJ_UPDATED,
+      collection: entity,
+      data: updatedModel,
+      count: 1
+    });
+  } catch (err) {
+    logger.error(err.message || err);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: err.message || err });
+  }
+}
+
 export default {
   createMaintainer,
-  sendMaintainersWithPaginationToClient
+  sendMaintainersWithPaginationToClient,
+  updateMaintainerById
 };

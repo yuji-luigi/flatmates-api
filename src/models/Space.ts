@@ -13,6 +13,16 @@ export type SpaceModel = Model<ISpace, unknown, ISpaceMethods>;
 
 export const spacesSchema = new Schema<ISpace, SpaceModel, ISpaceMethods>(
   {
+    cover: {
+      type: Schema.Types.ObjectId,
+      ref: 'uploads',
+      autopopulate: true
+    },
+    avatar: {
+      type: Schema.Types.ObjectId,
+      ref: 'uploads',
+      autopopulate: true
+    },
     name: {
       type: String,
       required: true

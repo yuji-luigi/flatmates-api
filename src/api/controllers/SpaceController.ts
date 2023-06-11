@@ -69,6 +69,32 @@ export const sendMainSpacesWithPaginationToClient = async (req: RequestCustom, r
     });
   }
 };
+
+export const sendSingleSpaceToClientByCookie = async (req: RequestCustom, res: Response) => {
+  try {
+    const entity = 'spaces';
+
+    // const limit = 10;
+
+    //  TODO: use req.query for querying in find method and paginating. maybe need to delete field to query in find method
+    // const { query } = req;
+
+    const data = await Space.findById(req.space._id);
+    data.cover && (await data.cover.setUrl());
+    data.avatar && (await data.avatar.setUrl());
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: entity,
+      data: data,
+      totalDocuments: 1
+    });
+  } catch (err) {
+    res.status(err).json({
+      message: err.message || err
+    });
+  }
+};
 export const getLinkedChildrenSpaces = async (req: Request, res: Response) => {
   try {
     //! set pagination logic here and next > parentId page set the pagination logic

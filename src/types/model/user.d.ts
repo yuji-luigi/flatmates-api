@@ -38,8 +38,7 @@ type modules =
 */
 
 type userRoles = 'user' | 'admin' | 'super_admin';
-
-interface IUser extends MongooseBaseModel<null, null> {
+interface IUser extends LoginInstance {
   _id: ObjectId;
   avatar?: IUpload;
   name?: string | undefined;
@@ -59,7 +58,7 @@ interface IUser extends MongooseBaseModel<null, null> {
   // modules?: modules;
   // organizations: IOrganization[] | [];
   organization: IOrganization | null | undefined;
-
+  cover: IUpload;
   _update?: {
     password?: Buffer | string;
   };
