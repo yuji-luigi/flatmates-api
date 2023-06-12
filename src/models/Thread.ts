@@ -6,27 +6,7 @@ import { formatDateAndTimeForFlights } from '../utils/functions';
 
 const { Schema } = mongoose;
 
-interface IThreadDoc {
-  createdAt: string;
-  title: string;
-  images: IUpload[] | [];
-  listViewType: 'default' | 'bigImage';
-  articleType: 'default' | 'blog' | 'news' | 'event' | 'announcement' | 'poll' | 'survey' | 'question' | 'discussion';
-  description?: string | undefined;
-  attachments: IUpload[] | [];
-  isImportant: boolean;
-  tags?: string[];
-  rating?: number | undefined;
-  // createdBy: IUser;
-  user: IUser;
-  organization?: IOrganization | string;
-  /** space assigned. organization is the largest level query in of the thread while space is the smallest level */
-  space: ISpace | string;
-  /** decides if everyone in the world can see or only under the organization. */
-  isPublic: boolean;
-}
-
-interface ThreadModel extends Model<IThreadDoc, object, IThreadMethods> {
+interface ThreadModel extends Model<IThread, object, IThreadMethods> {
   // hasSetStorageUrlToModel(): boolean;
   // a: string;
   handleDeleteUploads: (id: string) => Promise<void>;
@@ -34,7 +14,7 @@ interface ThreadModel extends Model<IThreadDoc, object, IThreadMethods> {
   hasSetStorageUrlToModel: true;
 }
 
-export const threadSchema = new Schema<IThreadDoc, ThreadModel, IThreadMethods>(
+export const threadSchema = new Schema<IThread, ThreadModel, IThreadMethods>(
   {
     title: String,
     description: {
@@ -160,4 +140,4 @@ threadSchema.set('toJSON', {
   virtuals: true
 });
 
-export default mongoose.model<IThreadDoc, ThreadModel>('threads', threadSchema);
+export default mongoose.model<IThread, ThreadModel>('threads', threadSchema);

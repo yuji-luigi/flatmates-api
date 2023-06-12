@@ -11,6 +11,9 @@ import vars, { sensitiveCookieOptions } from '../../config/vars';
 import User from '../../models/User';
 import { aggregateDescendantIds, userHasSpace } from '../helpers/spaceHelper';
 import { _MSG } from '../../utils/messages';
+import Thread from '../../models/Thread';
+import Maintenance from '../../models/Maintenance';
+import Maintainer from '../../models/Maintainer';
 
 // import MSG from '../../utils/messages';
 // import { runInNewContext } from 'vm';
@@ -87,6 +90,55 @@ export const sendSingleSpaceToClientByCookie = async (req: RequestCustom, res: R
       success: true,
       collection: entity,
       data: data,
+      totalDocuments: 1
+    });
+  } catch (err) {
+    res.status(err).json({
+      message: err.message || err
+    });
+  }
+};
+
+export const sendSpaceDataForHome = async (req: RequestCustom, res: Response) => {
+  try {
+    const entity = 'spaces';
+
+    // const limit = 10;
+
+    //  TODO: use req.query for querying in find method and paginating. maybe need to delete field to query in find method
+    // const { query } = req;
+
+    const space = await Space.findById(req.space._id);
+    const threads = await Thread.find({ space: req.space._id });
+    const maintenances = await Maintenance.find({ space: req.space._id });
+    const maintainers = await Maintainer.find({ spaces: { $in: [req.space._id] } });
+
+    space.cover && (await space.cover.setUrl());
+    space.avatar && (await space.avatar.setUrl());
+
+    for (const thread of threads) {
+      for (const image of thread.images) {
+        image && (await image.setUrl());
+      }
+      for (const maintenance of maintenances) {
+        for (const image of maintenance.images) {
+          image && (await image.setUrl());
+        }
+      }
+      for (const maintainer of maintainers) {
+        maintainer.avatar && (await maintainer.avatar.setUrl());
+      }
+    }
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: entity,
+      data: {
+        space,
+        threads,
+        maintenances,
+        maintainers
+      },
       totalDocuments: 1
     });
   } catch (err) {

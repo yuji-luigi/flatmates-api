@@ -11,7 +11,8 @@ import {
   sendSingleSpaceByIdToClient,
   sendDescendantIdsToClient,
   sendMainSpacesWithPaginationToClient,
-  sendSingleSpaceToClientByCookie
+  sendSingleSpaceToClientByCookie,
+  sendSpaceDataForHome
 } from '../controllers/SpaceController';
 
 import { sendLinkedChildrenWithPaginationToClient } from '../controllers/DataTableController';
@@ -25,6 +26,7 @@ const router = express.Router();
 // DATA TABLE
 router.get('/', isLoggedIn(), sendCrudObjectToLoggedClient);
 router.get('/single-by-cookie', isLoggedIn(), sendSingleSpaceToClientByCookie);
+router.get('/home', isLoggedIn(), sendSpaceDataForHome);
 router.get('/descendants/:spaceId', isLoggedIn(), sendDescendantIdsToClient);
 router.get('/with-pagination', isLoggedIn(), sendMainSpacesWithPaginationToClient);
 

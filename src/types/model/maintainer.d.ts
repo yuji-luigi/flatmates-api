@@ -2,7 +2,7 @@ interface MaintainerInterface extends MongooseBaseModel<null, null>, LoginInstan
   name: string;
   company: string;
   cover?: IUpload | string;
-  avatar?: IUpload | string;
+  avatar?: IUpload;
   homepage: string;
   type: string;
   tel: string;

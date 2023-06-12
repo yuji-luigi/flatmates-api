@@ -83,7 +83,7 @@ const setQueries = (req: RequestCustom, res: Response, next: NextFunction) => as
 
     if (req.user?.role !== 'super_admin' && space) {
       // watch out for this line for maintainer model. now they are model but can be changed to users.
-      req.body.rootSpace = space?._id;
+      req.body.space = space?._id;
     }
 
     if (req.user?.role !== 'super_admin' && !req.query.organization) {

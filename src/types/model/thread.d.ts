@@ -12,11 +12,9 @@ interface IThread extends MongooseBaseModel<null, null> {
   building?: string | IBuilding;
   rating?: number | undefined;
   // createdBy: IUser;
-  user: IUser | string;
+  user: IUser;
   organization?: IOrganization | string;
   space: ISpace | string;
-  rootSpace: ISpace | string;
-  v;
   /** decides if everyone in the world can see or only under the organization. */
   isPublic: boolean;
 }

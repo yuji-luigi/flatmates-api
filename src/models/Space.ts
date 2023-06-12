@@ -47,6 +47,7 @@ export const spacesSchema = new Schema<ISpace, SpaceModel, ISpaceMethods>(
     },
     password: String,
     //! TODO: condominium then main is a building. other cases are yet to be defined
+    /** actual instance that contains users. ex: (🚫 Italy).  (✅ NttRoma) */
     isMain: {
       type: Boolean
     },
