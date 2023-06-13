@@ -33,7 +33,7 @@ interface MaintenanceModel extends Model<IMaintenanceDoc, object, IMaintenanceMe
   hasSetStorageUrlToModel: true;
 }
 
-export const threadSchema = new Schema<IMaintenanceDoc, MaintenanceModel, IMaintenanceMethods>(
+export const maintenanceSchema = new Schema<IMaintenanceDoc, MaintenanceModel, IMaintenanceMethods>(
   {
     title: {
       type: String,
@@ -152,17 +152,22 @@ export const threadSchema = new Schema<IMaintenanceDoc, MaintenanceModel, IMaint
   }
 );
 
-threadSchema.plugin(autoPopulate);
+maintenanceSchema.plugin(autoPopulate);
 
-// threadSchema.get('_createdAt', function (v) {
+maintenanceSchema.pre('find', async function (next) {
+  // sort by most recent
+  this.sort({ createdAt: -1 });
+  next();
+});
+// maintenanceSchema.get('_createdAt', function (v) {
 //   return v.toISOString();
 // });
 
-threadSchema.virtual('_createdAt').get(function () {
+maintenanceSchema.virtual('_createdAt').get(function () {
   return formatDateAndTimeForFlights(this.createdAt);
 });
-threadSchema.set('toJSON', {
+maintenanceSchema.set('toJSON', {
   virtuals: true
 });
 
-export default mongoose.model<IMaintenanceDoc, MaintenanceModel>('maintenances', threadSchema);
+export default mongoose.model<IMaintenanceDoc, MaintenanceModel>('maintenances', maintenanceSchema);

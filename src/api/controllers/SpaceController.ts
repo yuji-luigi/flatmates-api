@@ -109,7 +109,7 @@ export const sendSpaceDataForHome = async (req: RequestCustom, res: Response) =>
     // const { query } = req;
 
     const space = await Space.findById(req.space._id);
-    const threads = await Thread.find({ space: req.space._id });
+    const threads = await Thread.find({ space: req.space._id }).sort({ createdAt: -1 });
     const maintenances = await Maintenance.find({ space: req.space._id });
     const maintainers = await Maintainer.find({ spaces: { $in: [req.space._id] } });
 

@@ -130,6 +130,11 @@ export const threadSchema = new Schema<IThread, ThreadModel, IThreadMethods>(
 
 threadSchema.plugin(autoPopulate);
 
+threadSchema.pre('find', async function (next) {
+  // sort by most recent
+  this.sort({ createdAt: -1 });
+  next();
+});
 // threadSchema.get('_createdAt', function (v) {
 //   return v.toISOString();
 // });
