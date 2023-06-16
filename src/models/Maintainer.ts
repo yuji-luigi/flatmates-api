@@ -99,4 +99,13 @@ maintainerSchema.statics = {};
 
 maintainerSchema.plugin(autoPopulate);
 
+maintainerSchema.pre('findOne', function (next) {
+  this.populate('avatar');
+  this.populate('cover');
+  this.populate('logo');
+  this.populate('spaces');
+  this.populate('createdBy');
+  next();
+});
+
 export default mongoose.model('maintainers', maintainerSchema);
