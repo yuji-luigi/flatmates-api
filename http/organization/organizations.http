@@ -1,0 +1,12 @@
+GET http://generic.host:5001/api/v1/organizations HTTP/1.1
+###
+GET http://generic.host:5001/api/v1/organizations/all HTTP/1.1
+
+
+### condo sato srl
+GET http://generic.host:5001/api/v1/organizations/643861526aec086124b0e0e7 HTTP/1.1
+
+### SELECTED ORGANIZATION AT HEADER
+GET http://generic.host:5001/api/v1/organizations/selected/643861526aec086124b0e0e7 HTTP/1.1
+
+### 

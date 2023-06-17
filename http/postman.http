@@ -1,0 +1,25 @@
+
+POST http://localhost:4444/api/v1/auth/login HTTP/1.1
+content-type: application/json
+
+{
+    "email": "admin@demo.com",
+    "password": "user$$$"
+}
+###
+GET http://localhost:4444/api/v1/items HTTP/1.1
+
+
+###
+POST https://www.googleapis.com/oauth2/v4/token
+content-type: application/json
+
+{
+    "code":"4/0AVHEtk4jn-17wqEaQL_LG3FszJivuqArSh4QeJc3ulrzIgLf5RpCt5hXh2r83CeAtSUAwA",
+"client_id":"64086805906-b364gc3ga0mte86da71u6p0gg08f7u96.apps.googleusercontent.com",
+"client_secret":"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",
+"redirect_uri":"https://flatmates.yuji-luigi.com",
+"grant_type":"authorization_code"
+}
+###
+GET https://accounts.google.com/o/oauth2/auth?client_id=64086805906-b364gc3ga0mte86da71u6p0gg08f7u96.apps.googleusercontent.com&response_type=code&scope=https://www.googleapis.com/auth/gmail.send&redirect_uri=https://flatmates.yuji-luigi.com&access_type=offline HTTP/1.1

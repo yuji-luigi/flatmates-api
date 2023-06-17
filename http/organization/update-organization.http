@@ -1,0 +1,8 @@
+
+### via roma update
+PUT http://generic.host:5001/api/v1/organizations/643861526aec086124b0e0e7 HTTP/1.1
+content-type: application/json
+
+{
+  "admins": ["643861526aec086124b0e0e6"]
+}

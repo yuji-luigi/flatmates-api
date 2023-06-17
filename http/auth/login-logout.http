@@ -1,0 +1,63 @@
+POST http://generic.host:5001/api/v1/auth/login HTTP/1.1
+content-type: application/json
+
+{
+  "email": "{{user}}",
+  "password": "{{password}}"
+}
+
+###
+POST http://generic.host:5001/api/v1/auth/login HTTP/1.1
+content-type: application/json
+
+{
+  "email": "docomo.worker@docomo.com",
+  "password": "{{password}}"
+}
+###
+POST http://generic.host:5001/api/v1/auth/login HTTP/1.1
+content-type: application/jsonm
+
+{
+  "email": "inhabitant.contardo@contardo.com",
+  "password": "{{password}}"
+}
+
+
+### VIA ROMA ADMIND
+POST http://generic.host:5001/api/v1/auth/login HTTP/1.1
+content-type: application/json
+
+{
+  "email": "admin.viaroma@demo.com",
+  "password": "{{password}}"
+}
+###
+POST http://generic.host:5001/api/v1/auth/login HTTP/1.1
+content-type: application/json
+
+{
+  "email": "inhabitant.viaroma@contardo.com",
+  "password": "{{password}}"
+}
+
+
+### CONTARDO ADMIN
+POST http://generic.host:5001/api/v1/auth/login HTTP/1.1
+content-type: application/json
+
+{
+  "email": "contardo@admin.com",
+  "password": "{{password}}"
+}
+### INHABITANT CONTARDO
+POST http://generic.host:5001/api/v1/auth/login HTTP/1.1
+content-type: application/json
+
+{
+  "email": "inhabitant.contardo@contardo.com",
+  "password": "{{password}}"
+}
+
+### LOGOUT
+GET  http://generic.host:5001/api/v1/auth/logout HTTP/1.1

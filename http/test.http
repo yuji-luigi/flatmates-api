@@ -1,0 +1,19 @@
+POST http://localhost:5000/api/v1/auth/login HTTP/1.1
+content-type: application/json
+
+{
+    "email": "admin@demo.com",
+    "password": "user$$$"
+}
+
+###
+POST http://localhost:5000/api/v1/users HTTP/1.1
+content-type: application/json
+
+{
+    "name": "sample",
+    "time": "Wed, 21 Oct 2015 18:27:50 GMT"
+}
+
+###
+GET https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fgmail.send&response_type=code&client_id=64086805906-b364gc3ga0mte86da71u6p0gg08f7u96.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Fgeneric.host%3A3000%2Fdashboard HTTP/1.1

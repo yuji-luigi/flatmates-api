@@ -1,0 +1,10 @@
+POST http://generic.host:5001/api/v1/auth/login HTTP/1.1
+content-type: application/json
+
+{
+  "email": "aa@demo.com",
+  "password": "user$$$"
+}
+
+###
+GET http://generic.host:5001/api/v1/buildings?name=adfhg HTTP/1.1

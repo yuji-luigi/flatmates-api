@@ -1,0 +1,1 @@
+GET http://generic.host:5001/api/v1/auth/me HTTP/1.1

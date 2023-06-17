@@ -9,4 +9,3 @@ dist/
 demo.js
 pnpm-lock.yaml
 yarn.lock
-http/

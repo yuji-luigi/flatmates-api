@@ -1,0 +1,22 @@
+### Get all spaces
+GET http://generic.host:5001/api/v1/spaces HTTP/1.1
+
+### Get by id
+GET http://generic.host:5001/api/v1/spaces/6432ced15647e578ce20f8a0 HTTP/1.1
+
+
+
+
+### GET DESCENDANTS
+GET http://generic.host:5001/api/v1/spaces/descendants/6432ceda5647e578ce20f8b1 HTTP/1.1
+###
+GET http://generic.host:5001/api/v1/spaces/descendants/643392f31265c1756e6bdcb7 HTTP/1.1
+
+
+### condo sato srl
+GET http://generic.host:5001/api/v1/organizations/643861526aec086124b0e0e7 HTTP/1.1
+
+### SELECTED ORGANIZATION AT HEADER
+GET http://generic.host:5001/api/v1/organizations/selected/643861526aec086124b0e0e7 HTTP/1.1
+
+### 
