@@ -1,3 +1,7 @@
+import { Chance } from 'chance';
+
+const chance = new Chance();
+
 /** @description not a pure function. returning the req.body, but the original object is modified by reference. */
 export const deleteEmptyFields = function <T = IAllSchema>(obj: AllModels): T {
   // const objCopy = { ...obj };
@@ -113,6 +117,9 @@ export const replaceHyphens = (str: string, replacer = '_') => str.replace(/-/g,
 export const replaceSlash = (str: string, replacer = '_') => str.replace(/\//g, replacer);
 
 export const replaceSpecialChars = (str: string) => str.replace(/[^\w\s]/gi, '_').replace(/\s+/g, '_');
+export const replaceSpecialCharsWith = (str: string, replacer: string) => {
+  return str.replace(/[^\w\s-]/gi, replacer).replace(/\s+/g, replacer);
+};
 
 export function formatDateForFlights(date: Date) {
   let dateStr = date.toLocaleDateString('en-US', {
@@ -144,4 +151,8 @@ export function formatDateAndTimeForFlights(date: string) {
 export function hasDuplicatesInArray(array: string[], compare: string) {
   return array.some((el) => el === compare);
   // return new Set(array).size !== array.length;
+}
+
+export function generateWord() {
+  return chance.word();
 }

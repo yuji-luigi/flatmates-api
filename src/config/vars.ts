@@ -33,7 +33,8 @@ const vars = {
   gmailAppPassword: process.env.GMAIL_APP_PASSWORD,
   displayMail: process.env.DISPLAY_MAIL,
   gmailAddress: process.env.GMAIL_ADDRESS,
-  testMail: process.env.TEST_MAIL
+  testMail: process.env.TEST_MAIL,
+  ssgSecret: process.env.SSG_SECRET
 };
 
 export const sensitiveCookieOptions = {

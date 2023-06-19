@@ -20,3 +20,11 @@ GET http://generic.host:5001/api/v1/organizations/643861526aec086124b0e0e7 HTTP/
 GET http://generic.host:5001/api/v1/organizations/selected/643861526aec086124b0e0e7 HTTP/1.1
 
 ### 
+
+GET http://generic.host:5001/api/v1/spaces/static-props/a HTTP/1.1
+### 
+
+GET http://generic.host:5001/api/v/spaces/static-props/a HTTP/1.1
+### 
+
+GET http://generic.host:5001/api/v1/spaces/ho HTTP/1.1

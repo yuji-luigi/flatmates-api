@@ -124,3 +124,13 @@ export async function aggregateDescendantIds(spaceId: string, user: IUser): Prom
     throw new Error(err);
   }
 }
+
+export async function setUrlToSpaceImages(space: ISpace) {
+  try {
+    await space.avatar?.setUrl();
+    await space.cover?.setUrl();
+  } catch (err) {
+    logger.error(err);
+    throw new Error(err);
+  }
+}

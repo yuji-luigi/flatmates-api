@@ -6,6 +6,8 @@ import jwt from 'jsonwebtoken';
 import autoPopulate from 'mongoose-autopopulate';
 
 import vars from '../config/vars';
+// import urlSlug from 'mongoose-slug-generator';
+import { generateWord, replaceSpecialCharsWith } from '../utils/functions';
 
 const { jwtSecret } = vars;
 
@@ -77,6 +79,11 @@ export const spacesSchema = new Schema<ISpace, SpaceModel, ISpaceMethods>(
       ref: 'organizations'
       // required: true
       // autopopulate: true
+    },
+    slug: {
+      type: String,
+      // slug: 'name',
+      unique: true
     }
   },
   {
@@ -142,9 +149,39 @@ spacesSchema.pre('find', function (next) {
   this.populate('organization', 'name');
   next();
 });
+// set slug for pre save
+spacesSchema.pre('save', async function (next) {
+  try {
+    const slug = this.slug || this.name;
+    this.slug = replaceSpecialCharsWith(slug, '-').toLocaleLowerCase();
+
+    let slugToCheck = this.slug;
+
+    const found = await Space.findOne({ slug: slugToCheck, _id: { $ne: this._id } });
+
+    let isUnique = !found;
+    while (!isUnique) {
+      const word = generateWord();
+      slugToCheck = `${this.slug}-${word}`;
+      const existingSpace = await Space.findOne({ slug: slugToCheck, _id: { $ne: this._id } });
+      isUnique = !existingSpace;
+      this.slug = slugToCheck;
+    }
+    // If the slug is not unique, append a unique suffix
+
+    next();
+  } catch (error) {
+    logger.error(error.message || error);
+    throw new Error('error in slug generation of space');
+  }
+});
 
 spacesSchema.pre('validate', async function (next) {
   if (this.organization) {
+    return next();
+  }
+  if (!this.parentId) {
+    this.organization = undefined;
     return next();
   }
   const organization = await getOrganizationOfHead(this.parentId, 'spaces');
@@ -153,6 +190,7 @@ spacesSchema.pre('validate', async function (next) {
 });
 
 spacesSchema.plugin(autoPopulate);
+// spacesSchema.plugin(urlSlug);
 
 const Space = model<ISpace, SpaceModel>('spaces', spacesSchema);
 export default Space;

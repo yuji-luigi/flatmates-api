@@ -88,7 +88,7 @@ const setQueries = (req: RequestCustom, res: Response, next: NextFunction) => as
 
     if (req.user?.role !== 'super_admin' && !req.query.organization) {
       res.clearCookie('jwt', sensitiveCookieOptions);
-      throw new Error('organization cookie is not set. select organization first');
+      // throw new Error('organization cookie is not set. select organization first');
     }
     return next();
   } catch (error) {
@@ -108,6 +108,13 @@ export function clearQueriesForSAdmin(req: RequestCustom, res: Response, next: N
   if (req.user.role === 'super_admin') {
     delete req.query.organization;
     delete req.query.space;
+  }
+  next();
+}
+export function checkSSGSecret(req: RequestCustom, res: Response, next: NextFunction) {
+  if (req.query.ssg_secret !== process.env.SSG_SECRET) {
+    next('route');
+    return;
   }
   next();
 }

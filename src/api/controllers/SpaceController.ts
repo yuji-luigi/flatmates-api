@@ -9,7 +9,7 @@ import { aggregateWithPagination } from '../helpers/mongoose.helper';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import vars, { sensitiveCookieOptions } from '../../config/vars';
 import User from '../../models/User';
-import { aggregateDescendantIds, userHasSpace } from '../helpers/spaceHelper';
+import { aggregateDescendantIds, setUrlToSpaceImages, userHasSpace } from '../helpers/spaceHelper';
 import { _MSG } from '../../utils/messages';
 import Thread from '../../models/Thread';
 import Maintenance from '../../models/Maintenance';
@@ -108,10 +108,14 @@ export const sendSpaceDataForHome = async (req: RequestCustom, res: Response) =>
     //  TODO: use req.query for querying in find method and paginating. maybe need to delete field to query in find method
     // const { query } = req;
 
-    const space = await Space.findById(req.space._id);
-    const threads = await Thread.find({ space: req.space._id }).sort({ createdAt: -1 });
-    const maintenances = await Maintenance.find({ space: req.space._id });
-    const maintainers = await Maintainer.find({ spaces: { $in: [req.space._id] } });
+    let space = await Space.findById(req.space._id);
+    space = !space ? await Space.findOne({ slug: req.params.slug }) : space;
+
+    if (!space) throw new Error('space not found. please check the slug.');
+
+    const threads = await Thread.find({ space: space._id }).sort({ createdAt: -1 });
+    const maintenances = await Maintenance.find({ space: space._id });
+    const maintainers = await Maintainer.find({ spaces: { $in: [space._id] } });
 
     space.cover && (await space.cover.setUrl());
     space.avatar && (await space.avatar.setUrl());
@@ -142,7 +146,7 @@ export const sendSpaceDataForHome = async (req: RequestCustom, res: Response) =>
       totalDocuments: 1
     });
   } catch (err) {
-    res.status(err).json({
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
       message: err.message || err
     });
   }
@@ -168,7 +172,25 @@ export const getLinkedChildrenSpaces = async (req: Request, res: Response) => {
 
 export const sendSingleSpaceByIdToClient = async (req: RequestCustom, res: Response) => {
   try {
-    const data = await Space.findById(req.params.spaceId);
+    const data = await Space.findOne(req.params.spaceId);
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: 'spaces',
+      data: data,
+      totalDocuments: 1
+    });
+  } catch (err) {
+    logger.error(err.message || err);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: err.message || err });
+  }
+};
+
+export const sendSingleSpaceBySlugToClient = async (req: RequestCustom, res: Response) => {
+  try {
+    const data = await Space.findOne({ slug: req.params.slug });
+
+    await setUrlToSpaceImages(data);
 
     res.status(httpStatus.OK).json({
       success: true,
@@ -418,6 +440,23 @@ export async function sendDescendantIdsToClient(req: RequestCustom, res: Respons
     logger.error(error.message || error);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
       message: error.message || error
+    });
+  }
+}
+export async function sendMainSpacesSlug(req: RequestCustom, res: Response) {
+  try {
+    const mainSpaces = await Space.find({ isMain: true }).lean();
+    const slugs = mainSpaces.map((space) => space.slug);
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: 'spaces',
+      data: slugs,
+      totalDocuments: mainSpaces.length
+    });
+  } catch (error) {
+    logger.error(error.message || error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: 'Error in sending main spaces slugs function.'
     });
   }
 }
