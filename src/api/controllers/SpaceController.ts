@@ -189,13 +189,17 @@ export const sendSingleSpaceByIdToClient = async (req: RequestCustom, res: Respo
 export const sendSingleSpaceBySlugToClient = async (req: RequestCustom, res: Response) => {
   try {
     const data = await Space.findOne({ slug: req.params.slug });
+    const maintainers = await Maintainer.find({ spaces: { $in: [data._id] } });
 
     await setUrlToSpaceImages(data);
 
     res.status(httpStatus.OK).json({
       success: true,
       collection: 'spaces',
-      data: data,
+      data: {
+        space: data,
+        maintainers
+      },
       totalDocuments: 1
     });
   } catch (err) {
