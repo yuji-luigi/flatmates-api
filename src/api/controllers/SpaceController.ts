@@ -192,6 +192,9 @@ export const sendSingleSpaceBySlugToClient = async (req: RequestCustom, res: Res
     const maintainers = await Maintainer.find({ spaces: { $in: [data._id] } });
 
     await setUrlToSpaceImages(data);
+    for (const maintainer of maintainers) {
+      await maintainer.avatar?.setUrl();
+    }
 
     res.status(httpStatus.OK).json({
       success: true,
