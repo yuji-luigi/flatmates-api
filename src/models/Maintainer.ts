@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
 import bcrypt from 'bcrypt';
 import Space from './Space';
+import logger from '../config/logger';
+import { generateWord, replaceSpecialCharsWith } from '../utils/functions';
 const { Schema } = mongoose;
 
 export const maintainerSchema = new Schema<MaintainerInterface>(
@@ -49,6 +51,10 @@ export const maintainerSchema = new Schema<MaintainerInterface>(
     description: String,
     address: String,
     isInSpace: Boolean,
+    slug: {
+      type: String,
+      unique: true
+    },
     // organizations: [
     //   {
     //     type: Schema.Types.ObjectId,
@@ -76,6 +82,33 @@ export const maintainerSchema = new Schema<MaintainerInterface>(
     timestamps: true
   }
 );
+
+maintainerSchema.pre('save', async function (next) {
+  try {
+    const slug = this.slug || `${this.name}-${this.company}`;
+    this.slug = replaceSpecialCharsWith(slug, '-').toLocaleLowerCase();
+
+    let slugToCheck = this.slug;
+
+    const found = await Space.findOne({ slug: slugToCheck, _id: { $ne: this._id } });
+
+    let isUnique = !found;
+    while (!isUnique) {
+      const word = generateWord();
+      slugToCheck = `${this.slug}-${word}`;
+      const existingSpace = await Space.findOne({ slug: slugToCheck, _id: { $ne: this._id } });
+      isUnique = !existingSpace;
+      this.slug = slugToCheck;
+    }
+    // If the slug is not unique, append a unique suffix
+
+    next();
+  } catch (error) {
+    logger.error(error.message || error);
+    throw new Error('error in slug generation of space');
+  }
+});
+
 maintainerSchema.pre('save', async function save(next) {
   try {
     if (this.isModified('password')) {

@@ -14,6 +14,7 @@ interface MaintainerInterface extends MongooseBaseModel<null, null>, LoginInstan
   spaces: ISpace[];
   password: string;
   isInSpace: boolean;
+  slug: string;
   // organizations: IOrganization[];
   // spaces: ISpaces[];
   createdBy: string | IUser;

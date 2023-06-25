@@ -6,7 +6,7 @@ import mongoose from './config/mongoose';
 
 import logger from './config/logger';
 import vars from './config/vars';
-import Space from './models/Space';
+import Maintainer from './models/Maintainer';
 const { port, env } = vars;
 
 // open mongoose connection
@@ -14,7 +14,7 @@ mongoose.connect();
 
 app.listen(port, async () => {
   logger.info(`server started on port ${port} (${env})`);
-  const spaces = await Space.find({});
+  const spaces = await Maintainer.find({});
   for (const s of spaces) {
     await s.save();
   }

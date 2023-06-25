@@ -80,6 +80,26 @@ export const sendMaintainersWithPaginationToClient = async (req: RequestCustom, 
   }
 };
 
+export const sendSingleMaintainerBySlug = async (req: RequestCustom, res: Response) => {
+  try {
+    const entity = 'maintainers';
+    req.params.entity = entity;
+    const data: Record<string, object | string | Date | number | IUpload> = await Maintainer.findOne({ slug: req.params.slug });
+    data.avatar && (await (data.avatar as IUpload).setUrl());
+    data.cover && (await (data.cover as IUpload).setUrl());
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: entity,
+      data,
+      count: data.length
+    });
+  } catch (err) {
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: err.message || err
+    });
+  }
+};
+
 export async function updateMaintainerById(req: RequestCustom, res: Response) {
   try {
     const { idMongoose } = req.params;
@@ -109,5 +129,6 @@ export async function updateMaintainerById(req: RequestCustom, res: Response) {
 export default {
   createMaintainer,
   sendMaintainersWithPaginationToClient,
-  updateMaintainerById
+  updateMaintainerById,
+  sendSingleMaintainerBySlug
 };

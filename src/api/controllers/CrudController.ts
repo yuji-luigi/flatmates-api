@@ -105,6 +105,7 @@ export const getSingleCrudObject = async (req: Request, res: Response) => {
       count: data.length
     });
   } catch (err) {
+    logger.error(err.message || err);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
       message: err.message || err
     });
