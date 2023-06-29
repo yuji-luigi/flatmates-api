@@ -3,6 +3,7 @@ import autoPopulate from 'mongoose-autopopulate';
 import { getPrivateUrlOfSpace } from '../api/helpers/uploadFileHelper';
 import logger from '../config/logger';
 import { formatDateAndTimeForFlights } from '../utils/functions';
+import { MAINTAINER_TYPES } from '../types/enum/enum';
 
 const { Schema } = mongoose;
 
@@ -15,6 +16,7 @@ interface IMaintenanceDoc {
   description?: string | undefined;
   attachments: IUpload[] | [];
   isImportant: boolean;
+  type: (typeof MAINTAINER_TYPES)[number];
   tags?: string[];
   rating?: number | undefined;
   // createdBy: IUser;
@@ -77,6 +79,10 @@ export const maintenanceSchema = new Schema<IMaintenanceDoc, MaintenanceModel, I
       default: false
     },
     rating: Number,
+    type: {
+      type: String,
+      enum: MAINTAINER_TYPES
+    },
 
     user: {
       type: Schema.Types.ObjectId,

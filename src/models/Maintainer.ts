@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 import Space from './Space';
 import logger from '../config/logger';
 import { generateWord, replaceSpecialCharsWith } from '../utils/functions';
+import { MAINTAINER_TYPES } from '../types/enum/enum';
 const { Schema } = mongoose;
 
 export const maintainerSchema = new Schema<MaintainerInterface>(
@@ -27,7 +28,10 @@ export const maintainerSchema = new Schema<MaintainerInterface>(
       autopopulate: true
     },
     homepage: String,
-    type: String,
+    type: {
+      type: String,
+      enum: MAINTAINER_TYPES
+    },
     tel: String,
     email: {
       type: String,
