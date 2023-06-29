@@ -63,17 +63,10 @@ const uploadFilesController = {
     try {
       // const { forSingleField } = req.body;
       const [filesToUpload /* existingFilesId */] = separateFiles(req.files);
-      const generalDirName = createFilesDirName(req.user, /* req.body.folderName */ req.params.entity);
-      // const formattedOrganizationName = replaceSpecialChars(req.user.organization.name);
+      const generalDirName = createFilesDirName(req.user, req.params.entity);
 
-      // const organizationNameId = `${formattedOrganizationName}_${req.user.organization._id}`;
-      // const folderNameInBody = req.body.folderName
-      //   ? `/${req.body.folderName}`
-      //   : '';
-      // const generalDirName = organizationNameId + folderNameInBody;
       const uploadModelsData = await saveInStorage(filesToUpload, generalDirName);
       // ok, with reference of existing files
-      // const uploadModelIds = existingFilesId;
       const responseObj: UploadResponseObject = {};
       for (const key in uploadModelsData) {
         const createdModel = await Upload.create({
@@ -86,13 +79,10 @@ const uploadFilesController = {
         } else {
           responseObj[createdModel.fieldInParent] = [createdModel._id.toString()];
         }
-
-        // uploadModelIds.push(createdModel._id.toString());
       }
       res.status(httpStatus.OK).json({
         success: true,
         data: responseObj,
-        // data: /* forSingleField ? uploadModelIds[0] : */ uploadModelIds,
         collection: 'storage'
       });
     } catch (error) {
@@ -110,7 +100,7 @@ const uploadFilesController = {
 
       const uploadModel = await Upload.findById(uploadId);
       deleteFileFromStorage(uploadModel.fullPath);
-      /* const deletedModel =  */ await uploadModel.removeThis();
+      await uploadModel.removeThis();
       const rootModel = await mongoose.model(modelEntity).findById(modelId);
       const updatedFilesInModel = rootModel[uploadKey].filter(
         (file: any) => file._id.toString() !== uploadId // file._id is an ObjectId
