@@ -42,6 +42,7 @@ import { Request, Response } from 'express';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import mongoose from 'mongoose';
 import { UploadResponseObject } from '../helpers/types-uploadFileHelper';
+import { replaceSpecialChars } from '../../utils/functions';
 // const { storageBucketName } = vars;
 
 const uploadFilesController = {
@@ -63,7 +64,8 @@ const uploadFilesController = {
     try {
       // const { forSingleField } = req.body;
       const [filesToUpload /* existingFilesId */] = separateFiles(req.files);
-      const generalDirName = createFilesDirName(req.user, req.params.entity);
+      const folderName = `${replaceSpecialChars(req.space.name)}/${req.params.entity}`;
+      const generalDirName = await createFilesDirName(req.user, folderName);
 
       const uploadModelsData = await saveInStorage(filesToUpload, generalDirName);
       // ok, with reference of existing files

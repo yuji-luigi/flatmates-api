@@ -5,7 +5,7 @@ import { S3, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aw
 // import { uuid } from 'uuidv4';
 import logger from '../../config/logger';
 import vars from '../../config/vars';
-import { formatDateASCII, replaceHyphens, replaceSpecialChars } from '../../utils/functions';
+import { formatDateASCII2, replaceHyphens, replaceSpecialChars } from '../../utils/functions';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Readable } from 'stream';
 import { replaceSpaces } from '../../utils/functions';
@@ -13,6 +13,7 @@ import { uuid } from 'uuidv4';
 import { UploadsThread } from './types-uploadFileHelper';
 import Upload from '../../models/Upload';
 import { RequestCustom } from '../../types/custom-express/express-custom';
+import Organization from '../../models/Organization';
 
 const { storageAccessKeyId, storageSecretAccessKey, storageBucketName, storageEndPoint, storageRegion } = vars;
 
@@ -46,7 +47,7 @@ export const saveInStorage = async function (
 ) {
   try {
     const dateNow = new Date();
-    const dateASCII = formatDateASCII(dateNow);
+    const dateASCII = formatDateASCII2(dateNow);
     // const today = formatDateByDash(dateNow);
     // o(n)...🤣
     const result = [];
@@ -74,7 +75,7 @@ export const saveInStorage = async function (
   }
 };
 
-export const getBucketParams = (data: any, fullPath: string) =>
+export const getBucketParams = (data: any, fullPath: string, isPrivate = false) =>
   // const { folderName, fileName } = data;
 
   // const key = folderName ? `${folderName}/${fileName}` : fileName; // include folder name in the key if it's provided
@@ -84,6 +85,7 @@ export const getBucketParams = (data: any, fullPath: string) =>
     Key: fullPath,
     Body: data.data,
     ContentType: data.mimetype,
+    ACL: isPrivate ? 'private' : 'public-read',
     ContentLength: `${data.size}` as unknown as number,
     Metadata: {
       mimetype: data.mimetype,
@@ -91,6 +93,7 @@ export const getBucketParams = (data: any, fullPath: string) =>
       size: `${data.size}`
     }
   });
+
 export function createUploadModelData(file: any, dateASCII: any) {
   const gui = uuid(); // generate uuid
   const extension = file.name.split('.').pop(); // get file extension
@@ -183,13 +186,20 @@ export const separateFiles = function (files: any) {
   // return [[], []];
 };
 
-export const createFilesDirName = function (user: IUser, folderName?: string) {
-  const formattedOrganizationName = replaceSpecialChars(user.organization?.name || 'super_admin');
+export const createFilesDirName = async function (user: IUser, folderName?: string) {
+  try {
+    const organization = await Organization.findById(user.organization);
 
-  const organizationNameId = `${formattedOrganizationName}_${user.organization?._id || ''}`;
-  const folderNameInBody = folderName ? `/${folderName}` : '';
-  const generalDirName = organizationNameId + folderNameInBody;
-  return generalDirName;
+    const formattedOrganizationName = replaceSpecialChars(organization.name || 'super_admin');
+
+    const organizationNameId = `${formattedOrganizationName}_${user.organization?._id || ''}`;
+    const folderNameInBody = folderName ? `/${folderName}` : '';
+    const generalDirName = organizationNameId + folderNameInBody;
+    return generalDirName;
+  } catch (error) {
+    logger.error(error.message || error);
+    throw new Error('Error: creating Directory name. createFiledDirName function');
+  }
 };
 
 export const deleteFileFromStorage = async function (key: string) {
@@ -210,7 +220,7 @@ export const deleteFileFromStorage = async function (key: string) {
 export const handleImagesAndAttachments = async function (req: RequestCustom): Promise<{ images: IUpload[]; attachments: IUpload[] }> {
   try {
     const [filesToUpload] = separateFiles(req.files);
-    const generalDirName = createFilesDirName(req.user, req.body.folderName);
+    const generalDirName = await createFilesDirName(req.user, req.body.folderName);
     const uploadModelsData = await saveInStorage(filesToUpload, generalDirName);
     const uploads: UploadsThread = { images: [], attachments: [] };
 

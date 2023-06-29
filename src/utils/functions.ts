@@ -97,12 +97,20 @@ const options: TolocaleOptions = {
 
 export const formatDate = (date: Date): string => date.toLocaleString('it-IT', options.weekToDay);
 export const detailedDate = (date: Date): string => date.toLocaleString('it-IT', options.detailedDate);
+export const formatDateASCII = (date: Date) => {
+  const year = date.toLocaleDateString('en-US', { year: 'numeric' });
+  const month = date.toLocaleDateString('en-US', { month: '2-digit' });
+  const day = date.toLocaleDateString('en-US', { day: '2-digit' });
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
 
-export const formatDateASCII = (date: Date) =>
-  date.toLocaleDateString('en-US', { year: 'numeric' }) +
-  date.toLocaleDateString('en-US', { month: 'numeric' }) +
-  date.toLocaleDateString('en-US', { day: 'numeric' }) +
-  date.getHours(); /*  + date.getMinutes() + date.getSeconds() */
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
+
+export const formatDateASCII2 = (date: Date) => {
+  return replaceSpecialChars(date.toISOString().replace('T', ' ').substring(0, 19));
+};
 
 /**
  *

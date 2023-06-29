@@ -53,7 +53,7 @@ const updateMaintenance = async (req: RequestCustom, res: Response) => {
     const reqBody = deleteEmptyFields<IMaintenance>(req.body);
     if (req.files) {
       const [filesToUpload] = separateFiles(req.files);
-      const generalDirName = createFilesDirName(req.user, req.body.folderName);
+      const generalDirName = await createFilesDirName(req.user, req.body.folderName);
       const uploadModelsData = await saveInStorage(filesToUpload, generalDirName);
       const uploads: UploadFields = { images: [], attachments: [] };
 

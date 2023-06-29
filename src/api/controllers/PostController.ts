@@ -199,7 +199,7 @@ const updateThread = async (req: RequestCustom, res: Response) => {
 
     if (req.files) {
       const [filesToUpload] = separateFiles(req.files);
-      const generalDirName = createFilesDirName(req.user, req.body.folderName);
+      const generalDirName = await createFilesDirName(req.user, req.body.folderName);
       const uploadModelsData = await saveInStorage(filesToUpload, generalDirName);
       const uploads: UploadsThread = { images: [], attachments: [] };
 
