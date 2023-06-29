@@ -28,3 +28,5 @@ GET http://generic.host:5001/api/v/spaces/static-props/a HTTP/1.1
 ### 
 
 GET http://generic.host:5001/api/v1/spaces/ho HTTP/1.1
+###
+GET {{host}}/api/v1/spaces/static-props/contardo-ferrini--condominio?ssg_secret={{ssg_secret}} HTTP/1.1
