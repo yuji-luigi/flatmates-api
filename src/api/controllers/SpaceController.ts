@@ -387,7 +387,11 @@ export const sendSpaceAsCookie = async (req: RequestCustom, res: Response) => {
 
     res.clearCookie('space');
 
-    res.cookie('space', jwt, sensitiveCookieOptions);
+    const httpOnlyFalseCookieOptions = {
+      ...sensitiveCookieOptions,
+      httpOnly: false
+    };
+    res.cookie('space', jwt, httpOnlyFalseCookieOptions);
     res.cookie('spaceName', space.name, { domain: vars.cookieDomain });
 
     res.status(httpStatus.OK).json({

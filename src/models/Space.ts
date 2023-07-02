@@ -131,7 +131,8 @@ export const spacesSchema = new Schema<ISpace, SpaceModel, ISpaceMethods>(
           _id: this._id,
           name: this.name,
           address: this.address,
-          organization: this.organization
+          organization: this.organization,
+          slug: this.slug
         };
         return jwt.sign(payload, jwtSecret, {
           expiresIn: '24h' // expires in 24 hours

@@ -8,6 +8,8 @@ import { _MSG } from '../../utils/messages';
 import Organization from '../../models/Organization';
 import Space from '../../models/Space';
 
+const entity = 'maintainers';
+
 export const createMaintainer = async (req: RequestCustom, res: Response) => {
   try {
     const foundMaintainer = await Maintainer.findOne({ email: req.body.email });
@@ -125,6 +127,32 @@ export async function updateMaintainerById(req: RequestCustom, res: Response) {
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: err.message || err });
   }
 }
+
+//! TODO: from next chose to call generic parameter route
+export const removeSpaceFromMaintainerById = async (req: RequestCustom, res: Response) => {
+  try {
+    /**
+     * find model
+     * create model with parentId in the correct field
+     * save
+     * send the data array to handle in redux
+     */
+    const { maintainer, space } = req.query;
+    const foundMaintainer = await Maintainer.findById(maintainer);
+    const deletedSpaces = foundMaintainer.spaces.filter((_space) => _space._id.toString() !== space.toString()).map((_space) => _space._id);
+    foundMaintainer.spaces = deletedSpaces as any;
+    await foundMaintainer.save();
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: entity,
+      data: foundMaintainer,
+      message: _MSG.OBJ_UPDATED
+    });
+  } catch (err) {
+    logger.error(err.message || err);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: err.message || err });
+  }
+};
 
 export default {
   createMaintainer,
