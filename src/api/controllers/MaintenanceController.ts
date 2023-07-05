@@ -8,6 +8,7 @@ import { createFilesDirName, saveInStorage, separateFiles } from '../helpers/upl
 import Upload from '../../models/Upload';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { authClientRun } from '../helpers/nodemailerHelper';
+import Maintainer from '../../models/Maintainer';
 /**
  * POST CONTROLLERS
  */
@@ -22,9 +23,11 @@ const createMaintenance = async (req: RequestCustom, res: Response) => {
   try {
     req.body.user = req.user;
     const reqBody = deleteEmptyFields<IMaintenance>(req.body);
+    reqBody.organization = req.query.organization;
     await Maintenance.create(reqBody);
+    const maintainer = await Maintainer.findById(req.body.maintainer);
     //!todo send push notification to the user of the space
-    await authClientRun();
+    await authClientRun({ maintainer });
     //!todo send email to the maintainers of the space of type of maintenance
     //!todo log the email
     const maintenances = await Maintenance.find(req.query).sort({ createdAt: -1 });

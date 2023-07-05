@@ -11,6 +11,7 @@ interface IUpload extends MongooseBaseModel<null, null>, IUploadMethods {
   size: number;
   url?: string | undefined;
   uploadedBy?: IUser | string | undefined;
+  ACL?: string | undefined;
   // setUrl: () => Promise<void>;
 }
 interface IUploadMethods {

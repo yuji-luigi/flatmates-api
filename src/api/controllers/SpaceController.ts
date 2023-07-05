@@ -120,19 +120,19 @@ export const sendSpaceDataForHome = async (req: RequestCustom, res: Response) =>
     space.cover && (await space.cover.setUrl());
     space.avatar && (await space.avatar.setUrl());
 
-    for (const thread of threads) {
-      for (const image of thread.images) {
-        image && (await image.setUrl());
-      }
-      for (const maintenance of maintenances) {
-        for (const image of maintenance.images) {
-          image && (await image.setUrl());
-        }
-      }
-      for (const maintainer of maintainers) {
-        maintainer.avatar && (await maintainer.avatar.setUrl());
-      }
-    }
+    // for (const thread of threads) {
+    //   for (const image of thread.images) {
+    //     image && (await image.setUrl());
+    //   }
+    // }
+    // for (const maintenance of maintenances) {
+    //   for (const image of maintenance.images) {
+    //     image && (await image.setUrl());
+    //   }
+    // }
+    // for (const maintainer of maintainers) {
+    //   maintainer.avatar && (await maintainer.avatar.setUrl());
+    // }
 
     res.status(httpStatus.OK).json({
       success: true,

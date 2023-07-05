@@ -2,9 +2,15 @@ import mongoose, { Model } from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
 import { deleteFileFromStorage, getPrivateUrlOfSpace } from '../api/helpers/uploadFileHelper';
 import logger from '../config/logger';
+import vars from '../config/vars';
 // import { deleteFileFromStorage } from '../api/helpers/uploadFileHelper';
 const { Schema } = mongoose;
 type IUploadModel = Model<IUpload, object, IUploadMethods>;
+
+export const ACL_STATUS = {
+  PRIVATE: 'private',
+  PUBLIC_READ: 'public-read'
+} as const;
 
 const uploadSchema = new Schema<IUpload, IUploadModel, IUploadMethods>(
   {
@@ -24,6 +30,11 @@ const uploadSchema = new Schema<IUpload, IUploadModel, IUploadMethods>(
     mimetype: {
       type: String
       // required: true
+    },
+    ACL: {
+      type: String,
+      enum: Object.values(ACL_STATUS),
+      default: ACL_STATUS.PUBLIC_READ
     },
     /** now is set to be entity. */
     folder: {
@@ -67,6 +78,10 @@ const uploadSchema = new Schema<IUpload, IUploadModel, IUploadMethods>(
         return thisData;
       },
       async setUrl() {
+        if (this.ACL === ACL_STATUS.PUBLIC_READ) {
+          this.url = vars.storageUrl + '/' + this.fullPath;
+          return;
+        }
         const obj = { params: { key: this.fullPath } };
         const url = await getPrivateUrlOfSpace(obj);
         this.url = url;

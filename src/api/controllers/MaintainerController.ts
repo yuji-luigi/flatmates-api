@@ -38,7 +38,7 @@ export const createMaintainer = async (req: RequestCustom, res: Response) => {
 
     res.status(httpStatus.CREATED).json({
       success: true,
-      collection: 'maintainers',
+      collection: entity,
       data,
       count: data.length
     });
@@ -53,8 +53,6 @@ export const createMaintainer = async (req: RequestCustom, res: Response) => {
 
 export const sendMaintainersWithPaginationToClient = async (req: RequestCustom, res: Response) => {
   try {
-    const entity = 'maintainers';
-
     // const queryMaintainer = req.space?.maintainers || req.organization?.maintainers;
 
     const maintainers = await Maintainer.find();
@@ -68,6 +66,26 @@ export const sendMaintainersWithPaginationToClient = async (req: RequestCustom, 
         maintainer.isInSpace = true;
       }
     }
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: entity,
+      data: maintainers,
+      totalDocuments: maintainers.length
+    });
+  } catch (err) {
+    res.status(err).json({
+      message: err.message || err
+    });
+  }
+};
+
+export const sendMaintainersOfBuildingToClient = async (req: RequestCustom, res: Response) => {
+  try {
+    // const queryMaintainer = req.space?.maintainers || req.organization?.maintainers;
+
+    const maintainers = await Maintainer.find({ spaces: { $in: [req.space?._id] } });
+    // const maintainers = await Maintainer.find({ _id: { $in: queryMaintainer } });
 
     res.status(httpStatus.OK).json({
       success: true,

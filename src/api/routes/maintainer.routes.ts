@@ -1,6 +1,6 @@
 import express from 'express';
 import { isLoggedIn } from '../../middlewares/auth';
-import maintainerCtrl, { removeSpaceFromMaintainerById } from '../controllers/MaintainerController';
+import maintainerCtrl, { removeSpaceFromMaintainerById, sendMaintainersOfBuildingToClient } from '../controllers/MaintainerController';
 const router = express.Router();
 router.get('/test/test', (req, res) => res.send('API is working: maintainer.routes.tsd'));
 
@@ -10,7 +10,9 @@ router.get('/slug/:slug', isLoggedIn(), maintainerCtrl.sendSingleMaintainerBySlu
 router.post('/with-pagination', isLoggedIn(), maintainerCtrl.createMaintainer);
 router.put('/:idMongoose', isLoggedIn(), maintainerCtrl.updateMaintainerById);
 
+router.get('/spaces', isLoggedIn(), sendMaintainersOfBuildingToClient);
 router.delete('/spaces', isLoggedIn(), removeSpaceFromMaintainerById);
+
 // router.put('/', is)
 
 // router.get('/:maintenanceId', isLoggedIn(), maintenanceCtrl.sendSingleMaintenanceToFrondEnd);

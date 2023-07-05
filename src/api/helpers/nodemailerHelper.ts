@@ -4,7 +4,7 @@ import nodemailer from 'nodemailer';
 
 // const REFRESH_TOKEN = 'YOUR_REFRESH_TOKEN';
 
-export async function authClientRun() {
+export async function authClientRun({ maintainer }: { maintainer: MaintainerInterface }) {
   try {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
@@ -15,7 +15,7 @@ export async function authClientRun() {
     });
     const mailOptions = {
       from: vars.displayMail,
-      to: vars.testMail,
+      to: maintainer.email,
       subject: 'Subject',
       text: 'Email content'
     };

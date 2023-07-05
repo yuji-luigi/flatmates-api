@@ -43,6 +43,7 @@ import { RequestCustom } from '../../types/custom-express/express-custom';
 import mongoose from 'mongoose';
 import { UploadResponseObject } from '../helpers/types-uploadFileHelper';
 import { replaceSpecialChars } from '../../utils/functions';
+import vars from '../../config/vars';
 // const { storageBucketName } = vars;
 
 const uploadFilesController = {
@@ -73,6 +74,7 @@ const uploadFilesController = {
       for (const key in uploadModelsData) {
         const createdModel = await Upload.create({
           ...uploadModelsData[key],
+          url: vars.storageUrl + '/' + uploadModelsData[key].fullPath,
           uploadedBy: req.user._id
         });
 
