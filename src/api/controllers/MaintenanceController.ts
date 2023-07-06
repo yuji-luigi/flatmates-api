@@ -9,6 +9,7 @@ import Upload from '../../models/Upload';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { authClientRun } from '../helpers/nodemailerHelper';
 import Maintainer from '../../models/Maintainer';
+import { IMaintenance } from '../../types/model/maintenance';
 /**
  * POST CONTROLLERS
  */

@@ -4,6 +4,7 @@ import { getPrivateUrlOfSpace } from '../api/helpers/uploadFileHelper';
 import logger from '../config/logger';
 import { formatDateAndTimeForFlights } from '../utils/functions';
 import { MAINTAINER_TYPES } from '../types/enum/enum';
+import { IMaintenanceMethods } from '../types/model/maintenance';
 
 const { Schema } = mongoose;
 

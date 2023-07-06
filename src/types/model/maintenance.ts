@@ -1,4 +1,10 @@
-interface IMaintenance extends MongooseBaseModel<null, null> {
+export const MAINTENANCE_STATUS = {
+  PENDING: 'pending',
+  COMPLETED: 'completed',
+  IN_PROGRESS: 'inProgress'
+};
+
+export interface IMaintenance extends MongooseBaseModel<null, null> {
   createdAt: string;
   title: string;
   images: IUpload[] | [];
@@ -8,8 +14,8 @@ interface IMaintenance extends MongooseBaseModel<null, null> {
   attachments: IUpload[] | [];
   isImportant: boolean;
   tags?: string[];
-  building?: string | IBuilding;
   rating?: number | undefined;
+  status: keyof typeof MAINTENANCE_STATUS;
   // createdBy: IUser;
   user: IUser | string;
   organization?: IOrganization | string;
@@ -18,7 +24,7 @@ interface IMaintenance extends MongooseBaseModel<null, null> {
   isPublic: boolean;
 }
 
-interface IMaintenanceMethods {
+export interface IMaintenanceMethods {
   setStorageUrlToModel: () => Promise<void>;
   /**
    * Deletes thread and all its uploads
