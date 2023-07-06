@@ -4,10 +4,13 @@ import { getPrivateUrlOfSpace } from '../api/helpers/uploadFileHelper';
 import logger from '../config/logger';
 import { formatDateAndTimeForFlights } from '../utils/functions';
 import { MAINTAINER_TYPES } from '../types/enum/enum';
-import { IMaintenanceMethods } from '../types/model/maintenance';
+import { IMaintenanceMethods } from '../types/model/maintenance-type';
 
 const { Schema } = mongoose;
 
+// import { IMaintenance } from '../types/model/maintenance-type';
+
+// interface TesIMaintenanceDoc
 interface IMaintenanceDoc {
   createdAt: string;
   title: string;
