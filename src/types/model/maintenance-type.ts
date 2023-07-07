@@ -1,3 +1,5 @@
+import { MAINTAINER_TYPES } from '../enum/enum';
+
 export const MAINTENANCE_STATUS = {
   PENDING: 'pending',
   COMPLETED: 'completed',
@@ -17,7 +19,8 @@ export interface IMaintenance extends MongooseBaseModel<null, null> {
   rating?: number | undefined;
   status: keyof typeof MAINTENANCE_STATUS;
   // createdBy: IUser;
-  user: IUser | string;
+  user: IUser;
+  type: (typeof MAINTAINER_TYPES)[number];
   organization?: IOrganization | string;
   space: ISpace | string;
   /** decides if everyone in the world can see or only under the organization. */

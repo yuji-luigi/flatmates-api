@@ -4,33 +4,14 @@ import { getPrivateUrlOfSpace } from '../api/helpers/uploadFileHelper';
 import logger from '../config/logger';
 import { formatDateAndTimeForFlights } from '../utils/functions';
 import { MAINTAINER_TYPES } from '../types/enum/enum';
-import { IMaintenanceMethods } from '../types/model/maintenance-type';
+import { IMaintenance, IMaintenanceMethods } from '../types/model/maintenance-type';
 
 const { Schema } = mongoose;
 
 // import { IMaintenance } from '../types/model/maintenance-type';
 
-// interface TesIMaintenanceDoc
-interface IMaintenanceDoc {
-  createdAt: string;
-  title: string;
-  images: IUpload[] | [];
-  listViewType: 'default' | 'bigImage';
-  articleType: 'default' | 'blog' | 'news' | 'event' | 'announcement' | 'poll' | 'survey' | 'question' | 'discussion';
-  description?: string | undefined;
-  attachments: IUpload[] | [];
-  isImportant: boolean;
-  type: (typeof MAINTAINER_TYPES)[number];
-  tags?: string[];
-  rating?: number | undefined;
-  // createdBy: IUser;
-  user: IUser;
-  organization?: IOrganization | string;
-  space: ISpace | string;
-  /** decides if everyone in the world can see or only under the organization. */
-  isPublic: boolean;
-}
-
+// type IMaintenanceDoc = Omit<IMaintenance, '_id'>;
+type IMaintenanceDoc = IMaintenance;
 interface MaintenanceModel extends Model<IMaintenanceDoc, object, IMaintenanceMethods> {
   // hasSetStorageUrlToModel(): boolean;
   // a: string;
