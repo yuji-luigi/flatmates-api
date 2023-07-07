@@ -1,6 +1,8 @@
-import mongoose, { SortOrder } from 'mongoose';
+import mongoose, { Document, SortOrder } from 'mongoose';
 import Thread from '../../models/Thread';
+import logger from '../../config/logger';
 import { ObjectId } from 'mongodb';
+import { generateWord, replaceSpecialCharsWith } from '../../utils/functions';
 // todo: aggregation method
 interface LookUpQueryInterface {
   [key: string]: mongoose.PipelineStage.FacetPipelineStage[];
@@ -106,4 +108,35 @@ export function convert_idToMongooseId(query: Record<string, string | ObjectId>)
     query.space = new ObjectId(query.space);
   }
   return query;
+}
+
+export interface ICollectionAware extends Document {
+  constructor: { collection: { name: string } };
+}
+export type DocumentWithSlug = { slug?: string; name: string } & ICollectionAware;
+
+export const getCollectionName = <T extends Document>(document: T & DocumentWithSlug) => document.constructor.collection.name;
+
+export async function createSlug<T extends Document>(document: T & DocumentWithSlug): Promise<string> {
+  // export async function createSlug(document: Document & { slug?: string; name: string } & MongooseThis): Promise<string> {
+  try {
+    let slug = document.slug || document.name;
+    slug = replaceSpecialCharsWith(slug, '-').toLocaleLowerCase();
+    let slugToCheck = slug;
+
+    const Model = await mongoose.model(getCollectionName(document));
+    const found = await Model.findOne({ slug: slugToCheck });
+    let isUnique = !found;
+    while (!isUnique) {
+      const word = generateWord();
+      slugToCheck = `${document.slug}-${word}`;
+      const foundOtherBySlug = await Model.findOne({ slug: slugToCheck, _id: { $ne: document._id } });
+      isUnique = !foundOtherBySlug;
+      slug = slugToCheck;
+    }
+    return slug;
+  } catch (error) {
+    logger.error(error.message || error);
+    throw new Error('error in slug generation of space');
+  }
 }

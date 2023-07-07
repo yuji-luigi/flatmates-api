@@ -239,3 +239,21 @@ export const handleImagesAndAttachments = async function (req: RequestCustom): P
     throw error;
   }
 };
+
+// test to make all uploads public
+export async function makeAllPublic() {
+  try {
+    const uploads = await Upload.find();
+    // for (const upload of uploads) {
+    //   const params = {
+    //     Bucket: storageBucketName,
+    //     Key: upload.fullPath,
+    //     ACL: 'public-read'
+    //   };
+    // await s3Client.send(new PutObjectCommand(params));
+    // }
+  } catch (error) {
+    logger.error(error.message || error);
+    throw error;
+  }
+}

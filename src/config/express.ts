@@ -14,7 +14,7 @@ import vars from './vars';
 import fileUpload from 'express-fileupload';
 // import logger from './logger';
 // import { RequestCustom } from '../types/custom-express/express-custom';
-// import { authClientRun } from './google-api';
+// import { notifyMaintainerByEmail } from './google-api';
 /**
  * Express instance
  * @public
@@ -49,7 +49,7 @@ passport.use('handleSpaceJwt', strategies.handleSpaceJwt);
 app.use('/api/v1', routes);
 
 // (async () => {
-//   await authClientRun();
+//   await notifyMaintainerByEmail();
 // })();
 // if error is not an instanceOf APIError, convert it.
 // app.use(error.converter);

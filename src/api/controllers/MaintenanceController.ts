@@ -7,7 +7,7 @@ import { deleteEmptyFields } from '../../utils/functions';
 import { createFilesDirName, saveInStorage, separateFiles } from '../helpers/uploadFileHelper';
 import Upload from '../../models/Upload';
 import { RequestCustom } from '../../types/custom-express/express-custom';
-import { authClientRun } from '../helpers/nodemailerHelper';
+import { notifyMaintainerByEmail } from '../helpers/nodemailerHelper';
 import Maintainer from '../../models/Maintainer';
 import { IMaintenance } from '../../types/model/maintenance-type';
 /**
@@ -28,7 +28,7 @@ const createMaintenance = async (req: RequestCustom, res: Response) => {
     await Maintenance.create(reqBody);
     const maintainer = await Maintainer.findById(req.body.maintainer);
     //!todo send push notification to the user of the space
-    await authClientRun({ maintainer });
+    await notifyMaintainerByEmail({ maintainer });
     //!todo send email to the maintainers of the space of type of maintenance
     //!todo log the email
     const maintenances = await Maintenance.find(req.query).sort({ createdAt: -1 });

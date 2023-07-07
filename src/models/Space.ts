@@ -155,7 +155,6 @@ spacesSchema.pre('save', async function (next) {
   try {
     const slug = this.slug || this.name;
     this.slug = replaceSpecialCharsWith(slug, '-').toLocaleLowerCase();
-
     let slugToCheck = this.slug;
 
     const found = await Space.findOne({ slug: slugToCheck, _id: { $ne: this._id } });

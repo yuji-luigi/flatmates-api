@@ -14,6 +14,7 @@ import { _MSG } from '../../utils/messages';
 import Thread from '../../models/Thread';
 import Maintenance from '../../models/Maintenance';
 import Maintainer from '../../models/Maintainer';
+import { ObjectId } from 'mongodb';
 
 // import MSG from '../../utils/messages';
 // import { runInNewContext } from 'vm';
@@ -172,7 +173,7 @@ export const getLinkedChildrenSpaces = async (req: Request, res: Response) => {
 
 export const sendSingleSpaceByIdToClient = async (req: RequestCustom, res: Response) => {
   try {
-    const data = await Space.findOne(req.params.spaceId);
+    const data = await Space.findOne(new ObjectId(req.params.spaceId));
 
     res.status(httpStatus.OK).json({
       success: true,

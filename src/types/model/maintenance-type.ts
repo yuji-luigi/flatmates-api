@@ -7,6 +7,7 @@ export const MAINTENANCE_STATUS = {
 };
 
 export interface IMaintenance extends MongooseBaseModel<null, null> {
+  name: string;
   createdAt: string;
   title: string;
   images: IUpload[] | [];
@@ -23,6 +24,7 @@ export interface IMaintenance extends MongooseBaseModel<null, null> {
   type: (typeof MAINTAINER_TYPES)[number];
   organization?: IOrganization | string;
   space: ISpace | string;
+  slug: string;
   /** decides if everyone in the world can see or only under the organization. */
   isPublic: boolean;
 }

@@ -1,17 +1,18 @@
-import mongoose, { Model } from 'mongoose';
+import mongoose, { CallbackWithoutResultAndOptionalError, Model } from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
 import { getPrivateUrlOfSpace } from '../api/helpers/uploadFileHelper';
 import logger from '../config/logger';
 import { formatDateAndTimeForFlights } from '../utils/functions';
 import { MAINTAINER_TYPES } from '../types/enum/enum';
 import { IMaintenance, IMaintenanceMethods } from '../types/model/maintenance-type';
+import { ICollectionAware, createSlug } from '../api/helpers/mongoose.helper';
 
 const { Schema } = mongoose;
 
 // import { IMaintenance } from '../types/model/maintenance-type';
 
 // type IMaintenanceDoc = Omit<IMaintenance, '_id'>;
-type IMaintenanceDoc = IMaintenance;
+type IMaintenanceDoc = IMaintenance & Document;
 interface MaintenanceModel extends Model<IMaintenanceDoc, object, IMaintenanceMethods> {
   // hasSetStorageUrlToModel(): boolean;
   // a: string;
@@ -87,6 +88,11 @@ export const maintenanceSchema = new Schema<IMaintenanceDoc, MaintenanceModel, I
       type: Schema.Types.ObjectId,
       ref: 'spaces'
       // required: true,
+    },
+    slug: {
+      type: String,
+      // slug: 'name',
+      unique: true
     }
   },
   {
@@ -148,6 +154,12 @@ maintenanceSchema.plugin(autoPopulate);
 maintenanceSchema.pre('find', async function (next) {
   // sort by most recent
   this.sort({ createdAt: -1 });
+  next();
+});
+
+maintenanceSchema.pre('save', async function (this: IMaintenance & ICollectionAware, next: CallbackWithoutResultAndOptionalError) {
+  // sort by most recent
+  this.slug = await createSlug(this);
   next();
 });
 // maintenanceSchema.get('_createdAt', function (v) {
