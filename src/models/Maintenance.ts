@@ -4,7 +4,7 @@ import { getPrivateUrlOfSpace } from '../api/helpers/uploadFileHelper';
 import logger from '../config/logger';
 import { formatDateAndTimeForFlights } from '../utils/functions';
 import { MAINTAINER_TYPES } from '../types/enum/enum';
-import { IMaintenance, IMaintenanceMethods } from '../types/model/maintenance-type';
+import { IMaintenance, IMaintenanceMethods, MAINTAINER_TYPES_ARRAY, MAINTENANCE_STATUS } from '../types/model/maintenance-type';
 import { ICollectionAware, createSlug } from '../api/helpers/mongoose.helper';
 
 const { Schema } = mongoose;
@@ -46,6 +46,11 @@ export const maintenanceSchema = new Schema<IMaintenanceDoc, MaintenanceModel, I
     listViewType: {
       type: String,
       default: 'default'
+    },
+    status: {
+      type: String,
+      enum: MAINTAINER_TYPES_ARRAY,
+      default: MAINTENANCE_STATUS.INCOMPLETE
     },
     attachments: [
       {

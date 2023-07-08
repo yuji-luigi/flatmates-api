@@ -1,10 +1,14 @@
 import { MAINTAINER_TYPES } from '../enum/enum';
 
 export const MAINTENANCE_STATUS = {
-  PENDING: 'pending',
+  INCOMPLETE: 'incomplete',
+  INVOICED: 'invoiced',
   COMPLETED: 'completed',
   IN_PROGRESS: 'inProgress'
-};
+} as const;
+export type MAINTENANCE_STATUS_TYPE = (typeof MAINTENANCE_STATUS)[keyof typeof MAINTENANCE_STATUS];
+
+export const MAINTAINER_TYPES_ARRAY = Object.keys(MAINTAINER_TYPES);
 
 export interface IMaintenance extends MongooseBaseModel<null, null> {
   name: string;
@@ -18,7 +22,7 @@ export interface IMaintenance extends MongooseBaseModel<null, null> {
   isImportant: boolean;
   tags?: string[];
   rating?: number | undefined;
-  status: keyof typeof MAINTENANCE_STATUS;
+  status: MAINTENANCE_STATUS_TYPE;
   // createdBy: IUser;
   user: IUser;
   type: (typeof MAINTAINER_TYPES)[number];
