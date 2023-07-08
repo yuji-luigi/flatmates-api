@@ -14,6 +14,7 @@ import { UploadsThread } from './types-uploadFileHelper';
 import Upload from '../../models/Upload';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import Organization from '../../models/Organization';
+import { Response } from 'express';
 
 const { storageAccessKeyId, storageSecretAccessKey, storageBucketName, storageEndPoint, storageRegion } = vars;
 
@@ -241,9 +242,9 @@ export const handleImagesAndAttachments = async function (req: RequestCustom): P
 };
 
 // test to make all uploads public
-export async function makeAllPublic() {
+export async function makeAllPublic(req: Request, res: Response) {
   try {
-    const uploads = await Upload.find();
+    // const uploads = await Upload.find();
     // for (const upload of uploads) {
     //   const params = {
     //     Bucket: storageBucketName,
@@ -252,6 +253,7 @@ export async function makeAllPublic() {
     //   };
     // await s3Client.send(new PutObjectCommand(params));
     // }
+    res.send('hacker!!');
   } catch (error) {
     logger.error(error.message || error);
     throw error;
