@@ -4,7 +4,7 @@ import { getPrivateUrlOfSpace } from '../api/helpers/uploadFileHelper';
 import logger from '../config/logger';
 import { formatDateAndTimeForFlights } from '../utils/functions';
 import { MAINTAINER_TYPES } from '../types/enum/enum';
-import { IMaintenance, IMaintenanceMethods, MAINTAINER_TYPES_ARRAY, MAINTENANCE_STATUS } from '../types/model/maintenance-type';
+import { IMaintenance, IMaintenanceMethods, MAINTENANCE_STATUS } from '../types/model/maintenance-type';
 import { ICollectionAware, createSlug } from '../api/helpers/mongoose.helper';
 
 const { Schema } = mongoose;
@@ -49,7 +49,7 @@ export const maintenanceSchema = new Schema<IMaintenanceDoc, MaintenanceModel, I
     },
     status: {
       type: String,
-      enum: MAINTAINER_TYPES_ARRAY,
+      enum: Object.values(MAINTENANCE_STATUS),
       default: MAINTENANCE_STATUS.INCOMPLETE
     },
     attachments: [
@@ -74,8 +74,7 @@ export const maintenanceSchema = new Schema<IMaintenanceDoc, MaintenanceModel, I
       type: String,
       enum: MAINTAINER_TYPES
     },
-
-    user: {
+    createdBy: {
       type: Schema.Types.ObjectId,
       ref: 'users',
       autopopulate: true
@@ -89,15 +88,24 @@ export const maintenanceSchema = new Schema<IMaintenanceDoc, MaintenanceModel, I
       ref: 'organizations',
       required: true
     },
-    space: {
+    mainSpace: {
       type: Schema.Types.ObjectId,
       ref: 'spaces'
       // required: true,
     },
+    invoice: {
+      type: Schema.Types.ObjectId,
+      ref: 'invoices',
+      autopopulate: true
+    },
+    receipt: {
+      type: Schema.Types.ObjectId,
+      ref: 'receipts',
+      autopopulate: true
+    },
     slug: {
       type: String,
-      // slug: 'name',
-      unique: true
+      immutable: true
     }
   },
   {
@@ -163,7 +171,7 @@ maintenanceSchema.pre('find', async function (next) {
 });
 
 maintenanceSchema.pre('save', async function (this: IMaintenance & ICollectionAware, next: CallbackWithoutResultAndOptionalError) {
-  // sort by most recent
+  // only when the document is new creates a slug.
   this.slug = await createSlug(this);
   next();
 });

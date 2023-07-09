@@ -2,6 +2,8 @@ import Mail from 'nodemailer/lib/mailer';
 import vars from '../../config/vars';
 
 import nodemailer from 'nodemailer';
+import Space from '../../models/Space';
+import { IMaintenance } from '../../types/model/maintenance-type';
 
 // const REFRESH_TOKEN = 'YOUR_REFRESH_TOKEN';
 
@@ -10,12 +12,13 @@ const auth = {
   pass: vars.gmailAppPassword
 };
 
-export async function notifyMaintainerByEmail({ maintainer }: { maintainer: MaintainerInterface }) {
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth
+});
+export async function notifyMaintainerByEmail({ maintainer, maintenance }: { maintainer: MaintainerInterface; maintenance: IMaintenance }) {
   try {
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth
-    });
+    const mainSpace = await Space.findById(maintenance.mainSpace);
 
     const mailOptions: Mail.Options = {
       from: vars.displayMail,

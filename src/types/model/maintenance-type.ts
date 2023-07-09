@@ -1,4 +1,6 @@
 import { MAINTAINER_TYPES } from '../enum/enum';
+import { InvoiceInterface } from './invoice-type';
+import { ReceiptInterface } from './receipt-type';
 
 export const MAINTENANCE_STATUS = {
   INCOMPLETE: 'incomplete',
@@ -24,13 +26,15 @@ export interface IMaintenance extends MongooseBaseModel<null, null> {
   rating?: number | undefined;
   status: MAINTENANCE_STATUS_TYPE;
   // createdBy: IUser;
-  user: IUser;
+  createdBy: IUser;
   type: (typeof MAINTAINER_TYPES)[number];
   organization?: IOrganization | string;
-  space: ISpace | string;
+  mainSpace: ISpace | string;
   slug: string;
   /** decides if everyone in the world can see or only under the organization. */
   isPublic: boolean;
+  invoice?: InvoiceInterface;
+  receipt?: ReceiptInterface;
 }
 
 export interface IMaintenanceMethods {

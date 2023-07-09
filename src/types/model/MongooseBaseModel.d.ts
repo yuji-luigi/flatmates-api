@@ -5,6 +5,8 @@ interface MongooseBaseModel<ParentEntity, ChildEntity> {
   description?: string;
   children?: Array<ChildEntity> | null | undefined;
   parent?: ParentEntity | null | undefined;
+  createdAt: string;
+  updatedAt: string;
   // organization?: IOrganization | string;
   setStorageUrlToModel?: () => Promise<void>;
 }

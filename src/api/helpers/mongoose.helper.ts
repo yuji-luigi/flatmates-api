@@ -113,28 +113,41 @@ export function convert_idToMongooseId(query: Record<string, string | ObjectId>)
 export interface ICollectionAware extends Document {
   constructor: { collection: { name: string } };
 }
-export type DocumentWithSlug = { slug?: string; name: string } & ICollectionAware;
+export type DocumentWithSlug = { slug?: string; name?: string; title: string } & ICollectionAware;
 
+/**
+ * @returns string of collection name. using document.constructor.collection.name
+ */
 export const getCollectionName = <T extends Document>(document: T & DocumentWithSlug) => document.constructor.collection.name;
 
 export async function createSlug<T extends Document>(document: T & DocumentWithSlug): Promise<string> {
   // export async function createSlug(document: Document & { slug?: string; name: string } & MongooseThis): Promise<string> {
   try {
-    let slug = document.slug || document.name;
+    // case the document already registered a slug. return
+    if (document.slug) {
+      return document.slug;
+    }
+    let slug = document.name || document.title;
+    if (!slug) {
+      throw new Error('slug is not defined. ');
+    }
+
     slug = replaceSpecialCharsWith(slug, '-').toLocaleLowerCase();
+    // store the slug to use later
     let slugToCheck = slug;
 
-    const Model = await mongoose.model(getCollectionName(document));
-    const found = await Model.findOne({ slug: slugToCheck });
-    let isUnique = !found;
+    const Model = mongoose.model(getCollectionName(document));
+    // it can't find itself because it is not saved yet. and existing documents are not already returned
+    const count = await Model.count({ slug });
+    let isUnique = !!count;
     while (!isUnique) {
       const word = generateWord();
-      slugToCheck = `${document.slug}-${word}`;
+      slugToCheck = `${slug}-${word}`;
       const foundOtherBySlug = await Model.findOne({ slug: slugToCheck, _id: { $ne: document._id } });
       isUnique = !foundOtherBySlug;
-      slug = slugToCheck;
+      // slug = slugToCheck;
     }
-    return slug;
+    return slugToCheck;
   } catch (error) {
     logger.error(error.message || error);
     throw new Error('error in slug generation of space');

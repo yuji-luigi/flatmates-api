@@ -25,10 +25,11 @@ const createMaintenance = async (req: RequestCustom, res: Response) => {
     req.body.user = req.user;
     const reqBody = deleteEmptyFields<IMaintenance>(req.body);
     reqBody.organization = req.query.organization;
-    await Maintenance.create(reqBody);
+    reqBody.mainSpace = req.query.space;
+    const maintenance = await Maintenance.create(reqBody);
     const maintainer = await Maintainer.findById(req.body.maintainer);
     //!todo send push notification to the user of the space
-    await notifyMaintainerByEmail({ maintainer });
+    await notifyMaintainerByEmail({ maintainer, maintenance });
     //!todo send email to the maintainers of the space of type of maintenance
     //!todo log the email
     const maintenances = await Maintenance.find(req.query).sort({ createdAt: -1 });
@@ -137,27 +138,27 @@ const sendSingleMaintenanceToFrondEnd = async (req: Request, res: Response) => {
 };
 const deleteThread = async (req: RequestCustom, res: Response) => {
   try {
-    const thread = await Maintenance.findById(req.params.threadId);
+    const maintenance = await Maintenance.findById(req.params.maintenanceId);
     // user check
-    if (req.user.role === SUPER_ADMIN || req.user._id?.toString() === thread?.user._id.toString() || thread.space) {
-      await thread?.handleDeleteUploads();
-      await Maintenance.findByIdAndDelete(req.params.threadId);
+    if (req.user.role === SUPER_ADMIN || req.user._id?.toString() === maintenance?.createdBy._id.toString() || maintenance.mainSpace) {
+      await maintenance?.handleDeleteUploads();
+      await Maintenance.findByIdAndDelete(req.params.maintenanceId);
     }
 
-    const threads = await Maintenance.find(req.query).sort({
+    const maintenances = await Maintenance.find(req.query).sort({
       isImportant: -1,
       createdAt: -1
     });
-    if (threads.length) {
-      for (const thread of threads) {
-        await thread.setStorageUrlToModel();
+    if (maintenances.length) {
+      for (const maintenance of maintenances) {
+        await maintenance.setStorageUrlToModel();
       }
     }
 
     res.status(httpStatus.CREATED).json({
       success: true,
-      collection: 'threads',
-      data: threads,
+      collection: 'maintenances',
+      data: maintenances,
       count: 1
     });
   } catch (error) {

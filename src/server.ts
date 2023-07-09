@@ -6,6 +6,7 @@ import mongoose from './config/mongoose';
 
 import logger from './config/logger';
 import vars from './config/vars';
+// import Maintenance from './models/Maintenance';
 // import { makeAllPublic } from './api/helpers/uploadFileHelper';
 const { port, env } = vars;
 
@@ -14,11 +15,12 @@ mongoose.connect();
 
 app.listen(port, async () => {
   logger.info(`server started on port ${port} (${env})`);
-  // await makeAllPublic();
-  // const uploads = await Upload.find();
-  // for (const upload of uploads) {
-  //   upload.url = vars.storageUrl + '/' + upload.fullPath;
-  //   await upload.save();
+
+  // const documents = await Maintenance.find();
+  // for (const document of documents) {
+  //   document.createdBy = document.user;
+  //   document.user = undefined;
+  //   await document.save();
   // }
 });
 
