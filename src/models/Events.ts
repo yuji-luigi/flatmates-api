@@ -19,7 +19,8 @@ const Events = new Schema<IEvent>(
     ],
     createdBy: {
       type: Schema.Types.ObjectId,
-      ref: 'users'
+      ref: 'users',
+      immutable: true
     },
     sharedWith: [
       {

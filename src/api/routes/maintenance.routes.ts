@@ -4,7 +4,8 @@ import { getPublicCrudObjects } from '../controllers/CrudController';
 import maintenanceCtrl from '../controllers/MaintenanceController';
 import { sendCrudObjectsWithPaginationToClient } from '../controllers/DataTableController';
 const router = express.Router();
-
+// notify maintainer by email
+// todo: create /notify-maintainer-by-email route: differentiate notify and not notify
 router.post('/', isLoggedIn(), maintenanceCtrl.createMaintenance);
 
 router.get('/with-pagination', isLoggedIn(), sendCrudObjectsWithPaginationToClient);

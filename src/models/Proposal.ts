@@ -24,7 +24,8 @@ export const proposalSchema = new Schema<IProposal>(
     },
     createdBy: {
       type: Schema.Types.ObjectId,
-      ref: 'users'
+      ref: 'users',
+      immutable: true
     }
   },
   {

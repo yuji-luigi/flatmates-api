@@ -78,7 +78,8 @@ export const maintainerSchema = new Schema<MaintainerInterface>(
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: 'users',
-      autopopulate: true
+      autopopulate: true,
+      immutable: true
     }
   },
   {

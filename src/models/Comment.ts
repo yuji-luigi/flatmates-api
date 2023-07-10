@@ -26,7 +26,8 @@ export const commentSchema = new Schema<IComment>(
     },
     createdBy: {
       type: Schema.Types.ObjectId,
-      ref: 'users'
+      ref: 'users',
+      immutable: true
     }
   },
   {

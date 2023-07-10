@@ -7,9 +7,9 @@ import { deleteEmptyFields } from '../../utils/functions';
 import { createFilesDirName, saveInStorage, separateFiles } from '../helpers/uploadFileHelper';
 import Upload from '../../models/Upload';
 import { RequestCustom } from '../../types/custom-express/express-custom';
-import { notifyMaintainerByEmail } from '../helpers/nodemailerHelper';
-import Maintainer from '../../models/Maintainer';
+import { sendEmail } from '../helpers/nodemailerHelper';
 import { IMaintenance } from '../../types/model/maintenance-type';
+import { createOptionsForMaintenance } from '../helpers/maintenanceHelper';
 /**
  * POST CONTROLLERS
  */
@@ -22,16 +22,16 @@ interface UploadFields {
 
 const createMaintenance = async (req: RequestCustom, res: Response) => {
   try {
-    req.body.user = req.user;
     const reqBody = deleteEmptyFields<IMaintenance>(req.body);
+    reqBody.createdBy = req.user;
     reqBody.organization = req.query.organization;
     reqBody.mainSpace = req.query.space;
     const maintenance = await Maintenance.create(reqBody);
-    const maintainer = await Maintainer.findById(req.body.maintainer);
-    //!todo send push notification to the user of the space
-    await notifyMaintainerByEmail({ maintainer, maintenance });
     //!todo send email to the maintainers of the space of type of maintenance
     //!todo log the email
+    const mailOptions = await createOptionsForMaintenance({ maintenance });
+    await sendEmail(mailOptions);
+
     const maintenances = await Maintenance.find(req.query).sort({ createdAt: -1 });
     for (const maintenance of maintenances) {
       for (const image of maintenance.images) {

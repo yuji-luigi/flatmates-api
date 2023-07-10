@@ -11,7 +11,7 @@ export const deleteEmptyFields = function <T = IAllSchema>(obj: AllModels): T {
       const sameObj = <ArrayInObject>obj;
       sameObj[key] = sameObj[key].filter((el: string) => el !== '');
     }
-    if (obj[key] === '') {
+    if (!obj[key]) {
       delete obj[key];
     }
   }

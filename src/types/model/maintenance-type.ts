@@ -31,6 +31,7 @@ export interface IMaintenance extends MongooseBaseModel<null, null> {
   organization?: IOrganization | string;
   mainSpace: ISpace | string;
   slug: string;
+  maintainer: MaintainerInterface;
   /** decides if everyone in the world can see or only under the organization. */
   isPublic: boolean;
   invoice?: InvoiceInterface;

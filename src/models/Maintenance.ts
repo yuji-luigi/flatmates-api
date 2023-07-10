@@ -65,6 +65,11 @@ export const maintenanceSchema = new Schema<IMaintenanceDoc, MaintenanceModel, I
         ref: 'tags'
       }
     ],
+    maintainer: {
+      type: Schema.Types.ObjectId,
+      ref: 'maintainers',
+      autopopulate: true
+    },
     isImportant: {
       type: Boolean,
       default: false
@@ -77,7 +82,8 @@ export const maintenanceSchema = new Schema<IMaintenanceDoc, MaintenanceModel, I
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: 'users',
-      autopopulate: true
+      autopopulate: true,
+      immutable: true
     },
     isPublic: {
       type: Boolean,
