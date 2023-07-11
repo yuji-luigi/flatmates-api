@@ -36,10 +36,25 @@ function createBodyForMaintenance({
   const imagesHtml = maintenance.images.map((image) => `<img src="${image.url}" alt="${image.name}" />`);
 
   const html = `
-<h3>Buongiorno, ${maintainer.name}. Ti ha assegnato manutenzione in codominio di ${mainSpace.name}</h3>
+<h3>Buongiorno, ${maintainer.name}</h3>
+<h4> Ti ha assegnato manutenzione in codominio di ${mainSpace.name} </h4>
+</br>
+<h3> --- descrizioni ---</h3>
+<h4>${maintenance.description}</h4>
+<h1>Inserisci codice alla link: ${maintenance.nonce}</h1>
+<h4>
+<a href="${generateUploadUrl(maintenance)}">
+Clicca qui per inserire fattura/ricevuta
+</a>
+</h4>
+${imagesHtml && imagesHtml.length > 0 ? imagesHtml.join('') : ''}
+<h3>${mainSpace.name}</h3>
 <h3>indirizzo: ${mainSpace.address}</h3>
-  </br>
-  <p>description: ${maintenance.description}</p>
-  ${imagesHtml && imagesHtml.length > 0 ? imagesHtml.join('') : ''}`;
+`;
   return html;
+}
+
+function generateUploadUrl(maintenance: IMaintenance) {
+  const url = `${vars.frontendUrl}/maintainer-upload-files/${maintenance.linkId}/${maintenance._id}`;
+  return url;
 }

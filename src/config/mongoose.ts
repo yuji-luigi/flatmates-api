@@ -78,7 +78,8 @@ export default {
         logger.info('Connected to DB! Uri:' + vars.mongo.uri);
       })
       .catch((err: object | string) => logger.error(`ERROR CONNECTING TO MONGO\n${err}. mongoURI: ${vars.mongo.uri}`));
-  }
+  },
+  close: () => mongoose.connection.close()
 };
 
 export {};

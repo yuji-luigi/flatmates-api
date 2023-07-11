@@ -2,7 +2,7 @@ import mongoose, { CallbackWithoutResultAndOptionalError, Model } from 'mongoose
 import autoPopulate from 'mongoose-autopopulate';
 import { getPrivateUrlOfSpace } from '../api/helpers/uploadFileHelper';
 import logger from '../config/logger';
-import { formatDateAndTimeForFlights } from '../utils/functions';
+import { formatDateAndTimeForFlights, generateNonceCode, generateRandomStringByLength } from '../utils/functions';
 import { MAINTAINER_TYPES } from '../types/enum/enum';
 import { IMaintenance, IMaintenanceMethods, MAINTENANCE_STATUS } from '../types/model/maintenance-type';
 import { ICollectionAware, createSlug } from '../api/helpers/mongoose.helper';
@@ -112,6 +112,14 @@ export const maintenanceSchema = new Schema<IMaintenanceDoc, MaintenanceModel, I
     slug: {
       type: String,
       immutable: true
+    },
+    nonce: {
+      type: Number,
+      default: generateNonceCode()
+    },
+    linkId: {
+      type: String,
+      default: generateRandomStringByLength(80)
     }
   },
   {
@@ -179,6 +187,7 @@ maintenanceSchema.pre('find', async function (next) {
 maintenanceSchema.pre('save', async function (this: IMaintenance & ICollectionAware, next: CallbackWithoutResultAndOptionalError) {
   // only when the document is new creates a slug.
   this.slug = await createSlug(this);
+
   next();
 });
 // maintenanceSchema.get('_createdAt', function (v) {

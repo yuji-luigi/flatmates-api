@@ -164,3 +164,13 @@ export function hasDuplicatesInArray(array: string[], compare: string) {
 export function generateWord() {
   return chance.word();
 }
+
+// create 6 digit random number
+export function generateNonceCode() {
+  return chance.integer({ min: 100000, max: 999999 });
+}
+
+// generate  long random string by number of characters
+export function generateRandomStringByLength(length: number) {
+  return chance.string({ length });
+}

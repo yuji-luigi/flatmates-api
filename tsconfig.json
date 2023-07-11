@@ -1,7 +1,7 @@
 {
   "ts-node": {
-    "files": false,
-    "transpileOnly": true //  if you want to use ts-node without type checking
+    "files": false
+    // "transpileOnly": true //  if you want to use ts-node without type checking
   },
   "compilerOptions": {
     "module": "commonjs",

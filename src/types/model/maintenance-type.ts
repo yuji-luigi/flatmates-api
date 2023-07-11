@@ -13,7 +13,6 @@ export type MAINTENANCE_STATUS_TYPE = (typeof MAINTENANCE_STATUS)[keyof typeof M
 export const MAINTAINER_TYPES_ARRAY = Object.keys(MAINTAINER_TYPES);
 
 export interface IMaintenance extends MongooseBaseModel<null, null> {
-  name: string;
   createdAt: string;
   title: string;
   images: IUpload[] | [];
@@ -36,6 +35,10 @@ export interface IMaintenance extends MongooseBaseModel<null, null> {
   isPublic: boolean;
   invoice?: InvoiceInterface;
   receipt?: ReceiptInterface;
+  /** nonce to authorize maintainer from email link */
+  nonce: number;
+  /** link to href maintainer from email */
+  linkId: string;
 }
 
 export interface IMaintenanceMethods {

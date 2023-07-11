@@ -26,6 +26,7 @@ const createMaintenance = async (req: RequestCustom, res: Response) => {
     reqBody.createdBy = req.user;
     reqBody.organization = req.query.organization;
     reqBody.mainSpace = req.query.space;
+
     const maintenance = await Maintenance.create(reqBody);
     //!todo send email to the maintainers of the space of type of maintenance
     //!todo log the email
