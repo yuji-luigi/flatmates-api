@@ -123,7 +123,7 @@ export const replaceSpaces = (str: string, replacer = '') => str.trim().replace(
 export const replaceHyphens = (str: string, replacer = '_') => str.replace(/-/g, replacer);
 
 export const replaceSlash = (str: string, replacer = '_') => str.replace(/\//g, replacer);
-
+// to under score
 export const replaceSpecialChars = (str: string) => str.replace(/[^\w\s]/gi, '_').replace(/\s+/g, '_');
 export const replaceSpecialCharsWith = (str: string, replacer: string) => {
   return str.replace(/[^\w\s-]/gi, replacer).replace(/\s+/g, replacer);
@@ -142,7 +142,7 @@ export function formatDateForFlights(date: Date) {
 
   return dateStr;
 }
-export function formatDateAndTimeForFlights(date: string | Date) {
+export function formatDateAndTimev3(date: string | Date) {
   const dateObject = new Date(date);
   const dateStr = formatDateForFlights(dateObject);
   const year = dateObject.toLocaleDateString('en-US', {

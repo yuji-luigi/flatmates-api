@@ -2,7 +2,7 @@ import mongoose, { CallbackWithoutResultAndOptionalError, Model } from 'mongoose
 import autoPopulate from 'mongoose-autopopulate';
 import { getPrivateUrlOfSpace } from '../api/helpers/uploadFileHelper';
 import logger from '../config/logger';
-import { formatDateAndTimeForFlights, generateNonceCode, generateRandomStringByLength, replaceSpecialChars } from '../utils/functions';
+import { generateNonceCode, generateRandomStringByLength, replaceSpecialChars } from '../utils/functions';
 import { MAINTAINER_TYPES } from '../types/enum/enum';
 import { IMaintenance, IMaintenanceMethods, MAINTENANCE_STATUS } from '../types/mongoose-types/model-types/maintenance-interface';
 import { ICollectionAware, createSlug } from '../api/helpers/mongoose.helper';
@@ -39,14 +39,14 @@ export const maintenanceSchema = new Schema<IMaintenanceDoc, MaintenanceModel, I
         autopopulate: true
       }
     ],
-    articleType: {
-      type: String,
-      default: 'default'
-    },
-    listViewType: {
-      type: String,
-      default: 'default'
-    },
+    // articleType: {
+    //   type: String,
+    //   default: 'default'
+    // },
+    // listViewType: {
+    //   type: String,
+    //   default: 'default'
+    // },
     status: {
       type: String,
       enum: Object.values(MAINTENANCE_STATUS),
@@ -85,10 +85,10 @@ export const maintenanceSchema = new Schema<IMaintenanceDoc, MaintenanceModel, I
       autopopulate: true,
       immutable: true
     },
-    isPublic: {
-      type: Boolean,
-      default: false
-    },
+    // isPublic: {
+    //   type: Boolean,
+    //   default: false
+    // },
     organization: {
       type: Schema.Types.ObjectId,
       ref: 'organizations',
@@ -194,9 +194,10 @@ maintenanceSchema.pre('save', async function (this: IMaintenance & ICollectionAw
 //   return v.toISOString();
 // });
 
-maintenanceSchema.virtual('_createdAt').get(function () {
-  return formatDateAndTimeForFlights(this.createdAt);
-});
+// maintenanceSchema.virtual('_createdAt').get(function () {
+//   return formatDateAndTimev3(this.createdAt);
+// });
+
 maintenanceSchema.set('toJSON', {
   virtuals: true
 });

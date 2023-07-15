@@ -1,7 +1,7 @@
 import mongoose, { Model, Schema } from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
 
-import { formatDateAndTimeForFlights } from '../utils/functions';
+import { formatDateAndTimev3 } from '../utils/functions';
 
 import { InvoiceInterface } from '../types/mongoose-types/model-types/invoice-interface';
 import Maintenance from './Maintenance';
@@ -65,7 +65,7 @@ invoiceSchema.pre('save', async function (next) {
 });
 
 invoiceSchema.virtual('_createdAt').get(function () {
-  return formatDateAndTimeForFlights(this.createdAt);
+  return formatDateAndTimev3(this.createdAt);
 });
 invoiceSchema.set('toJSON', {
   virtuals: true

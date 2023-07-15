@@ -3,38 +3,47 @@ import mongoose from '../../../config/mongoose';
 import { createOptionsForMaintenance } from '../../../api/helpers/maintenanceHelper';
 import { IMaintenance } from '../../../types/mongoose-types/model-types/maintenance-interface';
 import Space from '../../../models/Space';
-import UserSchema from '../../../models/User';
 import Maintainer from '../../../models/Maintainer';
 import 'jest';
+import { ISpace } from '../../../types/mongoose-types/model-types/space-interface';
+import { MaintainerInterface } from '../../../types/mongoose-types/model-types/maintainer-interface';
+import Maintenance from '../../../models/Maintenance';
 
 describe('test for createMailOptionsForMaintenance', () => {
-  let user, options;
+  let options;
   let mainSpace = {} as ISpace;
   let maintainer = {} as MaintainerInterface;
   let maintenance = {} as IMaintenance;
   beforeAll(async () => {
     mongoose.connect();
     mainSpace = await Space.findOne({ isMain: true });
-    user = await UserSchema.findOne();
     maintainer = await Maintainer.findOne();
-    maintenance = {
-      title: 'JEST MAINTENANCE TITLE',
-      createdAt: new Date().toDateString(),
-      images: [],
-      listViewType: 'default',
-      articleType: 'default',
-      attachments: [],
-      isImportant: true,
-      status: 'incomplete',
-      createdBy: user,
-      type: 'Electrician',
-      mainSpace,
-      slug: 'JEST-MAINTENANCE-TITLE',
-      maintainer,
-      isPublic: false,
-      _id: '',
-      updatedAt: ''
-    };
+    maintenance = await Maintenance.findOne();
+    // maintenance = {
+    //   title: 'JEST MAINTENANCE TITLE',
+    //   createdAt: new Date().toDateString(),
+    //   images: [],
+    //   // listViewType: 'default',
+    //   // articleType: 'default',
+    //   attachments: [],
+    //   isImportant: true,
+    //   status: 'published',
+    //   createdBy: {
+    //     name: 'JEST',
+    //     surname: 'JEST',
+    //     email: 'ojoj@kk.com'
+    //   } as IUser,
+    //   type: 'Electrician',
+    //   mainSpace,
+    //   slug: 'JEST-MAINTENANCE-TITLE',
+    //   maintainer,
+    //   isPublic: false,
+    //   _id: '',
+    //   updatedAt: '',
+    //   linkId: replaceSpecialChars(generateRandomStringByLength(20)),
+    //   nonce: 939399,
+
+    // };
   });
   it('create mainl options for maintenance', async () => {
     options = await createOptionsForMaintenance({ maintenance });

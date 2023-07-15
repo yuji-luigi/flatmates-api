@@ -1,7 +1,7 @@
 import mongoose, { Model, Schema } from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
 
-import { formatDateAndTimeForFlights } from '../utils/functions';
+import { formatDateAndTimev3 } from '../utils/functions';
 import { ReceiptInterface } from '../types/mongoose-types/model-types/receipt-interface';
 import Maintenance from './Maintenance';
 import logger from '../config/logger';
@@ -72,7 +72,7 @@ ReceiptSchema.pre('save', async function (next) {
 });
 
 ReceiptSchema.virtual('_createdAt').get(function () {
-  return formatDateAndTimeForFlights(this.createdAt);
+  return formatDateAndTimev3(this.createdAt);
 });
 ReceiptSchema.set('toJSON', {
   virtuals: true

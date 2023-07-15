@@ -1,3 +1,4 @@
+import { LoginInstance } from '../../universal-mongoose-model/user-base-interface';
 import { MongooseBaseModel } from './base-types/base-model-interface';
 import { ISpace } from './space-interface';
 import { IUpload } from './upload-interface';

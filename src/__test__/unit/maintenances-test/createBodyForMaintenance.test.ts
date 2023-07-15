@@ -4,22 +4,24 @@ import { createOptionsForMaintenance } from '../../../api/helpers/maintenanceHel
 import { IMaintenance } from '../../../types/mongoose-types/model-types/maintenance-interface';
 
 import 'jest';
+import Maintenance from '../../../models/Maintenance';
 
 describe('test for creating body/html for email', () => {
   let maintenance = {} as IMaintenance;
+  let options;
   beforeAll(async () => {
     mongoose.connect();
 
-    maintenance = Maintena;
+    maintenance = await Maintenance.findOne();
   });
-  it('create mainl options for maintenance', async () => {
+  it('create email options for maintenance', async () => {
     options = await createOptionsForMaintenance({ maintenance });
     expect(options).toHaveProperty('from');
     expect(options).toHaveProperty('to');
     expect(options).toHaveProperty('subject');
     expect(options).toHaveProperty('html');
-    expect(options.to).toBe(maintainer.email);
-    expect(options.subject).toBe(`Maintenance assigned. ${mainSpace.name}: ${maintenance.title}`);
+    expect(options.to).toBe(maintenance.maintainer.email);
+    expect(options.subject).toBe(`Maintenance assigned. ${maintenance.mainSpace.name}: ${maintenance.title}`);
   });
 
   afterAll(() => {

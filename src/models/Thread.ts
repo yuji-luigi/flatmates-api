@@ -2,7 +2,7 @@ import mongoose, { Model } from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
 import { getPrivateUrlOfSpace } from '../api/helpers/uploadFileHelper';
 import logger from '../config/logger';
-import { formatDateAndTimeForFlights } from '../utils/functions';
+import { formatDateAndTimev3 } from '../utils/functions';
 import { IThread, IThreadMethods } from '../types/mongoose-types/model-types/thread-interface';
 
 const { Schema } = mongoose;
@@ -129,7 +129,7 @@ threadSchema.pre('find', async function (next) {
 //   return v.toISOString();
 // });
 threadSchema.virtual('_createdAt').get(function () {
-  return formatDateAndTimeForFlights(this.createdAt);
+  return formatDateAndTimev3(this.createdAt);
 });
 threadSchema.set('toJSON', {
   virtuals: true
