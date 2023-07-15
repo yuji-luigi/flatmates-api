@@ -1,4 +1,4 @@
-import { MongooseBaseModel } from './base-model-interface';
+import { MongooseBaseModel } from './base-types/base-model-interface';
 import { IUser } from './user-interface';
 
 export interface IUpload extends MongooseBaseModel, IUploadMethods {

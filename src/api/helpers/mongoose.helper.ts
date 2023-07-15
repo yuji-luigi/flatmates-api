@@ -3,8 +3,8 @@ import Thread from '../../models/Thread';
 import logger from '../../config/logger';
 import { ObjectId } from 'mongodb';
 import { generateWord, replaceSpecialCharsWith } from '../../utils/functions';
-import { MongooseBaseModel } from '../../types/mongoose-types/model-types/base-model-interface';
-import { Entities } from '../../types/mongoose-types/Entities';
+import { MongooseBaseModel } from '../../types/mongoose-types/model-types/base-types/base-model-interface';
+import { Entities } from '../../types/mongoose-types/model-types/Entities';
 // todo: aggregation method
 interface LookUpQueryInterface {
   [key: string]: mongoose.PipelineStage.FacetPipelineStage[];

@@ -1,5 +1,5 @@
 import { MAINTAINER_TYPES } from '../../enum/enum';
-import { MongooseBaseModel } from './base-model-interface';
+import { MongooseBaseModel } from './base-types/base-model-interface';
 import { InvoiceInterface } from './invoice-interface';
 import { MaintainerInterface } from './maintainer-interface';
 import { IOrganization } from './organization-interface';

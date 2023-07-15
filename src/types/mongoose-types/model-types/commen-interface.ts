@@ -1,4 +1,4 @@
-import { Entities } from '../Entities';
+import { Entities } from './Entities';
 import { IOrganization } from './organization-interface';
 import { ISpace } from './space-interface';
 import { IUser } from './user-interface';

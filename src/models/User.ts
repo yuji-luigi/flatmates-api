@@ -1,5 +1,5 @@
 import { USER_ROLES } from './../types/enum/enum';
-import { Model, Schema, model } from 'mongoose';
+import { Schema, model } from 'mongoose';
 import bcrypt from 'bcrypt';
 import httpStatus from 'http-status';
 import moment from 'moment-timezone';
@@ -10,9 +10,8 @@ import autopopulate from 'mongoose-autopopulate';
 import logger from '../config/logger';
 import Space from './Space';
 import Organization from './Organization';
-import { IOrganization } from '../types/mongoose-types/model-types/organization-interface';
 import { ISpace } from '../types/mongoose-types/model-types/space-interface';
-import { IUser, UserError } from '../types/mongoose-types/model-types/user-interface';
+import { IUser, UserError, UserModel } from '../types/mongoose-types/model-types/user-interface';
 
 export type modules = {
   [key: string]: boolean;
@@ -23,62 +22,6 @@ export type modules = {
 };
 
 const { jwtSecret /* , jwtExpirationInterval  */ } = vars;
-
-/** UserModel static methods*/
-
-// interface IUserDocument {
-//   _id: ObjectId;
-//   avatar?: IUpload;
-//   name?: string | undefined;
-//   surname?: string | undefined;
-//   phone?: string | undefined;
-//   email?: string | undefined;
-//   password: string;
-//   /** will be only super_admin and user. will use adminOf field to check if user is admin of an space.
-//    */
-//   role?: userRoles;
-//   adminOf?: ISpace[] | [];
-//   bookmarks?: string[]; // consider if populate too much (threads and contents in threads)
-//   wallet?: string;
-//   userSetting: string | boolean;
-//   last_login?: Date;
-//   rootSpaces?: ISpace[] | [];
-//   // modules?: modules;
-//   // organizations: IOrganization[] | [];
-//   organization: IOrganization | null | undefined;
-//   cover: IUpload;
-//   _update?: {
-//     password?: Buffer | string;
-//   };
-//   token(): () => string;
-//   hasOrganization: (organizationId: string) => Promise<boolean>;
-//   isAdminOrganization: (organizationId: string) => Promise<boolean>;
-//   getOrganizations: () => Promise<IOrganization[]>;
-//   isSuperAdmin: () => boolean;
-//   passwordMatches: (password: string) => boolean;
-//   findAndGenerateToken: (body: IUserDocument) => Promise<{
-//     user: UserModel;
-//     accessToken: string;
-//   }>;
-//   /*   roles: string[] | any;
-//    */
-// }
-
-interface UserModel extends Model<IUser> {
-  // roles: USER_ROLES_ENUM;
-  passwordMatches: (password: string) => boolean;
-  findAndGenerateToken: (body: IUser) => Promise<{
-    // user: UserModel;
-    user: IUser;
-    accessToken: string;
-  }>;
-  hasOrganization: (organizationId: string) => Promise<boolean>;
-  token: () => string;
-  save: () => void;
-  getOrganizations: () => Promise<IOrganization[]>;
-  isSuperAdmin: () => boolean;
-  isAdminOrganization: (organizationId: string) => Promise<boolean>;
-}
 
 export const userSchema = new Schema<IUser, UserModel>(
   {
@@ -147,33 +90,7 @@ export const userSchema = new Schema<IUser, UserModel>(
     versionKey: false,
     timestamps: true,
     statics: {},
-    methods: {
-      async getOrganizations() {
-        try {
-          // const query = this.role === 'super_admin' ? {} : { _id: { $in: this.rootSpaces } };
-          const spaces: ISpace[] = await Space.find({ _id: { $in: this.rootSpaces } }).lean();
-          return spaces.map((space) => space.organization);
-        } catch (error) {
-          logger.error(error.message, error);
-          throw new Error('User.ts: UserSchema getOrganizations error');
-        }
-      },
-      async hasOrganization(organizationId): Promise<boolean> {
-        if (this.isSuperAdmin()) {
-          return true;
-        }
-        const usersOrganizations = await this.getOrganizations();
-        return usersOrganizations.includes(organizationId);
-      },
-      isSuperAdmin() {
-        return this.role === 'super_admin';
-      },
-      async isAdminOrganization(organizationId): Promise<boolean> {
-        if (this.role === 'super_admin') return true;
-        const organization = await Organization.findOne({ _id: organizationId, admins: { $in: this._id } }).lean();
-        return !!organization;
-      }
-    }
+    methods: {}
   }
 );
 
@@ -190,27 +107,6 @@ userSchema.pre('save', async function save(next) {
     return next(error);
   }
 });
-
-// HASH PASSWORD BEFORE UPDATE OF USER
-// TODO: try to figure out how to handle this situation
-/* FindOneAndUpdate this is difficult to understand */
-/* userSchema.pre('findOneAndUpdate', async function (next) {
-  try {
-    // if password is not updated
-    if (!this._update.password) {
-      return next();
-    }
-
-    const rounds = 10;
-
-    const hash = await bcrypt.hash(this._update.password, rounds);
-    this._update.password = hash;
-
-    return next();
-  } catch (error) {
-    return next(error);
-  }
-}); */
 
 /**
  * Methods
@@ -233,29 +129,39 @@ userSchema.method({
 
   token() {
     const payload = {
-      // id: this._id,
-      // name: this.name,
-      // surname: this.surname,
       email: this.email
-      // role: this.role,
-      // description: this.description,
-      // avatar: this.avatar,
-      // locale: this.locale,
     };
     return jwt.sign(payload, jwtSecret, {
       expiresIn: '24h' // expires in 24 hours
     });
   },
-  // async getOrganizations() {
-  //   try {
-  //     const spaces = await Space.find({ _id: { $in: this.rootSpaces } }).lean();
-  //     return spaces.map((space) => space.organization);
-  //   } catch (error) {
-  //     logger.error(error.message, error);
-  //   }
-  // },
   async passwordMatches(password: string) {
     return bcrypt.compare(password, this.password);
+  },
+  async getOrganizations() {
+    try {
+      // const query = this.role === 'super_admin' ? {} : { _id: { $in: this.rootSpaces } };
+      const spaces: ISpace[] = await Space.find({ _id: { $in: this.rootSpaces } }).lean();
+      return spaces.map((space) => space.organization);
+    } catch (error) {
+      logger.error(error.message, error);
+      throw new Error('User.ts: UserSchema getOrganizations error');
+    }
+  },
+  isSuperAdmin() {
+    return this.role === 'super_admin';
+  },
+  async hasOrganization(organizationId: string): Promise<boolean> {
+    if (this.isSuperAdmin()) {
+      return true;
+    }
+    const usersOrganizations = await this.getOrganizations();
+    return usersOrganizations.includes(organizationId);
+  },
+  async isAdminOrganization(organizationId: string): Promise<boolean> {
+    if (this.role === 'super_admin') return true;
+    const organization = await Organization.findOne({ _id: organizationId, admins: { $in: this._id } }).lean();
+    return !!organization;
   }
 });
 
@@ -274,7 +180,7 @@ userSchema.statics = {
         message: 'An email is required to generate a token'
       });
 
-    const user = await this.findOne<UserModel>({ email }).exec();
+    const user = await this.findOne({ email }).exec();
     const err: UserError = {
       status: httpStatus.UNAUTHORIZED,
       isPublic: true

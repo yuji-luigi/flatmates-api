@@ -1,4 +1,4 @@
-import { MongooseBaseModel } from './base-model-interface';
+import { MongooseBaseModel } from './base-types/base-model-interface';
 import { InvoiceInterface } from './invoice-interface';
 import { MaintainerInterface } from './maintainer-interface';
 import { IMaintenance } from './maintenance-interface';

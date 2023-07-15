@@ -11,7 +11,7 @@ export const organizationSchema = new Schema<IOrganization>(
     phone: String,
     email: String,
     homepage: String,
-    logoBanner: String,
+    logo250x60: String,
     logoSquare: String,
     maintainers: [
       {

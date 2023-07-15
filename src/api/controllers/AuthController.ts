@@ -127,7 +127,7 @@ async function createNewSpace({
 const login = async (req: Request, res: Response) => {
   try {
     // const { user, accessToken } = await User.findAndGenerateToken(req.body);
-    const { user, accessToken } = await User.findAndGenerateToken(req.body);
+    const { user, accessToken } = await User.findAndGenerateToken<IUser>(req.body);
 
     const token = generateTokenResponse(user, accessToken);
     // const userTransformed = user.transform();

@@ -9,7 +9,20 @@ const Events = new Schema<IEvent>(
   {
     title: String,
     subtitle: String,
-    building: String,
+    mainSpace: {
+      type: Schema.Types.ObjectId,
+      ref: 'spaces'
+    },
+    body: String,
+    private: Boolean,
+    space: {
+      type: Schema.Types.ObjectId,
+      ref: 'spaces'
+    },
+    organization: {
+      type: Schema.Types.ObjectId,
+      ref: 'organizations'
+    },
     fromDate: Date,
     toDate: Date,
     tags: [
@@ -18,11 +31,6 @@ const Events = new Schema<IEvent>(
         ref: 'tags'
       }
     ],
-    createdBy: {
-      type: Schema.Types.ObjectId,
-      ref: 'users',
-      immutable: true
-    },
     sharedWith: [
       {
         type: Schema.Types.ObjectId,
@@ -32,6 +40,26 @@ const Events = new Schema<IEvent>(
     status: {
       type: String,
       enum: publishStatus
+    },
+    isPublic: Boolean,
+    attachments: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'uploads',
+        autopopulate: true
+      }
+    ],
+    images: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'uploads',
+        autopopulate: true
+      }
+    ],
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: 'users',
+      immutable: true
     }
   },
   {

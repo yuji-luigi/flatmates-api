@@ -1,4 +1,4 @@
-import { MongooseBaseModel } from './base-model-interface';
+import { MongooseBaseModel } from './base-types/base-model-interface';
 import { ISpace } from './space-interface';
 import { IUpload } from './upload-interface';
 import { IUser } from './user-interface';

@@ -29,14 +29,7 @@ export const threadSchema = new Schema<IThread, ThreadModel, IThreadMethods>(
         autopopulate: true
       }
     ],
-    articleType: {
-      type: String,
-      default: 'default'
-    },
-    listViewType: {
-      type: String,
-      default: 'default'
-    },
+
     attachments: [
       {
         type: Schema.Types.ObjectId,
@@ -50,10 +43,6 @@ export const threadSchema = new Schema<IThread, ThreadModel, IThreadMethods>(
         ref: 'tags'
       }
     ],
-    isImportant: {
-      type: Boolean
-      // default: false
-    },
     rating: Number,
     user: {
       type: Schema.Types.ObjectId,

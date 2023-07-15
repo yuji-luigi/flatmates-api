@@ -1,4 +1,4 @@
-import { MongooseBaseModel } from './base-model-interface';
+import { MongooseBaseModel } from './base-types/base-model-interface';
 import { MaintainerInterface } from './maintainer-interface';
 import { IUser } from './user-interface';
 
@@ -9,10 +9,11 @@ export interface IOrganization extends MongooseBaseModel {
   email: string;
   address: string;
   homepage: string;
-  logoBanner?: string;
+  logo250x60?: string;
+  // 300x300
   logoSquare?: string;
-  maintainers: MaintainerInterface[];
   /** decides if everyone in the world can see or only under the organization. */
   isPublic: boolean;
   admins: string[] | IUser[];
+  maintainers: MaintainerInterface[];
 }

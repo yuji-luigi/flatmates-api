@@ -6,7 +6,7 @@ import logger from '../../config/logger';
 import MSG, { _MSG } from '../../utils/messages';
 import { cutQuery, deleteEmptyFields, getEntity, getEntityFromOriginalUrl, getSplittedPath } from '../../utils/functions';
 import { RequestCustom } from '../../types/custom-express/express-custom';
-import { MongooseBaseModel } from '../../types/mongoose-types/model-types/base-model-interface';
+import { MongooseBaseModel } from '../../types/mongoose-types/model-types/base-types/base-model-interface';
 import { IUpload } from '../../types/mongoose-types/model-types/upload-interface';
 //= ===============================================================================
 // CRUD GENERIC CONTROLLER METHODS

@@ -1,16 +1,11 @@
-import { MongooseBaseModel } from './base-model-interface';
-import { ITag } from './tag-interface';
-import { IUser } from './user-interface';
+import { PostBaseInterface } from './base-types/post-base-interface';
+import { IOrganization } from './organization-interface';
+import { ISpace } from './space-interface';
 
-export interface IEvent extends MongooseBaseModel {
-  fromDate?: Date;
-  toDate?: Date;
-  title: string;
-  subtitle: string;
-  tags?: ITag[] | undefined;
-  status: 'draft' | 'published' | 'deleted';
-  private: boolean;
-  sharedWith?: IUser[];
-  building?: string;
-  createdBy?: IUser;
+export interface IEvent extends PostBaseInterface {
+  mainSpace: ISpace;
+  space?: string | ISpace;
+  organization: string | IOrganization;
+  fromDate: Date;
+  toDate: Date;
 }

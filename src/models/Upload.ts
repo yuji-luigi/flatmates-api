@@ -83,6 +83,7 @@ const uploadSchema = new Schema<IUpload, IUploadModel, IUploadMethods>(
           this.url = vars.storageUrl + '/' + this.fullPath;
           return;
         }
+
         const obj = { params: { key: this.fullPath } };
         const url = await getPrivateUrlOfSpace(obj);
         this.url = url;
