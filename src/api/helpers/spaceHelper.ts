@@ -2,6 +2,8 @@ import { ObjectId } from 'mongodb';
 import Space from '../../models/Space';
 import logger from '../../config/logger';
 import { _MSG } from '../../utils/messages';
+import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
+import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 
 /**  searches only root spaces of user */
 export async function userHasSpace(user: IUser, selectedSpace: string): Promise<boolean> {
@@ -127,7 +129,6 @@ export async function aggregateDescendantIds(spaceId: string, user: IUser): Prom
 
 export async function setUrlToSpaceImages(space: ISpace) {
   try {
-    await space.avatar?.setUrl();
     await space.cover?.setUrl();
   } catch (err) {
     logger.error(err);

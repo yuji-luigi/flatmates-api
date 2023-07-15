@@ -1,4 +1,7 @@
-interface IUpload extends MongooseBaseModel<null, null>, IUploadMethods {
+import { MongooseBaseModel } from './base-model-interface';
+import { IUser } from './user-interface';
+
+export interface IUpload extends MongooseBaseModel, IUploadMethods {
   // _id?: string | undefined;
   fileName: string;
   originalFileName: string;
@@ -14,7 +17,7 @@ interface IUpload extends MongooseBaseModel<null, null>, IUploadMethods {
   ACL?: string | undefined;
   // setUrl: () => Promise<void>;
 }
-interface IUploadMethods {
+export interface IUploadMethods {
   methods: () => void;
   removeThis: () => Promise<object>;
   deleteFromStorage: () => Promise<void>;

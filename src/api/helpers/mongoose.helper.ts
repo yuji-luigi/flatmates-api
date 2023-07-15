@@ -3,6 +3,8 @@ import Thread from '../../models/Thread';
 import logger from '../../config/logger';
 import { ObjectId } from 'mongodb';
 import { generateWord, replaceSpecialCharsWith } from '../../utils/functions';
+import { MongooseBaseModel } from '../../types/mongoose-types/model-types/base-model-interface';
+import { Entities } from '../../types/mongoose-types/Entities';
 // todo: aggregation method
 interface LookUpQueryInterface {
   [key: string]: mongoose.PipelineStage.FacetPipelineStage[];
@@ -80,7 +82,7 @@ export async function getThreadsForPlatForm({
   query?: object;
   sortQuery?: SortQuery;
 }) {
-  const threads = await Thread.find<MongooseBaseModel<any, any>>(query).sort({
+  const threads = await Thread.find<MongooseBaseModel>(query).sort({
     isImportant: -1,
     createdAt: -1
   });

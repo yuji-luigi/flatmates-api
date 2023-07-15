@@ -8,8 +8,9 @@ import { createFilesDirName, saveInStorage, separateFiles } from '../helpers/upl
 import Upload from '../../models/Upload';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { sendEmail } from '../helpers/nodemailerHelper';
-import { IMaintenance } from '../../types/model/maintenance-type';
+import { IMaintenance } from '../../types/mongoose-types/model-types/maintenance-interface';
 import { createOptionsForMaintenance } from '../helpers/maintenanceHelper';
+import { IUpload } from '../../types/mongoose-types/model-types/upload-interface';
 /**
  * POST CONTROLLERS
  */
@@ -170,6 +171,26 @@ const deleteThread = async (req: RequestCustom, res: Response) => {
     });
   }
 };
+
+export async function authUserMaintenanceFiles(req: Request, res: Response) {
+  try {
+    const { linkId, idMongoose } = req.params;
+    const maintenance = await Maintenance.findOne({ linkId, _id: idMongoose, pin: req.body.pin });
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: 'maintenances',
+      data: { message: 'pin is correct', maintenance },
+      count: 1
+    });
+  } catch (error) {
+    logger.error(error.message || error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: error.message || error,
+      success: false
+    });
+  }
+}
 
 // export const { createMaintenance } = postController;
 const postController = {

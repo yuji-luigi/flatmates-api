@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
+import { IOrganization } from '../types/mongoose-types/model-types/organization-interface';
 
 const { Schema } = mongoose;
 

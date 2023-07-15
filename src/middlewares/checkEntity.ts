@@ -2,6 +2,7 @@ import httpStatus from 'http-status';
 import { NextFunction, Request, Response } from 'express';
 import { getEntity } from '../utils/functions';
 import logger from '../config/logger';
+import { Entities } from '../types/mongoose-types/Entities';
 
 export const entities: Array<Entities> = [
   'bookmarks',

@@ -3,12 +3,12 @@ import { Chance } from 'chance';
 const chance = new Chance();
 
 /** @description not a pure function. returning the req.body, but the original object is modified by reference. */
-export const deleteEmptyFields = function <T = IAllSchema>(obj: AllModels): T {
+export const deleteEmptyFields = function <T = any>(obj: any): T {
   // const objCopy = { ...obj };
   for (const key in obj) {
     if (Array.isArray(obj[key])) {
       // TODO: HERE ONLY ARRAY EXISTS BUT THIS ERROR.... had to make a assertion.
-      const sameObj = <ArrayInObject>obj;
+      const sameObj = obj;
       sameObj[key] = sameObj[key].filter((el: string) => el !== '');
     }
     if (!obj[key]) {
@@ -142,7 +142,7 @@ export function formatDateForFlights(date: Date) {
 
   return dateStr;
 }
-export function formatDateAndTimeForFlights(date: string) {
+export function formatDateAndTimeForFlights(date: string | Date) {
   const dateObject = new Date(date);
   const dateStr = formatDateForFlights(dateObject);
   const year = dateObject.toLocaleDateString('en-US', {

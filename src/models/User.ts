@@ -10,6 +10,9 @@ import autopopulate from 'mongoose-autopopulate';
 import logger from '../config/logger';
 import Space from './Space';
 import Organization from './Organization';
+import { IOrganization } from '../types/mongoose-types/model-types/organization-interface';
+import { ISpace } from '../types/mongoose-types/model-types/space-interface';
+import { IUser, UserError } from '../types/mongoose-types/model-types/user-interface';
 
 export type modules = {
   [key: string]: boolean;

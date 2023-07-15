@@ -8,6 +8,7 @@ import autoPopulate from 'mongoose-autopopulate';
 import vars from '../config/vars';
 // import urlSlug from 'mongoose-slug-generator';
 import { generateWord, replaceSpecialCharsWith } from '../utils/functions';
+import { ISpace, ISpaceMethods, spaceTypes } from '../types/mongoose-types/model-types/space-interface';
 
 const { jwtSecret } = vars;
 
@@ -20,11 +21,7 @@ export const spacesSchema = new Schema<ISpace, SpaceModel, ISpaceMethods>(
       ref: 'uploads',
       autopopulate: true
     },
-    avatar: {
-      type: Schema.Types.ObjectId,
-      ref: 'uploads',
-      autopopulate: true
-    },
+
     name: {
       type: String,
       required: true
@@ -50,12 +47,13 @@ export const spacesSchema = new Schema<ISpace, SpaceModel, ISpaceMethods>(
     password: String,
     //! TODO: condominium then main is a building. other cases are yet to be defined
     /** actual instance that contains users. ex: (🚫 Italy).  (✅ NttRoma) */
+    // todo Delete this
     isMain: {
       type: Boolean
     },
     spaceType: {
-      type: String
-      // enum: ['city', 'district', 'neighborhood', 'street', 'building', 'floor', 'space'],
+      type: String,
+      enum: spaceTypes
     },
     isPublic: {
       type: Boolean,

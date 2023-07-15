@@ -5,6 +5,7 @@ import Space from './Space';
 import logger from '../config/logger';
 import { generateWord, replaceSpecialCharsWith } from '../utils/functions';
 import { MAINTAINER_TYPES } from '../types/enum/enum';
+import { MaintainerInterface } from '../types/mongoose-types/model-types/maintainer-interface';
 const { Schema } = mongoose;
 
 export const maintainerSchema = new Schema<MaintainerInterface>(

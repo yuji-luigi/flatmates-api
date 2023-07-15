@@ -12,6 +12,8 @@ import logger from '../../config/logger';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import Space from '../../models/Space';
 import Organization from '../../models/Organization';
+import { IOrganization } from '../../types/mongoose-types/model-types/organization-interface';
+import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 
 const { jwtExpirationInterval, cookieDomain } = vars;
 

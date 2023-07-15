@@ -1,5 +1,10 @@
-interface IThread extends MongooseBaseModel<null, null> {
-  _id?: string;
+import { MongooseBaseModel } from './base-model-interface';
+import { IOrganization } from './organization-interface';
+import { ISpace } from './space-interface';
+import { IUpload } from './upload-interface';
+import { IUser } from './user-interface';
+
+export interface IThread extends MongooseBaseModel {
   createdAt: string;
   title: string;
   images: IUpload[] | [];
@@ -9,7 +14,6 @@ interface IThread extends MongooseBaseModel<null, null> {
   attachments: IUpload[] | [];
   isImportant: boolean;
   tags?: string[];
-  building?: string | IBuilding;
   rating?: number | undefined;
   // createdBy: IUser;
   user: IUser;
@@ -19,7 +23,7 @@ interface IThread extends MongooseBaseModel<null, null> {
   isPublic: boolean;
 }
 
-interface IThreadMethods {
+export interface IThreadMethods {
   setStorageUrlToModel: () => Promise<void>;
   /**
    * Deletes thread and all its uploads

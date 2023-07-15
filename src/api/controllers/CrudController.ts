@@ -6,6 +6,8 @@ import logger from '../../config/logger';
 import MSG, { _MSG } from '../../utils/messages';
 import { cutQuery, deleteEmptyFields, getEntity, getEntityFromOriginalUrl, getSplittedPath } from '../../utils/functions';
 import { RequestCustom } from '../../types/custom-express/express-custom';
+import { MongooseBaseModel } from '../../types/mongoose-types/model-types/base-model-interface';
+import { IUpload } from '../../types/mongoose-types/model-types/upload-interface';
 //= ===============================================================================
 // CRUD GENERIC CONTROLLER METHODS
 //= ===============================================================================
@@ -16,7 +18,7 @@ export const getPublicCrudObjects = async (req: Request, res: Response) => {
     req.params.entity = entity;
 
     const Model = mongoose.model(entity);
-    const data = await Model.find<MongooseBaseModel<any, any>>(req.query).sort({
+    const data = await Model.find<MongooseBaseModel>(req.query).sort({
       createdAt: -1
     });
 
@@ -48,7 +50,7 @@ export const sendCrudDocumentsToClient = async (req: Request, res: Response) => 
 
     const Model = mongoose.model(entity);
 
-    const data = await Model.find<MongooseBaseModel<any, any>>(req.query).sort({
+    const data = await Model.find<MongooseBaseModel>(req.query).sort({
       createdAt: -1
     });
 

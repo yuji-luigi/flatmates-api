@@ -10,6 +10,7 @@ import { RequestCustom } from '../../types/custom-express/express-custom';
 import { getThreadsForPlatForm } from '../helpers/mongoose.helper';
 import mongoose from 'mongoose';
 import { UploadsThread } from '../helpers/types-uploadFileHelper';
+import { IThread } from '../../types/mongoose-types/model-types/thread-interface';
 /**
  * POST CONTROLLERS
  */

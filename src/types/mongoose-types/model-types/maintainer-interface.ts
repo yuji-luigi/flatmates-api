@@ -1,4 +1,9 @@
-interface MaintainerInterface extends MongooseBaseModel<null, null>, LoginInstance {
+import { MongooseBaseModel } from './base-model-interface';
+import { ISpace } from './space-interface';
+import { IUpload } from './upload-interface';
+import { IUser } from './user-interface';
+
+export interface MaintainerInterface extends MongooseBaseModel, LoginInstance {
   name: string;
   company: string;
   cover?: IUpload | string;

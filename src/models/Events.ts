@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
+import { IEvent } from '../types/mongoose-types/model-types/event-interface';
 const { Schema } = mongoose;
 
 const publishStatus = ['draft', 'published', 'deleted'];

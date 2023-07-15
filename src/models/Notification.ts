@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
+import { INotification } from '../types/mongoose-types/model-types/notification-interface';
 const { Schema } = mongoose;
 
 export const notificationSchema = new Schema<INotification>(

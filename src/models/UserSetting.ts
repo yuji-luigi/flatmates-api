@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
+import { IUserSetting } from '../types/mongoose-types/model-types/user-setting-interface';
 
 const { Schema } = mongoose;
 

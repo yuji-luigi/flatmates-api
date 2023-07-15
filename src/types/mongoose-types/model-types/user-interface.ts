@@ -1,44 +1,19 @@
 // import { Model } from 'mongoose';
 // import { IUserSetting } from './UserSetting';
 
-type UserError = {
+import { ObjectId } from 'mongodb';
+import { IOrganization } from './organization-interface';
+import { ISpace } from './space-interface';
+import { IUpload } from './upload-interface';
+
+export type UserError = {
   status?: number;
   isPublic?: boolean;
   message?: string;
 };
 
-/** UserModel static methods*/
-//  interface UserModel<MongooseModel> extends MongooseModel<IUser> {
-//   roles: string[];
-//   passwordMatches(password: string): boolean;
-//   findAndGenerateToken(body: IUser): {
-//     user: UserModel;
-//     accessToken: string;
-//   };
-//   token(): () => string;
-//   save(): () => void;
-// }
-
-/*
-    modules is
-*/
-
-type modules =
-  | {
-      [key: string]: boolean | undefined;
-      transports?: boolean | undefined;
-      employees?: boolean | undefined;
-      apartments?: boolean | undefined;
-      worksites?: boolean | undefined;
-    }
-  | undefined;
-
-/*
-    IUser represents what user object has as object without methods and statics.
-*/
-
 type userRoles = 'user' | 'admin' | 'super_admin';
-interface IUser extends LoginInstance {
+export interface IUser extends LoginInstance {
   _id: ObjectId;
   avatar?: IUpload;
   name?: string | undefined;

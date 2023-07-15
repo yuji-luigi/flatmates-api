@@ -15,6 +15,7 @@ import Thread from '../../models/Thread';
 import Maintenance from '../../models/Maintenance';
 import Maintainer from '../../models/Maintainer';
 import { ObjectId } from 'mongodb';
+import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 
 // import MSG from '../../utils/messages';
 // import { runInNewContext } from 'vm';
@@ -85,7 +86,6 @@ export const sendSingleSpaceToClientByCookie = async (req: RequestCustom, res: R
 
     const data = await Space.findById(req.space._id);
     data.cover && (await data.cover.setUrl());
-    data.avatar && (await data.avatar.setUrl());
 
     res.status(httpStatus.OK).json({
       success: true,
@@ -119,7 +119,6 @@ export const sendSpaceDataForHome = async (req: RequestCustom, res: Response) =>
     const maintainers = await Maintainer.find({ spaces: { $in: [space._id] } });
 
     space.cover && (await space.cover.setUrl());
-    space.avatar && (await space.avatar.setUrl());
 
     // for (const thread of threads) {
     //   for (const image of thread.images) {

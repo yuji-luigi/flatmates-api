@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
+import { ITag } from '../types/mongoose-types/model-types/tag-interface';
 
 const { Schema } = mongoose;
 
@@ -8,9 +9,9 @@ export const tagSchema = new Schema<ITag>(
     name: String,
     description: String,
     color: String,
-    building: {
+    mainSpace: {
       type: Schema.Types.ObjectId,
-      ref: 'buildings'
+      ref: 'spaces'
     },
     organization: {
       type: Schema.Types.ObjectId,

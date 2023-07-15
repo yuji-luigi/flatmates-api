@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
+import { IWallet } from '../types/mongoose-types/model-types/wallet-interface';
 
 const { Schema } = mongoose;
 // TODO: MAKE LOG OF TRANSACTIONS!!

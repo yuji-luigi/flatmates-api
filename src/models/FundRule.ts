@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
+import { IFundRule } from '../types/mongoose-types/model-types/fundRule-interface';
 
 const { Schema } = mongoose;
 
@@ -9,11 +10,11 @@ export const fundRuleSchema = new Schema<IFundRule>(
       type: String,
       enum: ['every', 'majority']
     },
-    building: {
-      type: Schema.Types.ObjectId,
-      ref: 'buildings'
-    },
     space: {
+      type: Schema.Types.ObjectId,
+      ref: 'spaces'
+    },
+    mainSpace: {
       type: Schema.Types.ObjectId,
       ref: 'spaces'
     },
@@ -25,6 +26,10 @@ export const fundRuleSchema = new Schema<IFundRule>(
       type: Schema.Types.ObjectId,
       ref: 'users',
       immutable: true
+    },
+    organization: {
+      type: Schema.Types.ObjectId,
+      ref: 'organization'
     }
   },
   {

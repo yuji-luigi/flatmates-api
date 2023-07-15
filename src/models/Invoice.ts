@@ -3,7 +3,7 @@ import autoPopulate from 'mongoose-autopopulate';
 
 import { formatDateAndTimeForFlights } from '../utils/functions';
 
-import { InvoiceInterface } from '../types/model/invoice-type';
+import { InvoiceInterface } from '../types/mongoose-types/model-types/invoice-interface';
 import Maintenance from './Maintenance';
 import logger from '../config/logger';
 

@@ -2,7 +2,7 @@ import mongoose, { Model, Schema } from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
 
 import { formatDateAndTimeForFlights } from '../utils/functions';
-import { ReceiptInterface } from '../types/model/receipt-type';
+import { ReceiptInterface } from '../types/mongoose-types/model-types/receipt-interface';
 import Maintenance from './Maintenance';
 import logger from '../config/logger';
 
@@ -62,7 +62,7 @@ ReceiptSchema.pre('save', async function (next) {
       throw new Error('maintenance is undefined. you must provide maintenance in order to save receipt');
     }
     const maintenance = await Maintenance.findById(this.maintenance);
-    maintenance.invoice = this;
+    maintenance.receipt = this;
     await maintenance.save();
     next();
   } catch (error) {

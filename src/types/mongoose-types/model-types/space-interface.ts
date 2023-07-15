@@ -1,6 +1,18 @@
-interface ISpace extends MongooseBaseModel<ISpace, ISpace> {
+import { MongooseBaseModel } from './base-model-interface';
+import { IOrganization } from './organization-interface';
+import { IUpload } from './upload-interface';
+import { IUser } from './user-interface';
+
+export const spaceTypes = ['country', 'street', 'building', 'house', 'room', 'floor'] as const;
+export type SpaceTypes = (typeof spaceTypes)[number];
+
+export interface ISpace extends MongooseBaseModel {
+  name: string;
   /** to show @top level in frontend */
   isHead: boolean;
+  // TODO: DEPRECATE THIS. USE SPACETYPE
+  isMain: boolean;
+  spaceType: SpaceTypes;
   /** only for rootSpace(head) determines how many users can be registered to the space. */
   maxUsers: number;
   /** same order as condoAdmin, companyAdmin, flatAdmin following values. */
@@ -12,6 +24,7 @@ interface ISpace extends MongooseBaseModel<ISpace, ISpace> {
    *
    * Also meaning that has no children */
   isTail: boolean;
+  cover: IUpload;
   /** reference Id to query.
    *
    * click parent do query by parentId and get the children
@@ -25,17 +38,20 @@ interface ISpace extends MongooseBaseModel<ISpace, ISpace> {
   organization: string | IOrganization | null;
   /** decides if everyone in the world can see or only under the organization. */
   isPublic: boolean;
-  // maintainers: IMaintainer[];
+  slug: string;
+  // maintainers: MaintainerInterface[];
 
   getParent(): Promise<ISpace | null | undefined>;
 }
 
-interface ISpaceMethods {
-  getParent(): Pormise<ISpace | null | undefined>;
+export interface ISpaceMethods {
+  getParent(): Promise<ISpace | null | undefined>;
   // getChildren(): ISpace[] | [] | null | undefined
   getAncestors(currentDocument: ISpace, children: string[]): Promise<string[] | null | undefined>;
   /** returns root space. */
   getHeadSpace(): Promise<ISpace | null | undefined>;
+  /** returns jwt string with expiration and secret */
+  token(): string;
 }
 
 type TypeOfSpace = 'condominium' | 'officeBuilding' | 'flat';

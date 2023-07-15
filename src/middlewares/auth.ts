@@ -14,6 +14,8 @@ import { USER_ROLES } from '../types/enum/enum';
 import { ObjectId } from 'mongodb';
 import Organization from '../models/Organization';
 import logger from '../config/logger';
+import { ISpace } from '../types/mongoose-types/model-types/space-interface';
+import { IUser } from '../types/mongoose-types/model-types/user-interface';
 
 export const isLoggedIn =
   (roles: USER_ROLES[] = USER_ROLES) =>

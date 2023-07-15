@@ -1,16 +1,20 @@
 import mongoose from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
+import { IBookmark } from '../types/mongoose-types/model-types/bookmar-interface';
 const { Schema } = mongoose;
 
 const bookmarkSchema = new Schema<IBookmark>(
   {
-    title: String,
     entity: String,
+    refId: Schema.Types.ObjectId,
     /** saving thread or */
-    threads: String,
     note: String,
-    building: String,
-    date: String,
+    mainSpace: {
+      type: Schema.Types.ObjectId,
+      ref: 'spaces',
+      autopopulate: true
+    },
+
     organization: {
       type: Schema.Types.ObjectId,
       ref: 'organizations',

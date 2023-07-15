@@ -1,12 +1,11 @@
 import mongoose from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
+import { IComment } from '../types/mongoose-types/model-types/commen-interface';
 const { Schema } = mongoose;
 
 export const commentSchema = new Schema<IComment>(
   {
-    title: String,
     body: String,
-    password: String,
     private: {
       type: Boolean,
       default: false

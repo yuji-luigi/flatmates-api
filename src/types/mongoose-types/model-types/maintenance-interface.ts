@@ -1,6 +1,12 @@
-import { MAINTAINER_TYPES } from '../enum/enum';
-import { InvoiceInterface } from './invoice-type';
-import { ReceiptInterface } from './receipt-type';
+import { MAINTAINER_TYPES } from '../../enum/enum';
+import { MongooseBaseModel } from './base-model-interface';
+import { InvoiceInterface } from './invoice-interface';
+import { MaintainerInterface } from './maintainer-interface';
+import { IOrganization } from './organization-interface';
+import { ReceiptInterface } from './receipt-interface';
+import { ISpace } from './space-interface';
+import { IUpload } from './upload-interface';
+import { IUser } from './user-interface';
 
 export const MAINTENANCE_STATUS = {
   INCOMPLETE: 'incomplete',
@@ -12,7 +18,7 @@ export type MAINTENANCE_STATUS_TYPE = (typeof MAINTENANCE_STATUS)[keyof typeof M
 
 export const MAINTAINER_TYPES_ARRAY = Object.keys(MAINTAINER_TYPES);
 
-export interface IMaintenance extends MongooseBaseModel<null, null> {
+export interface IMaintenance extends MongooseBaseModel {
   createdAt: string;
   title: string;
   images: IUpload[] | [];

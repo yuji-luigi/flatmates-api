@@ -1,3 +1,5 @@
+import { IUpload } from '../../types/mongoose-types/model-types/upload-interface';
+
 export interface UploadsThread {
   [key: string]: IUpload[];
   images: IUpload[];

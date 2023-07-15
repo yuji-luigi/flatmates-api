@@ -1,7 +1,7 @@
 import { describe } from 'node:test';
 import mongoose from '../../../config/mongoose';
 import { createOptionsForMaintenance } from '../../../api/helpers/maintenanceHelper';
-import { IMaintenance } from '../../../types/model/maintenance-type';
+import { IMaintenance } from '../../../types/mongoose-types/model-types/maintenance-interface';
 import Space from '../../../models/Space';
 import UserSchema from '../../../models/User';
 import Maintainer from '../../../models/Maintainer';

@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
+import { IProposal } from '../types/mongoose-types/model-types/proposal-interface';
 const { Schema } = mongoose;
 
 export const proposalSchema = new Schema<IProposal>(
@@ -10,9 +11,9 @@ export const proposalSchema = new Schema<IProposal>(
       type: Schema.Types.ObjectId,
       ref: 'fundRules'
     },
-    building: {
+    mainSpace: {
       type: Schema.Types.ObjectId,
-      ref: 'buildings'
+      ref: 'spaces'
     },
     // proposals: [{
     //   type: Schema.Types.ObjectId,
@@ -21,6 +22,10 @@ export const proposalSchema = new Schema<IProposal>(
     isPublic: {
       type: Boolean,
       default: false
+    },
+    organization: {
+      type: Schema.Types.ObjectId,
+      ref: 'organizations'
     },
     createdBy: {
       type: Schema.Types.ObjectId,

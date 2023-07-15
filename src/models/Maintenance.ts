@@ -2,9 +2,9 @@ import mongoose, { CallbackWithoutResultAndOptionalError, Model } from 'mongoose
 import autoPopulate from 'mongoose-autopopulate';
 import { getPrivateUrlOfSpace } from '../api/helpers/uploadFileHelper';
 import logger from '../config/logger';
-import { formatDateAndTimeForFlights, generateNonceCode, generateRandomStringByLength } from '../utils/functions';
+import { formatDateAndTimeForFlights, generateNonceCode, generateRandomStringByLength, replaceSpecialChars } from '../utils/functions';
 import { MAINTAINER_TYPES } from '../types/enum/enum';
-import { IMaintenance, IMaintenanceMethods, MAINTENANCE_STATUS } from '../types/model/maintenance-type';
+import { IMaintenance, IMaintenanceMethods, MAINTENANCE_STATUS } from '../types/mongoose-types/model-types/maintenance-interface';
 import { ICollectionAware, createSlug } from '../api/helpers/mongoose.helper';
 
 const { Schema } = mongoose;
@@ -119,7 +119,7 @@ export const maintenanceSchema = new Schema<IMaintenanceDoc, MaintenanceModel, I
     },
     linkId: {
       type: String,
-      default: generateRandomStringByLength(80)
+      default: replaceSpecialChars(generateRandomStringByLength(80))
     }
   },
   {

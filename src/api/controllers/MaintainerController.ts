@@ -7,6 +7,8 @@ import { RequestCustom } from '../../types/custom-express/express-custom';
 import { _MSG } from '../../utils/messages';
 import Organization from '../../models/Organization';
 import Space from '../../models/Space';
+import { MaintainerInterface } from '../../types/mongoose-types/model-types/maintainer-interface';
+import { IUpload } from '../../types/mongoose-types/model-types/upload-interface';
 
 const entity = 'maintainers';
 

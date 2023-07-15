@@ -3,6 +3,7 @@ import autoPopulate from 'mongoose-autopopulate';
 import { deleteFileFromStorage, getPrivateUrlOfSpace } from '../api/helpers/uploadFileHelper';
 import logger from '../config/logger';
 import vars from '../config/vars';
+import { IUpload, IUploadMethods } from '../types/mongoose-types/model-types/upload-interface';
 // import { deleteFileFromStorage } from '../api/helpers/uploadFileHelper';
 const { Schema } = mongoose;
 type IUploadModel = Model<IUpload, object, IUploadMethods>;

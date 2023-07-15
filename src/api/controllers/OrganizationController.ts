@@ -9,6 +9,7 @@ import vars, { sensitiveCookieOptions } from '../../config/vars';
 import User from '../../models/User';
 import { _MSG } from '../../utils/messages';
 import { deleteEmptyFields } from '../../utils/functions';
+import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 
 export async function sendOrganizations(req: RequestCustom, res: Response) {
   try {

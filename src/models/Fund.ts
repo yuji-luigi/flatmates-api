@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
+import { IFund } from '../types/mongoose-types/model-types/fund-interface';
 
 const { Schema } = mongoose;
 
@@ -12,10 +13,6 @@ export const fundSchema = new Schema<IFund>(
         ref: 'fundRules'
       }
     ],
-    building: {
-      type: Schema.Types.ObjectId,
-      ref: 'buildings'
-    },
     isPublic: {
       type: Boolean,
       default: false

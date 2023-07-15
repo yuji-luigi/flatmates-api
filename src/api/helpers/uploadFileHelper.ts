@@ -15,6 +15,8 @@ import Upload from '../../models/Upload';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import Organization from '../../models/Organization';
 import { Response } from 'express';
+import { IUpload } from '../../types/mongoose-types/model-types/upload-interface';
+import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 
 const { storageAccessKeyId, storageSecretAccessKey, storageBucketName, storageEndPoint, storageRegion } = vars;
 
