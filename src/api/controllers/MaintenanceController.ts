@@ -11,6 +11,7 @@ import { sendEmail } from '../helpers/nodemailerHelper';
 import { IMaintenance } from '../../types/mongoose-types/model-types/maintenance-interface';
 import { createOptionsForMaintenance } from '../helpers/maintenanceHelper';
 import { IUpload } from '../../types/mongoose-types/model-types/upload-interface';
+import { sensitiveCookieOptions } from '../../config/vars';
 /**
  * POST CONTROLLERS
  */
@@ -175,8 +176,9 @@ const deleteThread = async (req: RequestCustom, res: Response) => {
 export async function authUserMaintenanceFiles(req: Request, res: Response) {
   try {
     const { linkId, idMongoose } = req.params;
-    const maintenance = await Maintenance.findOne({ linkId, _id: idMongoose, pin: req.body.pin });
-
+    const maintenance = await Maintenance.findOne({ linkId, _id: idMongoose, nonce: req.body.pin });
+    if (!maintenance) throw new Error('pin is not correct');
+    res.cookie('maintnanceNonce', req.body.pin, sensitiveCookieOptions);
     res.status(httpStatus.OK).json({
       success: true,
       collection: 'maintenances',

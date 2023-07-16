@@ -18,10 +18,7 @@ interface ThreadModel extends Model<IThread, object, IThreadMethods> {
 export const threadSchema = new Schema<IThread, ThreadModel, IThreadMethods>(
   {
     title: String,
-    description: {
-      type: String,
-      default: ''
-    },
+    subtitle: String,
     images: [
       {
         type: Schema.Types.ObjectId,

@@ -16,13 +16,6 @@ mongoose.connect();
 
 app.listen(port, async () => {
   logger.info(`server started on port ${port} (${env})`);
-  // console.log(generateRandomStringByLength(80));
-  // const documents = await Maintenance.find();
-  // for (const document of documents) {
-  //   document.createdBy = document.user;
-  //   document.user = undefined;
-  //   await document.save();
-  // }
 });
 
 /**
