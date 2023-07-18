@@ -11,7 +11,7 @@ router.post('/', isLoggedIn(), maintenanceCtrl.createMaintenance);
 router.get('/with-pagination', isLoggedIn(), sendCrudObjectsWithPaginationToClient);
 router.get('/:maintenanceId', isLoggedIn(), maintenanceCtrl.sendSingleMaintenanceToFrondEnd);
 router.get('/', isLoggedIn(), maintenanceCtrl.sendMaintenancesToFrondEnd);
-router.post('/file-upload/:linkId/:idMongoose', authUserMaintenanceFiles);
+router.post('/auth/file-upload/:linkId/:idMongoose', authUserMaintenanceFiles);
 
 router.delete('/:maintenanceId', isLoggedIn(), maintenanceCtrl.deleteThread);
 

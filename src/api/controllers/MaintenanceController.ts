@@ -176,9 +176,13 @@ const deleteThread = async (req: RequestCustom, res: Response) => {
 export async function authUserMaintenanceFiles(req: Request, res: Response) {
   try {
     const { linkId, idMongoose } = req.params;
-    const maintenance = await Maintenance.findOne({ linkId, _id: idMongoose, nonce: req.body.pin });
+    const maintenance = await Maintenance.findOne({ linkId, _id: idMongoose, nonce: req.body.pin })
+      .populate({ path: 'organization', select: 'name' })
+      .populate({ path: 'mainSpace', select: 'name' });
     if (!maintenance) throw new Error('pin is not correct');
-    res.cookie('maintnanceNonce', req.body.pin, sensitiveCookieOptions);
+    res.cookie('maintenanceNonce', req.body.pin, sensitiveCookieOptions);
+    console.log(maintenance.mainSpace);
+    console.log(maintenance.organization);
     res.status(httpStatus.OK).json({
       success: true,
       collection: 'maintenances',
