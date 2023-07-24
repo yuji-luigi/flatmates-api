@@ -31,7 +31,8 @@ import {
   getPrivateUrlOfSpace,
   separateFiles,
   createFilesDirName,
-  deleteFileFromStorage
+  deleteFileFromStorage,
+  getFolderName
 } from '../helpers/uploadFileHelper';
 
 import httpStatus from 'http-status';
@@ -126,6 +127,45 @@ const uploadFilesController = {
       });
     }
   },
+
+  async postMaintenanceFileToStorage(req: RequestCustom, res: Response) {
+    try {
+      const folderName = getFolderName(req.body);
+      const [filesToUpload /* existingFilesId */] = separateFiles(req.files);
+      if (!filesToUpload) {
+        throw new Error('No files to upload');
+      }
+      const uploadModelsData = await saveInStorage(filesToUpload, folderName, true);
+      // ok, with reference of existing files
+      const responseObj: UploadResponseObject = {};
+      for (const key in uploadModelsData) {
+        const createdModel = await Upload.create({
+          ...uploadModelsData[key],
+          url: vars.storageUrl + '/' + uploadModelsData[key].fullPath
+          // uploadedBy: req.user._id
+        });
+
+        if (responseObj[createdModel.fieldInParent]) {
+          responseObj[createdModel.fieldInParent].push(createdModel._id.toString());
+        } else {
+          responseObj[createdModel.fieldInParent] = [createdModel._id.toString()];
+        }
+      }
+      res.status(httpStatus.OK).json({
+        success: true,
+        data: responseObj,
+        collection: 'storage'
+      });
+    } catch (error) {
+      logger.error(error.message || error);
+      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+        message: error.message,
+        success: false,
+        collection: 'storage'
+      });
+    }
+  },
+
   async deleteAll(req: RequestCustom, res: Response) {
     try {
       const deletedModels = await Upload.find();

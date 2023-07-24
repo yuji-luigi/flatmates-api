@@ -62,7 +62,7 @@ const uploadSchema = new Schema<IUpload, IUploadModel, IUploadMethods>(
     uploadedBy: {
       type: Schema.Types.ObjectId,
       ref: 'users',
-      required: true,
+      // required: true,
       autopopulate: true
     }
   },
@@ -101,7 +101,6 @@ const uploadSchema = new Schema<IUpload, IUploadModel, IUploadMethods>(
 
 uploadSchema.plugin(autoPopulate);
 
-export default mongoose.model('uploads', uploadSchema);
 uploadSchema.virtual('name').get(function () {
   return this.fileName;
 });
@@ -111,4 +110,5 @@ uploadSchema.set('toJSON', {
   virtuals: true
 });
 
-module.exports = mongoose.model<IUpload, IUploadModel>('uploads', uploadSchema);
+export default mongoose.model('uploads', uploadSchema);
+// module.exports = mongoose.model<IUpload, IUploadModel>('uploads', uploadSchema);

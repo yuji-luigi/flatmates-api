@@ -3,6 +3,7 @@ import { Request } from 'express';
 import vars from './vars';
 import User from '../models/User';
 import Space from '../models/Space';
+// import Maintenance from '../models/Maintenance';
 
 const { jwtSecret } = vars;
 const JwtStrategy = passport.Strategy;
@@ -68,12 +69,32 @@ const handleSpaceJwt = async (payload: any, done: any) => {
   }
 };
 
+// const handleMaintenanceJwt = async (payload: any, done: any) => {
+//   try {
+//     // const user = await User.findById(payload.id);
+//     const maintenance = await Maintenance.findById(payload._id)
+//       .populate({ path: 'mainSpace', select: 'name' })
+//       .populate({ path: 'organization', select: 'name' })
+//       .populate({ path: 'maintainer', select: 'name' });
+//     // .populate({ path: 'organization', select: 'name' });
+//     if (maintenance) return done(null, maintenance);
+//     return done(null, false);
+//   } catch (error) {
+//     return done(error, false);
+//   }
+// };
+
 const spaceJwtOptions = {
   secretOrKey: jwtSecret,
   jwtFromRequest: (req: Request) => cookieExtractorEx(req)('space')
 };
+// const maintenanceJwtOptions = {
+//   secretOrKey: jwtSecret,
+//   jwtFromRequest: (req: Request) => cookieExtractorEx(req)('maintenance')
+// };
 
 export default {
   jwt: new JwtStrategy(jwtOptions, jwt),
   handleSpaceJwt: new JwtStrategy(spaceJwtOptions, handleSpaceJwt)
+  // handleMaintenanceJwt: new JwtStrategy(maintenanceJwtOptions, handleMaintenanceJwt)
 };

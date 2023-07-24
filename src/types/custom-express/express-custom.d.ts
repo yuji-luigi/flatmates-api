@@ -96,5 +96,7 @@ export interface RequestCustom<
   user?: IUser | undefined;
   space?: ISpace | null;
   organization: IOrganization;
+  maintenance?: IMaintenance;
+  // files?: File[];
   // query: QueryInterface;
 }

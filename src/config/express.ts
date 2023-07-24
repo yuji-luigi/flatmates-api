@@ -43,6 +43,7 @@ app.use(passport.initialize());
 // find user by token. then done.
 passport.use('jwt', strategies.jwt);
 passport.use('handleSpaceJwt', strategies.handleSpaceJwt);
+// passport.use('handleMaintenanceJwt', strategies.handleMaintenanceJwt);
 
 // app.use(handleOrganization());
 // mount api v1 routes

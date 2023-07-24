@@ -44,8 +44,10 @@ interface FileData {
 }
 
 export const saveInStorage = async function (
+  // filesData: Express.Request['files'],
   filesData: FileData[],
-  generalDirName = 'noDirName'
+  generalDirName = 'noDirName',
+  isPrivate = false
   // forSingleField = false
 ) {
   try {
@@ -62,7 +64,7 @@ export const saveInStorage = async function (
       file.folderName = generalDirName + '/' + file.fieldInModel; // get file
       const uploadModelData = createUploadModelData(file, dateASCII);
       // define full path
-      const bucketParams = getBucketParams(file, uploadModelData.fullPath);
+      const bucketParams = getBucketParams(file, uploadModelData.fullPath, isPrivate);
       await s3Client.send(new PutObjectCommand(bucketParams));
 
       result.push(uploadModelData);
@@ -78,12 +80,12 @@ export const saveInStorage = async function (
   }
 };
 
-export const getBucketParams = (data: any, fullPath: string, isPrivate = false) =>
+export const getBucketParams = (data: any, fullPath: string, isPrivate: boolean) => {
   // const { folderName, fileName } = data;
 
   // const key = folderName ? `${folderName}/${fileName}` : fileName; // include folder name in the key if it's provided
 
-  ({
+  return {
     Bucket: storageBucketName,
     Key: fullPath,
     Body: data.data,
@@ -95,7 +97,8 @@ export const getBucketParams = (data: any, fullPath: string, isPrivate = false) 
       original_filename: data.name,
       size: `${data.size}`
     }
-  });
+  };
+};
 
 export function createUploadModelData(file: any, dateASCII: any) {
   const gui = uuid(); // generate uuid
@@ -261,3 +264,9 @@ export async function makeAllPublic(req: Request, res: Response) {
     throw error;
   }
 }
+
+export const getFolderName = (body: any) => {
+  const { organizationName, mainSpace, entity } = body;
+  const folderName = `${replaceSpecialChars(organizationName)}/${replaceSpecialChars(mainSpace)}/${entity}`;
+  return folderName;
+};

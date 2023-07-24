@@ -54,4 +54,5 @@ export interface IMaintenanceMethods {
    * @returns {Promise<void>}
    */
   handleDeleteUploads: () => Promise<void>;
+  token: () => string;
 }

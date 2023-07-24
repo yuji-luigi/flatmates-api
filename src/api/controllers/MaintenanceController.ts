@@ -180,9 +180,9 @@ export async function authUserMaintenanceFiles(req: Request, res: Response) {
       .populate({ path: 'organization', select: 'name' })
       .populate({ path: 'mainSpace', select: 'name' });
     if (!maintenance) throw new Error('pin is not correct');
+
     res.cookie('maintenanceNonce', req.body.pin, sensitiveCookieOptions);
-    console.log(maintenance.mainSpace);
-    console.log(maintenance.organization);
+
     res.status(httpStatus.OK).json({
       success: true,
       collection: 'maintenances',

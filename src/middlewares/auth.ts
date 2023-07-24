@@ -16,6 +16,7 @@ import Organization from '../models/Organization';
 import logger from '../config/logger';
 import { ISpace } from '../types/mongoose-types/model-types/space-interface';
 import { IUser } from '../types/mongoose-types/model-types/user-interface';
+import { IMaintenance } from '../types/mongoose-types/model-types/maintenance-interface';
 
 export const isLoggedIn =
   (roles: USER_ROLES[] = USER_ROLES) =>
@@ -120,6 +121,22 @@ export function checkSSGSecret(req: RequestCustom, res: Response, next: NextFunc
   }
   next();
 }
+
+function setMaintenance(req: RequestCustom, res: Response, next: NextFunction) {
+  return function (err: any, maintenance: IMaintenance & boolean) {
+    if (err) {
+      throw err;
+    }
+    if (!maintenance) {
+      throw new Error('maintenance not found');
+    }
+    req.maintenance = maintenance;
+    next();
+  };
+}
+
+export const handleMaintenanceJWTInReq = (req: RequestCustom, res: Response, next: NextFunction) =>
+  passport.authenticate('handleMaintenanceJwt', { session: false }, setMaintenance(req, res, next))(req, res, next);
 
 export const ADMIN = 'admin';
 export const LOGGED_USER = 'user';
