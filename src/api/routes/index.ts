@@ -8,6 +8,7 @@ import customRoutes from './crud.custom.routes';
 import uploadFilesRoutes from './uploadFiles.routes';
 import threadRoutes from './thread.routes';
 import spaceRoutes from './space.routes';
+import checkRoutes from './check.routes';
 import organizationRoutes from './organization.routes';
 import maintainerRoutes from './maintainer.routes';
 // import dataTableRoutes from './data-table.routes';
@@ -36,6 +37,7 @@ router.use('/spaces', spaceRoutes);
 router.use('/organizations', organizationRoutes);
 router.use('/maintainers', maintainerRoutes);
 router.use('/users', userRoutes);
+router.use('/checks', checkRoutes);
 // router.use('/with-pagination', dataTableRoutes);
 
 router.use('/', customRoutes);

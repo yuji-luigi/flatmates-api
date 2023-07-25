@@ -5,7 +5,9 @@ import { IOrganization } from './organization-interface';
 import { ISpace } from './space-interface';
 import { IUpload } from './upload-interface';
 
-export interface InvoiceInterface extends MongooseBaseModel {
+export const checkTypes = ['invoices', 'receipts'] as const;
+export type CheckType = (typeof checkTypes)[number];
+export interface CheckInterface extends MongooseBaseModel {
   //virtual field name get from maintenance.name
   name: string;
   maintainer: MaintainerInterface;
@@ -14,5 +16,6 @@ export interface InvoiceInterface extends MongooseBaseModel {
   file: IUpload;
   organization: IOrganization;
   mainSpace: ISpace;
+  type: CheckType;
   space?: string | ISpace;
 }

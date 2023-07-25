@@ -17,6 +17,7 @@ import Space from '../models/Space';
 import Upload from '../models/Upload';
 import Maintenance from '../models/Maintenance';
 import Maintainer from '../models/Maintainer';
+import Check from '../models/Check';
 
 import vars from './vars';
 
@@ -42,6 +43,7 @@ Space;
 Upload;
 Maintenance;
 Maintainer;
+Check;
 
 // mongoose.model('bookmarks', bookmarkSchema);
 // mongoose.model('buildings', buildingSchema);

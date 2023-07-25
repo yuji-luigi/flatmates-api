@@ -14,7 +14,8 @@ const entities = [
   'notifications',
   'spaces',
   'maintainers',
-  'maintenances'
+  'maintenances',
+  'checks'
 ] as const;
 
 export type Entities = (typeof entities)[number];

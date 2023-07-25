@@ -2,12 +2,13 @@ import mongoose, { Model, Schema } from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
 
 import { formatDateAndTimev3 } from '../utils/functions';
-import { ReceiptInterface } from '../types/mongoose-types/model-types/receipt-interface';
+
+import { CheckInterface, checkTypes } from '../types/mongoose-types/model-types/check-interface';
 import Maintenance from './Maintenance';
 import logger from '../config/logger';
 
-type ReceiptModel = Model<ReceiptInterface, object, object>;
-export const ReceiptSchema = new Schema<ReceiptInterface, ReceiptModel, unknown>(
+type CheckModel = Model<CheckInterface, object, object>;
+export const checkSchema = new Schema<CheckInterface, CheckModel, unknown>(
   {
     file: {
       type: Schema.Types.ObjectId,
@@ -15,10 +16,10 @@ export const ReceiptSchema = new Schema<ReceiptInterface, ReceiptModel, unknown>
       autopopulate: true,
       required: true
     },
-    invoice: {
-      type: Schema.Types.ObjectId,
-      ref: 'invoices',
-      autopopulate: true
+    type: {
+      type: String,
+      enum: checkTypes,
+      required: true
     },
     maintainer: {
       type: Schema.Types.ObjectId,
@@ -47,35 +48,33 @@ export const ReceiptSchema = new Schema<ReceiptInterface, ReceiptModel, unknown>
   }
 );
 
-ReceiptSchema.plugin(autoPopulate);
+checkSchema.plugin(autoPopulate);
 
 // sort by most recent
-ReceiptSchema.pre('find', async function (next) {
+checkSchema.pre('find', async function (next) {
   // sort by most recent
   this.sort({ createdAt: -1 });
   next();
 });
 
-ReceiptSchema.pre('save', async function (next) {
+checkSchema.pre('save', async function (next) {
   try {
-    if (!this.maintenance) {
-      throw new Error('maintenance is undefined. you must provide maintenance in order to save receipt');
-    }
+    // save in maintenance.invoice or receipt at the creation of the check
     const maintenance = await Maintenance.findById(this.maintenance);
-    maintenance.receipt = this;
+    maintenance[this.type].push(this);
     await maintenance.save();
     next();
   } catch (error) {
     logger.error(error.message || error);
-    throw new Error('error in invoiceSchema.pre(save)');
+    throw new Error('error in checkSchema.pre(save)');
   }
 });
 
-ReceiptSchema.virtual('_createdAt').get(function () {
+checkSchema.virtual('_createdAt').get(function () {
   return formatDateAndTimev3(this.createdAt);
 });
-ReceiptSchema.set('toJSON', {
+checkSchema.set('toJSON', {
   virtuals: true
 });
 
-export default mongoose.model<ReceiptInterface, ReceiptModel>('receipts', ReceiptSchema);
+export default mongoose.model<CheckInterface, CheckModel>('checks', checkSchema);

@@ -41,14 +41,6 @@ export const maintenanceSchema = new Schema<IMaintenanceDoc, MaintenanceModel, I
         autopopulate: true
       }
     ],
-    // articleType: {
-    //   type: String,
-    //   default: 'default'
-    // },
-    // listViewType: {
-    //   type: String,
-    //   default: 'default'
-    // },
     status: {
       type: String,
       enum: Object.values(MAINTENANCE_STATUS),
@@ -87,10 +79,7 @@ export const maintenanceSchema = new Schema<IMaintenanceDoc, MaintenanceModel, I
       autopopulate: true,
       immutable: true
     },
-    // isPublic: {
-    //   type: Boolean,
-    //   default: false
-    // },
+
     organization: {
       type: Schema.Types.ObjectId,
       ref: 'organizations',
@@ -101,16 +90,20 @@ export const maintenanceSchema = new Schema<IMaintenanceDoc, MaintenanceModel, I
       ref: 'spaces'
       // required: true,
     },
-    invoice: {
-      type: Schema.Types.ObjectId,
-      ref: 'invoices',
-      autopopulate: true
-    },
-    receipt: {
-      type: Schema.Types.ObjectId,
-      ref: 'receipts',
-      autopopulate: true
-    },
+    invoices: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'checks',
+        autopopulate: true
+      }
+    ],
+    receipts: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'checks',
+        autopopulate: true
+      }
+    ],
     slug: {
       type: String,
       immutable: true

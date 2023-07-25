@@ -141,7 +141,8 @@ const uploadFilesController = {
       for (const key in uploadModelsData) {
         const createdModel = await Upload.create({
           ...uploadModelsData[key],
-          url: vars.storageUrl + '/' + uploadModelsData[key].fullPath
+          url: vars.storageUrl + '/' + uploadModelsData[key].fullPath,
+          ACL: 'private'
           // uploadedBy: req.user._id
         });
 
