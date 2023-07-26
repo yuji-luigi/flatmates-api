@@ -47,8 +47,23 @@ export async function sendCheckToClient(req: RequestCustom, res: Response) {
       count: 1
     });
   } catch (err) {
+    logger.error(err);
     res.status(err).json({
       message: err.message || err
     });
   }
 }
+
+exports.showCheckToClient = async function (req: RequestCustom, res: Response) {
+  try {
+    const check = await Check.findById(req.params.idMongoose);
+    await check.file.setUrl();
+    res.status(httpStatus.OK).json({
+      data: check,
+      success: true,
+      collection: 'checks'
+    });
+  } catch (error) {
+    logger.error();
+  }
+};

@@ -93,15 +93,15 @@ export const maintenanceSchema = new Schema<IMaintenanceDoc, MaintenanceModel, I
     invoices: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'checks',
-        autopopulate: true
+        ref: 'checks'
+        // autopopulate: true
       }
     ],
     receipts: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'checks',
-        autopopulate: true
+        ref: 'checks'
+        // autopopulate: true
       }
     ],
     slug: {
