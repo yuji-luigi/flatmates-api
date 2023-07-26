@@ -6,6 +6,7 @@ import { RequestCustom } from '../../types/custom-express/express-custom';
 import { aggregateWithPagination, convert_idToMongooseId } from '../helpers/mongoose.helper';
 import vars from '../../config/vars';
 import User from '../../models/User';
+import xlsx from 'xlsx';
 import { _MSG } from '../../utils/messages';
 import { deleteEmptyFields } from '../../utils/functions';
 
@@ -203,4 +204,39 @@ export async function deleteOrganizationCookie(req: RequestCustom, res: Response
     collection: 'organizations',
     data: {}
   });
+}
+
+export async function importExcelFromClient(req: RequestCustom, res: Response) {
+  try {
+    const fileFromClient = req.files.file;
+    // Parse the file based on its type
+    let data;
+    if (
+      !Array.isArray(fileFromClient) &&
+      ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'].includes(fileFromClient.mimetype)
+    ) {
+      // Excel file
+      const workbook = xlsx.read(fileFromClient.data, { type: 'buffer' });
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      data = xlsx.utils.sheet_to_json(worksheet);
+    } else {
+      // Unsupported file type
+      throw new Error('Unsupported file type');
+    }
+    ''.toLowerCase().replace(/\s/g, '');
+
+    // Save the data to the database
+    console.log('Data saved successfully');
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: 'Data saved successfully',
+      data
+    });
+  } catch (error) {
+    logger.error(error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: error.message || error,
+      success: false
+    });
+  }
 }
