@@ -18,6 +18,7 @@ import Upload from '../models/Upload';
 import Maintenance from '../models/Maintenance';
 import Maintainer from '../models/Maintainer';
 import Check from '../models/Check';
+import AuthToken from '../models/AuthToken';
 
 import vars from './vars';
 
@@ -44,23 +45,7 @@ Upload;
 Maintenance;
 Maintainer;
 Check;
-
-// mongoose.model('bookmarks', bookmarkSchema);
-// mongoose.model('buildings', buildingSchema);
-// mongoose.model('comments', commentSchema);
-// mongoose.model('funds', fundSchema);
-// mongoose.model('fundRules', fundRuleSchema);
-// mongoose.model('instances', instanceSchema);
-// mongoose.model('proposals', proposalSchema);
-// mongoose.model('tags', tagSchema);
-// mongoose.model('threads', threadSchema);
-// mongoose.model('users', userSchema);
-// mongoose.model('wallets', walletSchema);
-// mongoose.model('areas', areaSchema);
-// mongoose.model('organizations', organizationSchema);
-// mongoose.model('wallets', walletSchema);
-// mongoose.model('notifications', notificationSchema);
-
+AuthToken;
 // Exit Applicatioin on Error
 mongoose.connection.on('error', (err: object | string) => {
   logger.error(`Mongoose connection error: ${err}`);

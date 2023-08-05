@@ -143,8 +143,8 @@ const login = async (req: Request, res: Response) => {
 
     res.send({
       success: true,
-      data: { token /* , user: userTransformed */ },
-      accessToken: token
+      data: { token /* , user: userTransformed */ }
+      // accessToken: token
     });
   } catch (error) {
     res.status(error.status).json({ ...error, message: error.message || error });

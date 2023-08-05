@@ -6,9 +6,10 @@ import { RequestCustom } from '../../types/custom-express/express-custom';
 import { aggregateWithPagination, convert_idToMongooseId } from '../helpers/mongoose.helper';
 import vars from '../../config/vars';
 import User from '../../models/User';
-import xlsx from 'xlsx';
 import { _MSG } from '../../utils/messages';
 import { deleteEmptyFields } from '../../utils/functions';
+import { handleCreateSpaceByUserUnit, userExcelData } from '../helpers/usersHelper';
+import { convertExcelToJson } from '../../utils/excelHelper';
 
 export const createUserAndSendDataWithPagination = async (req: RequestCustom, res: Response) => {
   try {
@@ -22,6 +23,15 @@ export const createUserAndSendDataWithPagination = async (req: RequestCustom, re
     req.body.organization = req.space.organization;
     req.body.space = req.space._id;
     req.body.rootSpaces = [req.space._id];
+
+    if (!req.body.password) {
+      throw new Error('Password is required. Please provide password.');
+    }
+    const foundUser = await User.findOne({ email: req.body.email });
+    if (foundUser) {
+      throw new Error('Email is already in use. Please check the email.');
+    }
+
     const newModel = new User(req.body);
 
     await newModel.save();
@@ -210,21 +220,25 @@ export async function importExcelFromClient(req: RequestCustom, res: Response) {
   try {
     const fileFromClient = req.files.file;
     // Parse the file based on its type
-    let data;
-    if (
-      !Array.isArray(fileFromClient) &&
-      ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'].includes(fileFromClient.mimetype)
-    ) {
-      // Excel file
-      const workbook = xlsx.read(fileFromClient.data, { type: 'buffer' });
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      data = xlsx.utils.sheet_to_json(worksheet);
-    } else {
-      // Unsupported file type
-      throw new Error('Unsupported file type');
-    }
-    ''.toLowerCase().replace(/\s/g, '');
+    const data = convertExcelToJson<userExcelData>(fileFromClient);
+    // userExcelData[];
+    // if (
+    //   !Array.isArray(fileFromClient) &&
+    //   ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'].includes(fileFromClient.mimetype)
+    // ) {
+    //   // Excel file
+    //   const workbook = xlsx.read(fileFromClient.data, { type: 'buffer' });
+    //   const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+    //   data = xlsx.utils.sheet_to_json(worksheet);
+    // } else {
+    //   // Unsupported file type
+    //   throw new Error('Unsupported file type');
+    // }
 
+    await handleCreateSpaceByUserUnit({ excelData: data, mainSpace: req.space });
+    // FORMAT THE DATA FROM EXCEL FILE
+
+    // const users = await User.insertMany(data);
     // Save the data to the database
     console.log('Data saved successfully');
     res.status(httpStatus.OK).json({

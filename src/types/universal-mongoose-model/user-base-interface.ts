@@ -1,6 +1,3 @@
-import { MaintainerInterface } from '../mongoose-types/model-types/maintainer-interface';
-import { IUser } from '../mongoose-types/model-types/user-interface';
-
 export interface LoginInstance extends LoginInstanceMethods {
   name: string;
   surname: string;

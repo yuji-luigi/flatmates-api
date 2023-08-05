@@ -3,7 +3,7 @@ import { IOrganization } from './organization-interface';
 import { IUpload } from './upload-interface';
 import { IUser } from './user-interface';
 
-export const spaceTypes = ['country', 'street', 'building', 'house', 'room', 'floor'] as const;
+export const spaceTypes = ['country', 'street', 'building', 'area', 'house', 'room', 'floor'] as const;
 export type SpaceTypes = (typeof spaceTypes)[number];
 
 export interface ISpace extends MongooseBaseModel {
@@ -12,7 +12,7 @@ export interface ISpace extends MongooseBaseModel {
   isHead: boolean;
   // TODO: DEPRECATE THIS. USE SPACETYPE
   isMain: boolean;
-  spaceType: SpaceTypes;
+  type: SpaceTypes;
   /** only for rootSpace(head) determines how many users can be registered to the space. */
   maxUsers: number;
   /** same order as condoAdmin, companyAdmin, flatAdmin following values. */
@@ -40,7 +40,7 @@ export interface ISpace extends MongooseBaseModel {
   isPublic: boolean;
   slug: string;
   // maintainers: MaintainerInterface[];
-
+  user?: IUser;
   getParent(): Promise<ISpace | null | undefined>;
 }
 

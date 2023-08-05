@@ -52,18 +52,22 @@ export const userSchema = new Schema<IUser, UserModel>(
     email: {
       type: String,
       match: /^\S+@\S+\.\S+$/,
-      required: true,
-      unique: true,
+      // unique: true,
+      required: false,
       trim: true,
       lowercase: true
     },
     password: {
       type: String,
-      required: true
+      required: false
     },
     phone: {
       type: String
       // required: false
+    },
+    active: {
+      type: Boolean,
+      default: false
     },
     rootSpaces: [
       {
@@ -73,17 +77,19 @@ export const userSchema = new Schema<IUser, UserModel>(
         // autopopulate: true
       }
     ],
-    // organizations: [
-    //   {
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'organizations',
-    //     required: true
-    //   }
-    // ]
     organization: {
       type: Schema.Types.ObjectId,
       ref: 'organizations',
       required: true
+    },
+    tailSpace: {
+      type: Schema.Types.ObjectId,
+      ref: 'spaces',
+      required: false
+    },
+    authToken: {
+      type: Schema.Types.ObjectId,
+      ref: 'authTokens'
     }
   },
   {
@@ -238,6 +244,6 @@ userSchema.statics = {
 userSchema.plugin(autopopulate);
 
 // const UserSchema = mongoose.model('users', userSchema) as unknown;
-const UserSchema = model<IUser, UserModel>('users', userSchema);
-export default UserSchema;
+const User = model<IUser, UserModel>('users', userSchema);
+export default User;
 // export default UserSchema as UserModel<Model<IUserDocument>>;

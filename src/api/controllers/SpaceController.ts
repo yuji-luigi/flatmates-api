@@ -440,7 +440,8 @@ export const deleteSpaceCookie = async (req: RequestCustom, res: Response) => {
 
 export async function sendDescendantIdsToClient(req: RequestCustom, res: Response) {
   try {
-    const spaceIds = await aggregateDescendantIds(req.params.spaceId, req.user);
+    const user = (await User.findById(req.user._id)) as IUser;
+    const spaceIds = await aggregateDescendantIds(req.params.spaceId, user);
     res.status(httpStatus.OK).json({
       success: true,
       collection: 'spaces',

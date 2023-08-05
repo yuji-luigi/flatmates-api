@@ -6,7 +6,7 @@ import { ISpace } from './space-interface';
 import { IUpload } from './upload-interface';
 import { MongooseBaseModel } from './base-types/base-model-interface';
 import { LoginInstance, LoginInstanceMethods, tokenGeneratePayload } from '../../universal-mongoose-model/user-base-interface';
-import { Model } from 'mongoose';
+import { Model, ObjectId } from 'mongoose';
 
 export type UserError = {
   status?: number;
@@ -30,15 +30,16 @@ export interface IUser extends Document, LoginInstance, MongooseBaseModel {
   // wallet?: string;
   // userSetting: string | boolean;
   rootSpaces?: ISpace[] | [];
-
+  active: boolean;
   organization: IOrganization | null | undefined;
   cover: IUpload;
   _update?: {
     password?: Buffer | string;
   };
   last_login?: Date;
+  tailSpace: ISpace | string;
+  authToken: ObjectId;
   passwordMatches: (password: string) => boolean;
-
   hasOrganization: (organizationId: string) => Promise<boolean>;
   token: () => string;
   save: () => void;

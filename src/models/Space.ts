@@ -35,7 +35,10 @@ export const spacesSchema = new Schema<ISpace, SpaceModel, ISpaceMethods>(
       type: Boolean,
       default: false
     },
-
+    type: {
+      type: String,
+      enum: spaceTypes
+    },
     isTail: {
       type: Boolean,
       default: true
@@ -51,10 +54,7 @@ export const spacesSchema = new Schema<ISpace, SpaceModel, ISpaceMethods>(
     isMain: {
       type: Boolean
     },
-    spaceType: {
-      type: String,
-      enum: spaceTypes
-    },
+
     isPublic: {
       type: Boolean,
       default: false
@@ -66,6 +66,10 @@ export const spacesSchema = new Schema<ISpace, SpaceModel, ISpaceMethods>(
         autopopulate: true
       }
     ],
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: 'users'
+    },
     // maintainers: [
     //   {
     //     type: Schema.Types.ObjectId,
@@ -78,6 +82,7 @@ export const spacesSchema = new Schema<ISpace, SpaceModel, ISpaceMethods>(
       // required: true
       // autopopulate: true
     },
+
     slug: {
       type: String,
       // slug: 'name',

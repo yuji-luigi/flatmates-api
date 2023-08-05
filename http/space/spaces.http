@@ -2,7 +2,9 @@
 GET http://generic.host:5001/api/v1/spaces HTTP/1.1
 
 ### Get by id
-GET http://generic.host:5001/api/v1/spaces/6432ced15647e578ce20f8a0 HTTP/1.1
+GET http://generic.host:5001/api/v1/spaces/64c684c9740674e92952307e HTTP/1.1
+### Get by id children
+GET http://generic.host:5001/api/v1/spaces/with-pagination/linkedChildren/64ce6ffbc478f43f05497ca5 HTTP/1.1
 
 
 
