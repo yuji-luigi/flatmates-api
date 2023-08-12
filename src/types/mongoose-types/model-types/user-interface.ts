@@ -6,8 +6,8 @@ import { ISpace } from './space-interface';
 import { IUpload } from './upload-interface';
 import { MongooseBaseModel } from './base-types/base-model-interface';
 import { LoginInstance, LoginInstanceMethods, tokenGeneratePayload } from '../../universal-mongoose-model/user-base-interface';
-import { Model, ObjectId } from 'mongoose';
-
+import { Model } from 'mongoose';
+import { ObjectId } from 'bson';
 export type UserError = {
   status?: number;
   isPublic?: boolean;
@@ -37,7 +37,7 @@ export interface IUser extends Document, LoginInstance, MongooseBaseModel {
     password?: Buffer | string;
   };
   last_login?: Date;
-  tailSpace: ISpace | string;
+  // tailSpace: ISpace | string;
   authToken: ObjectId;
   passwordMatches: (password: string) => boolean;
   hasOrganization: (organizationId: string) => Promise<boolean>;
@@ -45,7 +45,7 @@ export interface IUser extends Document, LoginInstance, MongooseBaseModel {
   save: () => void;
   getOrganizations: () => Promise<IOrganization[]>;
   isSuperAdmin: () => boolean;
-  isAdminOrganization: (organizationId: string) => Promise<boolean>;
+  isAdminOrganization: (organizationId: ObjectId) => Promise<boolean>;
 }
 
 export interface IUserStatics {

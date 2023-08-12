@@ -1,4 +1,4 @@
-const entities = [
+export const entities = [
   'bookmarks',
   'comments',
   'funds',
@@ -15,7 +15,8 @@ const entities = [
   'spaces',
   'maintainers',
   'maintenances',
-  'checks'
+  'checks',
+  'auth-tokens'
 ] as const;
 
 export type Entities = (typeof entities)[number];

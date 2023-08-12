@@ -1,5 +1,7 @@
+import { ObjectId } from 'bson';
+
 export interface MongooseBaseModel {
-  _id: string;
+  _id: ObjectId;
   createdAt: string;
   updatedAt: string;
   // organization?: IOrganization | string;

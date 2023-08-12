@@ -455,6 +455,26 @@ export async function sendDescendantIdsToClient(req: RequestCustom, res: Respons
     });
   }
 }
+
+export async function sendHeadToTailToClient(req: RequestCustom, res: Response) {
+  try {
+    const user = (await User.findById(req.user._id)) as IUser;
+    const spaceIds = await aggregateDescendantIds(req.params.spaceId, user);
+    const spaces = await Space.find({ _id: { $in: spaceIds } }).lean();
+    // const headToTail = buildHierarchy({spaces, rootSpace: });
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: 'spaces',
+      data: spaceIds,
+      totalDocuments: spaceIds.length
+    });
+  } catch (error) {
+    logger.error(error.message || error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: error.message || error
+    });
+  }
+}
 export async function sendMainSpacesSlug(req: RequestCustom, res: Response) {
   try {
     const mainSpaces = await Space.find({ isMain: true }).lean();

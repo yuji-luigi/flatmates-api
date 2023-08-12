@@ -57,6 +57,6 @@ ${imagesHtml && imagesHtml.length > 0 ? imagesHtml.join('') : ''}
 }
 
 function generateUploadUrl(maintenance: IMaintenance) {
-  const url = `${vars.frontendUrl}/maintainer-upload-files/${maintenance.linkId}/${maintenance._id.toString()}`;
+  const url = `${vars.frontendUrl}/auth-tokens/maintainer-upload-files/${maintenance.linkId}/${maintenance._id.toString()}`;
   return url;
 }

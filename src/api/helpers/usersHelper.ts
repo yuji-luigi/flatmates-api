@@ -78,7 +78,6 @@ export async function handleCreateSpaceByUserUnit({ excelData, mainSpace }: { ex
             surname,
             email,
             rootSpaces: [mainSpace],
-            tailSpace: tailSpaceToSave._id,
             active: false,
             organization: mainSpace.organization,
             authToken

@@ -9,6 +9,7 @@ import uploadFilesRoutes from './uploadFiles.routes';
 import threadRoutes from './thread.routes';
 import spaceRoutes from './space.routes';
 import checkRoutes from './check.routes';
+import authTokenRoutes from './auth-token.routes';
 import organizationRoutes from './organization.routes';
 import maintainerRoutes from './maintainer.routes';
 // import dataTableRoutes from './data-table.routes';
@@ -38,6 +39,7 @@ router.use('/organizations', organizationRoutes);
 router.use('/maintainers', maintainerRoutes);
 router.use('/users', userRoutes);
 router.use('/checks', checkRoutes);
+router.use('/auth-tokens', authTokenRoutes);
 // router.use('/with-pagination', dataTableRoutes);
 
 router.use('/', customRoutes);

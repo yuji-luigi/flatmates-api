@@ -41,6 +41,8 @@ export interface ISpace extends MongooseBaseModel {
   slug: string;
   // maintainers: MaintainerInterface[];
   user?: IUser;
+  // set spaces as children in some operations
+  children: any;
   getParent(): Promise<ISpace | null | undefined>;
 }
 

@@ -1,3 +1,4 @@
+/* eslint-disable quotes */
 // devi chiamare function. nel caso possiamo passare parametro
 // ex: const MSG = require('./messages')()
 import { StringSchemaDefinition } from 'mongoose';
@@ -69,5 +70,6 @@ export const _MSG = {
   NOT_FOUND_ID: (entity: string, id: string) => `Model ${entity} con id:${id} non trovato`,
   MAIL_SEND_ERROR: "Errore durante l'invio della mail. Riprovo esecuzione del checkForExpiration la mail tra 1 minuto",
   NOT_ALLOWED: 'you are not allowed to do this',
-  MAINTAINER_EXISTS: 'maintainer already exists. search maintainer by email and add to your Building/Space'
+  MAINTAINER_EXISTS: 'maintainer already exists. search maintainer by email and add to your Building/Space',
+  INVALID_ACCESS: 'Invalid access '
 };

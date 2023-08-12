@@ -3,28 +3,7 @@ import { NextFunction, Request, Response } from 'express';
 import { getEntity } from '../utils/functions';
 import logger from '../config/logger';
 import { Entities } from '../types/mongoose-types/model-types/Entities';
-
-export const entities: Array<Entities> = [
-  'bookmarks',
-  // 'buildings',
-  'comments',
-  // 'floors',
-  'funds',
-  'fundRules',
-  // 'instances',
-  'proposals',
-  'tags',
-  'threads',
-  'users',
-  'userSettings',
-  'wallets',
-  'organizations',
-  'notifications',
-  // 'areas',
-  'spaces',
-  'maintenances',
-  'maintainers'
-];
+import { entities } from '../types/mongoose-types/model-types/Entities';
 
 export const checkEntity = (req: Request, res: Response, next: NextFunction) => {
   // next();

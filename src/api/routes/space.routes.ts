@@ -14,7 +14,8 @@ import {
   sendSingleSpaceToClientByCookie,
   sendSpaceDataForHome,
   sendMainSpacesSlug,
-  sendSingleSpaceBySlugToClient
+  sendSingleSpaceBySlugToClient,
+  sendHeadToTailToClient
 } from '../controllers/SpaceController';
 
 import { sendLinkedChildrenWithPaginationToClient } from '../controllers/DataTableController';
@@ -31,6 +32,7 @@ router.get('/static-props/:slug', checkSSGSecret, sendSpaceDataForHome);
 router.get('/ssg-paths', checkSSGSecret, sendMainSpacesSlug);
 
 router.get('/descendants/:spaceId', isLoggedIn(), sendDescendantIdsToClient);
+router.get('/head-to-tail/:spaceId', isLoggedIn(), sendHeadToTailToClient);
 router.get('/with-pagination', isLoggedIn(), sendMainSpacesWithPaginationToClient);
 
 router.get('/selections', isLoggedIn(), sendSpaceSelectionToClient);

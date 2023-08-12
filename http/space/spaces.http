@@ -10,7 +10,11 @@ GET http://generic.host:5001/api/v1/spaces/with-pagination/linkedChildren/64ce6f
 
 
 ### GET DESCENDANTS
-GET http://generic.host:5001/api/v1/spaces/descendants/6432ceda5647e578ce20f8b1 HTTP/1.1
+GET http://generic.host:5001/api/v1/spaces/descendants/6432ced15647e578ce20f8a0 HTTP/1.1
+
+
+### GET HEAD TO TAIL
+GET http://generic.host:5001/api/v1/spaces/head-to-tail/6432ced15647e578ce20f8a0 HTTP/1.1
 ###
 GET http://generic.host:5001/api/v1/spaces/descendants/643392f31265c1756e6bdcb7 HTTP/1.1
 

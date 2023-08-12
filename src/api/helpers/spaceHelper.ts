@@ -1,9 +1,10 @@
 import { ObjectId } from 'mongodb';
-import Space from '../../models/Space';
+import Space, { SpaceModel } from '../../models/Space';
 import logger from '../../config/logger';
 import { _MSG } from '../../utils/messages';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
+import { headToTailPipeline } from '../pipelines/spacePipelines';
 
 /**  searches only root spaces of user */
 export async function userHasSpace(user: IUser, selectedSpace: string): Promise<boolean> {
@@ -31,7 +32,7 @@ export async function userHasSpaceDFS(user: IUser, selectedSpace: ISpace): Promi
     }
   }
 
-  return;
+  return false;
 }
 
 async function searchDescendants(spaceId: string, targetId: string, user: IUser): Promise<boolean> {
@@ -46,6 +47,7 @@ async function searchDescendants(spaceId: string, targetId: string, user: IUser)
       return true;
     }
   }
+  return false;
 }
 
 /** breadth-first search */
@@ -127,6 +129,20 @@ export async function aggregateDescendantIds(spaceId: string, user: IUser): Prom
   }
 }
 
+export async function aggregateHeadToTail(spaceId: string, user: IUser): Promise<string[]> {
+  try {
+    const space = await Space.findById(spaceId);
+    if (!(await user.isAdminOrganization(space._id)) || !(await userHasSpaceBFS(user, space))) {
+      throw new Error(_MSG.NOT_ALLOWED);
+    }
+    return [];
+    // return spaceIds;
+  } catch (err) {
+    logger.error(err);
+    throw new Error(err);
+  }
+}
+
 export async function setUrlToSpaceImages(space: ISpace) {
   try {
     await space.cover?.setUrl();
@@ -135,3 +151,20 @@ export async function setUrlToSpaceImages(space: ISpace) {
     throw new Error(err);
   }
 }
+
+// export async function buildHierarchy({ spaces, rootSpace }: { spaces: ISpace[]; rootSpaceId: string }) {
+//   // Fetch all spaces from the DB
+
+//   function findChildren(parentId: ObjectId) {
+//     return spaces.filter((space) => space.parentId.toString() === parentId.toString());
+//   }
+
+// async  function constructSpaceTree(currentSpace: ISpace): any {
+//     const children = findChildren(currentSpace._id);
+//     if (children.length > 0) {
+//       currentSpace.children = children.map((child) => constructSpaceTree(child));
+//     }
+//     const rootSpace = await Space.findById(rootSpaceId);
+//     return constructSpaceTree(rootSpace);
+//   }
+// }

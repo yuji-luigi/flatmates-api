@@ -11,6 +11,7 @@ const router = express.Router();
  */
 
 router.get('/', isLoggedIn(), sendUsersToClient);
+
 router.get('/with-pagination', isLoggedIn([ADMIN, SUPER_ADMIN]), sendUsersToClient);
 router.post('/with-pagination', isLoggedIn([ADMIN, SUPER_ADMIN]), createUserAndSendDataWithPagination);
 router.post('/import-excel', isLoggedIn([ADMIN, SUPER_ADMIN]), importExcelFromClient);

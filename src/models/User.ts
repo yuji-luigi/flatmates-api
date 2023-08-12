@@ -82,11 +82,6 @@ export const userSchema = new Schema<IUser, UserModel>(
       ref: 'organizations',
       required: true
     },
-    tailSpace: {
-      type: Schema.Types.ObjectId,
-      ref: 'spaces',
-      required: false
-    },
     authToken: {
       type: Schema.Types.ObjectId,
       ref: 'authTokens'
@@ -103,11 +98,11 @@ export const userSchema = new Schema<IUser, UserModel>(
 // HASH PASSWORD BEFORE CREATION OF USER
 userSchema.pre('save', async function save(next) {
   try {
-    if (!this.isModified('password')) return next();
-    const rounds = 10;
-    const hash = await bcrypt.hash(this.password, rounds);
-    this.password = hash;
-
+    if (this.isModified('password')) {
+      const rounds = 10;
+      const hash = await bcrypt.hash(this.password, rounds);
+      this.password = hash;
+    }
     return next();
   } catch (error) {
     return next(error);
