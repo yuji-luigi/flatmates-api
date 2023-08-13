@@ -10,12 +10,12 @@ import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 export async function createOptionsForMaintenance({ maintenance }: { maintenance: IMaintenance }): Promise<Mail.Options> {
   try {
     const maintainer = await Maintainer.findById(maintenance.maintainer);
-    const mainSpace = await Space.findById(maintenance.mainSpace);
-    const html = createBodyForMaintenance({ maintenance, maintainer, mainSpace });
+    const space = await Space.findById(maintenance.space);
+    const html = createBodyForMaintenance({ maintenance, maintainer, space });
     const options: Mail.Options = {
       from: vars.displayMail,
       to: maintainer.email,
-      subject: `Maintenance assigned. ${mainSpace.name}: ${maintenance.title}`,
+      subject: `Maintenance assigned. ${space.name}: ${maintenance.title}`,
       html
     };
 
@@ -26,20 +26,12 @@ export async function createOptionsForMaintenance({ maintenance }: { maintenance
   }
 }
 
-function createBodyForMaintenance({
-  maintenance,
-  maintainer,
-  mainSpace
-}: {
-  maintenance: IMaintenance;
-  maintainer: MaintainerInterface;
-  mainSpace: ISpace;
-}) {
+function createBodyForMaintenance({ maintenance, maintainer, space }: { maintenance: IMaintenance; maintainer: MaintainerInterface; space: ISpace }) {
   const imagesHtml = maintenance.images.map((image) => `<img src="${image.url}" alt="${image.fileName}" />`);
 
   const html = `
 <h3>Buongiorno, ${maintainer.name}</h3>
-<h4> Ti ha assegnato manutenzione in codominio di ${mainSpace.name} </h4>
+<h4> Ti ha assegnato manutenzione in codominio di ${space.name} </h4>
 </br>
 <h3> --- descrizioni ---</h3>
 <h4>${maintenance.description}</h4>
@@ -50,8 +42,8 @@ Clicca qui per inserire fattura/ricevuta
 </a>
 </h4>
 ${imagesHtml && imagesHtml.length > 0 ? imagesHtml.join('') : ''}
-<h3>${mainSpace.name}</h3>
-<h3>indirizzo: ${mainSpace.address}</h3>
+<h3>${space.name}</h3>
+<h3>indirizzo: ${space.address}</h3>
 `;
   return html;
 }

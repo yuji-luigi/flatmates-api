@@ -30,7 +30,7 @@ export interface IMaintenance extends MongooseBaseModel {
   createdBy: IUser;
   type: (typeof MAINTAINER_TYPES)[number];
   organization?: IOrganization | string;
-  mainSpace: ISpace;
+  space: ISpace;
   maintainer: MaintainerInterface;
   /** decides if everyone in the world can see or only under the organization. */
   slug: string;

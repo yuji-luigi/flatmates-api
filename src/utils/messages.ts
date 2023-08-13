@@ -71,5 +71,6 @@ export const _MSG = {
   MAIL_SEND_ERROR: "Errore durante l'invio della mail. Riprovo esecuzione del checkForExpiration la mail tra 1 minuto",
   NOT_ALLOWED: 'you are not allowed to do this',
   MAINTAINER_EXISTS: 'maintainer already exists. search maintainer by email and add to your Building/Space',
-  INVALID_ACCESS: 'Invalid access '
+  INVALID_ACCESS: 'Invalid access',
+  NOT_IMPLEMENTED: 'Not implemented'
 };

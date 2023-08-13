@@ -79,13 +79,13 @@ export const maintenanceSchema = new Schema<IMaintenanceDoc, MaintenanceModel, I
       autopopulate: true,
       immutable: true
     },
-
     organization: {
       type: Schema.Types.ObjectId,
       ref: 'organizations',
       required: true
     },
-    mainSpace: {
+
+    space: {
       type: Schema.Types.ObjectId,
       ref: 'spaces'
       // required: true,

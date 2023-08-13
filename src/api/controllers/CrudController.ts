@@ -202,3 +202,9 @@ export default {
   updateCrudObjectById,
   getSingleCrudObject
 };
+
+export const sendNotImplemented = (req: Request, res: Response) => {
+  res.status(httpStatus.NOT_IMPLEMENTED).json({
+    message: _MSG.NOT_IMPLEMENTED
+  });
+};

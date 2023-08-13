@@ -27,7 +27,7 @@ const createMaintenance = async (req: RequestCustom, res: Response) => {
     const reqBody = deleteEmptyFields<IMaintenance>(req.body);
     reqBody.createdBy = req.user;
     reqBody.organization = req.query.organization;
-    reqBody.mainSpace = req.query.space;
+    reqBody.space = req.query.space;
 
     const maintenance = await Maintenance.create(reqBody);
     //!todo send email to the maintainers of the space of type of maintenance
@@ -143,7 +143,7 @@ const deleteThread = async (req: RequestCustom, res: Response) => {
   try {
     const maintenance = await Maintenance.findById(req.params.maintenanceId);
     // user check
-    if (req.user.role === SUPER_ADMIN || req.user._id?.toString() === maintenance?.createdBy._id.toString() || maintenance.mainSpace) {
+    if (req.user.role === SUPER_ADMIN || req.user._id?.toString() === maintenance?.createdBy._id.toString() || maintenance.space) {
       await maintenance?.handleDeleteUploads();
       await Maintenance.findByIdAndDelete(req.params.maintenanceId);
     }

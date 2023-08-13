@@ -9,13 +9,13 @@ import dataTableCtrl, {
 } from '../controllers/DataTableController';
 import { isLoggedIn, ADMIN, LOGGED_USER } from '../../middlewares/auth';
 import { checkEntity } from '../../middlewares/checkEntity';
-import { createLinkedChild } from '../controllers/CrudCustomController';
+// import { createLinkedChild } from '../controllers/CrudCustomController';
 
 router.get('/', (req: Request, res: Response) => {
   res.send('API is working');
 });
 
-// GENERIC crud routes
+// // GENERIC crud routes
 router.get('/:entity', checkEntity, isLoggedIn(), crudCtrl.sendCrudDocumentsToClient);
 // GENERIC DATA TABLE/PAGINATION GET ROUTE
 router.get('/:entity/with-pagination', isLoggedIn(), dataTableCtrl.sendCrudObjectsWithPaginationToClient);
@@ -24,7 +24,7 @@ router.get('/options/:entity/:idMongoose', checkEntity, isLoggedIn(), crudCtrl.g
 
 router.post('/:entity', checkEntity, isLoggedIn([ADMIN, LOGGED_USER, SUPER_ADMIN]), crudCtrl.createCrudObject);
 router.post('/:entity/with-pagination', checkEntity, isLoggedIn([ADMIN, LOGGED_USER, SUPER_ADMIN]), createCrudObjectAndSendDataWithPagination);
-router.post('/:entity/with-pagination/linkedChildren/:parentId', checkEntity, isLoggedIn(), createLinkedChild);
+// router.post('/:entity/with-pagination/linkedChildren/:parentId', checkEntity, isLoggedIn(), createLinkedChild);
 
 router.put('/:entity/:idMongoose', checkEntity, isLoggedIn([ADMIN, LOGGED_USER, SUPER_ADMIN]), crudCtrl.updateCrudObjectById);
 

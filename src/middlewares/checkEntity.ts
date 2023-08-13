@@ -5,10 +5,15 @@ import logger from '../config/logger';
 import { Entities } from '../types/mongoose-types/model-types/Entities';
 import { entities } from '../types/mongoose-types/model-types/Entities';
 
+const invalidEntities = ['auth-tokens', 'spaces', 'uploads', 'users'];
+
 export const checkEntity = (req: Request, res: Response, next: NextFunction) => {
   // next();
   const entity = req.params.entity || getEntity(req.url);
   // req.params.entity = entity;
+  if (invalidEntities.includes(entity)) {
+    res.status(httpStatus.UNAUTHORIZED).json({ message: 'entity does not exist' });
+  }
   logger.info(`entity: ${entity}`);
   if (entities.includes(entity as Entities)) {
     return next();
