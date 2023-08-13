@@ -11,6 +11,10 @@ const nodeEnv = process.env.NODE_ENV || 'dev';
 const storageBucketName = process.env.S3_BUCKET;
 const storageEndPoint = process.env.S3_ENDPOINT;
 
+const PROD = process.env.NODE_ENV === 'prod';
+
+const frontendUrl = PROD ? process.env.FRONTEND_URL_PROD : process.env.FRONTEND_URL_DEV;
+
 const vars = {
   env: process.env.NODE_ENV,
   port: nodeEnv === 'prod' ? process.env.PORT_PROD : process.env.PORT_DEV,
@@ -21,7 +25,7 @@ const vars = {
   },
   logs: nodeEnv === 'prod' ? 'combined' : 'dev',
   cookieDomain: nodeEnv === 'dev' ? process.env.DEV_COOKIE_DOMAIN : process.env.PROD_COOKIE_DOMAIN,
-  frontendUrl: nodeEnv === 'dev' ? process.env.FRONTEND_URL_DEV : process.env.FRONTEND_URL_PROD,
+  frontendUrl,
   cron_schedule: nodeEnv === 'prod' ? process.env.CRON_SCHEDULE_PROD : process.env.CRON_SCHEDULE_DEV,
   // cron_timeout: '0 1 * * *', runs at 1:00 AM
   cron_schedule_options: nodeEnv === 'prod' ? { scheduled: true, timeZone: 'Europe/Rome' } : {}, // set this as a 3rd argument to cron.schedule
@@ -33,15 +37,14 @@ const vars = {
   storageEndPoint,
   storageRegion: process.env.S3_REGION,
   storageUrl: `https://${storageBucketName}.${storageEndPoint.split('://')[1]}`,
-
   googleAuthClientId: process.env.GOOGLE_AUTH_CLIENT_ID,
   googleAuthSecret: process.env.GOOGLE_AUTH_SECRET,
-  redirectUrl: process.env.REDIRECT_URL,
   gmailAppPassword: process.env.GMAIL_APP_PASSWORD,
   displayMail: process.env.DISPLAY_MAIL,
   gmailAddress: process.env.GMAIL_ADDRESS,
   testMail: process.env.TEST_MAIL,
-  ssgSecret: process.env.SSG_SECRET
+  ssgSecret: process.env.SSG_SECRET,
+  redirectUrl: frontendUrl + '/' + process.env.REDIRECT_URL
 };
 
 export const sensitiveCookieOptions = {
