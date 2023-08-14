@@ -3,7 +3,6 @@
 // eslint-disable-next-line no-undef
 import app from './config/express';
 import mongoose from './config/mongoose';
-import Mongoose from 'mongoose';
 
 import logger from './config/logger';
 import vars from './config/vars';

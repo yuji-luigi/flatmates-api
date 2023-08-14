@@ -21,7 +21,7 @@ describe('test for creating body/html for email', () => {
     expect(options).toHaveProperty('subject');
     expect(options).toHaveProperty('html');
     expect(options.to).toBe(maintenance.maintainer.email);
-    expect(options.subject).toBe(`Maintenance assigned. ${maintenance.mainSpace.name}: ${maintenance.title}`);
+    expect(options.subject).toBe(`Maintenance assigned. ${maintenance.space.name}: ${maintenance.title}`);
   });
 
   afterAll(() => {
