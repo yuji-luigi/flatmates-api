@@ -12,7 +12,7 @@ export const checkEntity = (req: Request, res: Response, next: NextFunction) => 
   const entity = req.params.entity || getEntity(req.url);
   // req.params.entity = entity;
   if (invalidEntities.includes(entity)) {
-    res.status(httpStatus.UNAUTHORIZED).json({ message: 'entity does not exist' });
+    return res.status(httpStatus.UNAUTHORIZED).json({ message: 'invalid access' });
   }
   logger.info(`entity: ${entity}`);
   if (entities.includes(entity as Entities)) {

@@ -156,6 +156,10 @@ const logout = (req: Request, res: Response) => {
   // cancello il cookie
   res.clearCookie('jwt', { domain: cookieDomain });
   res.clearCookie('space', { domain: cookieDomain });
+  res.clearCookie('spaceName', { domain: cookieDomain });
+  // res.clearCookie('maintenance', { domain: cookieDomain });
+  // res.clearCookie('maintenanceNonce', { domain: cookieDomain });
+  res.clearCookie('organization', { domain: cookieDomain });
   res.status(httpStatus.OK).json({ message: 'Logout effettuato con successo' });
 };
 

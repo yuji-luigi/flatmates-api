@@ -1,4 +1,4 @@
-import { sensitiveCookieOptions } from './../config/vars';
+import vars from './../config/vars';
 /* eslint-disable no-undef */
 
 import { Response, NextFunction } from 'express';
@@ -43,19 +43,7 @@ const setUserInRequest = (req: RequestCustom, res: Response, next: NextFunction)
     return next();
   }
   const error = err || info;
-  // const logIn = Promise.promisify(req.logIn);
-  // const apiError = new APIError({
-  //   message: error ? error.message : 'Unauthorized',
-  //   status: httpStatus.UNAUTHORIZED,
-  //   stack: error ? error.stack : undefined
-  // });
 
-  // try {
-  //   if (error) throw error;
-  //   await logIn(user /*,  { session: false } */);
-  // } catch (e) {
-  //   return next(apiError);
-  // }
   if (error) {
     throw error;
   }
@@ -90,7 +78,7 @@ const setQueries = (req: RequestCustom, res: Response, next: NextFunction) => as
     }
 
     if (req.user?.role !== 'super_admin' && !req.query.organization) {
-      res.clearCookie('jwt', sensitiveCookieOptions);
+      res.clearCookie('jwt', { domain: vars.cookieDomain });
       // throw new Error('organization cookie is not set. select organization first');
     }
     return next();

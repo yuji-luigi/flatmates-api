@@ -1,9 +1,13 @@
+import Mail from 'nodemailer/lib/mailer';
 import logger from '../../config/logger';
+import vars from '../../config/vars';
 import AuthToken from '../../models/AuthToken';
 import Space from '../../models/Space';
 import User from '../../models/User';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
+import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
+import { generateTokenUrl } from '../../utils/authTokenUtil';
 
 export type userExcelData = {
   name: string;
@@ -92,4 +96,33 @@ export async function handleCreateSpaceByUserUnit({ excelData, mainSpace }: { ex
     logger.error(error.message || error);
     throw new Error('Error creating spaces from excel data');
   }
+}
+
+export async function createMailOptionsForUserToken({ userId }: { userId: string }): Promise<Mail.Options> {
+  try {
+    const user = await User.findById(userId);
+    const authToken = await AuthToken.findById(user.authToken);
+    const html = createTokenMailBodyByUser(user as IUser, authToken);
+    const options: Mail.Options = {
+      from: vars.displayMail,
+      to: user.email,
+      subject: 'Flatmates: Access to platform for register.',
+      html
+    };
+
+    return options;
+  } catch (error) {
+    logger.error(error.message || error);
+    throw new Error(`Error creating options for maintenance: ${error.message || error}`);
+  }
+}
+
+function createTokenMailBodyByUser(user: IUser, authToken: AuthTokenInterface) {
+  const url = generateTokenUrl.userRegister(authToken);
+  const html = `
+  <p>${user.name} ${user.surname}</p>
+  <p>nonce: ${authToken.nonce}</p>
+  <p>url: ${url}</p>
+  `;
+  return html;
 }

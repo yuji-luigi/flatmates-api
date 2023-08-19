@@ -3,13 +3,16 @@ import { Response } from 'express';
 import logger from '../../config/logger';
 import Space from '../../models/Space';
 import { RequestCustom } from '../../types/custom-express/express-custom';
-import { aggregateWithPagination, convert_idToMongooseId } from '../helpers/mongoose.helper';
+import { aggregateWithPagination, checkDuplicateEmail, convert_idToMongooseId } from '../helpers/mongoose.helper';
 import vars from '../../config/vars';
 import User from '../../models/User';
 import { _MSG } from '../../utils/messages';
 import { deleteEmptyFields } from '../../utils/functions';
-import { handleCreateSpaceByUserUnit, userExcelData } from '../helpers/usersHelper';
+import { createMailOptionsForUserToken, handleCreateSpaceByUserUnit, userExcelData } from '../helpers/usersHelper';
 import { convertExcelToJson } from '../../utils/excelHelper';
+import { sendEmail } from '../helpers/nodemailerHelper';
+
+const entity = 'users';
 
 export const createUserAndSendDataWithPagination = async (req: RequestCustom, res: Response) => {
   try {
@@ -254,3 +257,43 @@ export async function importExcelFromClient(req: RequestCustom, res: Response) {
     });
   }
 }
+
+export async function sendTokenEmail(req: RequestCustom, res: Response) {
+  try {
+    const mailOptions = await createMailOptionsForUserToken({ userId: req.params.idMongoose });
+    const result = await sendEmail(mailOptions);
+    logger.info(result);
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: 'users',
+      data: result
+    });
+  } catch (error) {
+    logger.error(error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: error.message || error,
+      success: false
+    });
+  }
+}
+
+export const updateUserById = async (req: RequestCustom, res: Response) => {
+  try {
+    const { idMongoose } = req.params;
+    const foundUser = await User.findById(idMongoose);
+
+    await checkDuplicateEmail(User, req.body.email);
+    foundUser.set(req.body);
+    const updatedModel = await foundUser.save();
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: _MSG.OBJ_UPDATED,
+      collection: entity,
+      data: updatedModel,
+      count: 1
+    });
+  } catch (err) {
+    logger.error(err.message || err);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: err.message || err });
+  }
+};

@@ -6,6 +6,10 @@ import { _MSG } from '../../utils/messages';
 import { MongooseBaseModel } from '../../types/mongoose-types/model-types/base-types/base-model-interface';
 import AuthToken from '../../models/AuthToken';
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
+import { verifyPinFromRequest } from '../helpers/authTokenHelper';
+import User from '../../models/User';
+import { RequestCustom } from '../../types/custom-express/express-custom';
+import { sensitiveCookieOptions } from '../../config/vars';
 
 const entity = 'authTokens';
 //= ===============================================================================
@@ -52,6 +56,44 @@ export const sendLinkIdToClient = async (req: Request, res: Response) => {
   } catch (err) {
     logger.error(_MSG.INVALID_ACCESS, err.message);
     res.status(err).json({
+      message: err.message || err
+    });
+  }
+};
+
+export const verifyPinAndSendBooleanToClient = async (req: RequestCustom, res: Response) => {
+  try {
+    const verified = await verifyPinFromRequest(req);
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: entity,
+      data: verified
+    });
+  } catch (err) {
+    logger.error(_MSG.INVALID_ACCESS, err.message);
+    res.status(err).json({
+      message: err.message || err
+    });
+  }
+};
+
+export const verifyPinAndSendUserToClient = async (req: RequestCustom, res: Response) => {
+  try {
+    // throws error
+    const verified = await verifyPinFromRequest(req);
+    if (!verified) {
+      throw new Error('pin not verified');
+    }
+    const user = await User.findOne({ authToken: req.params.idMongoose });
+    res.cookie('jwt', user.token(), sensitiveCookieOptions);
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: entity,
+      data: user
+    });
+  } catch (err) {
+    logger.error(_MSG.INVALID_ACCESS, err.message);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
       message: err.message || err
     });
   }

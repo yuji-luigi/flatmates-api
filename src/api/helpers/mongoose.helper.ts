@@ -1,4 +1,4 @@
-import mongoose, { Document, SortOrder } from 'mongoose';
+import mongoose, { Document, Model, SortOrder } from 'mongoose';
 import Thread from '../../models/Thread';
 import logger from '../../config/logger';
 import { ObjectId } from 'mongodb';
@@ -154,4 +154,9 @@ export async function createSlug<T extends Document>(document: T & DocumentWithS
     logger.error(error.message || error);
     throw new Error('error in slug generation of space');
   }
+}
+
+export async function checkDuplicateEmail(model: Model<any, any>, email: string) {
+  const count = await model.count({ email });
+  return !!count;
 }
