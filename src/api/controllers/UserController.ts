@@ -7,10 +7,12 @@ import { aggregateWithPagination, checkDuplicateEmail, convert_idToMongooseId } 
 import vars from '../../config/vars';
 import User from '../../models/User';
 import { _MSG } from '../../utils/messages';
-import { deleteEmptyFields } from '../../utils/functions';
-import { createMailOptionsForUserToken, handleCreateSpaceByUserUnit, userExcelData } from '../helpers/usersHelper';
+import { deleteEmptyFields, emptyFieldsToUndefined } from '../../utils/functions';
+import { createMailOptionsForUserToken, deleteDuplicateEmailField, handleConstructUpdateUser, userExcelData } from '../helpers/usersHelper';
 import { convertExcelToJson } from '../../utils/excelHelper';
 import { sendEmail } from '../helpers/nodemailerHelper';
+import { IUser } from '../../types/mongoose-types/model-types/user-interface';
+import { Document } from 'mongoose';
 
 const entity = 'users';
 
@@ -224,24 +226,13 @@ export async function importExcelFromClient(req: RequestCustom, res: Response) {
     const fileFromClient = req.files.file;
     // Parse the file based on its type
     const data = convertExcelToJson<userExcelData>(fileFromClient);
-    // userExcelData[];
-    // if (
-    //   !Array.isArray(fileFromClient) &&
-    //   ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'].includes(fileFromClient.mimetype)
-    // ) {
-    //   // Excel file
-    //   const workbook = xlsx.read(fileFromClient.data, { type: 'buffer' });
-    //   const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-    //   data = xlsx.utils.sheet_to_json(worksheet);
-    // } else {
-    //   // Unsupported file type
-    //   throw new Error('Unsupported file type');
-    // }
+    const mainSpace = req.space;
 
-    await handleCreateSpaceByUserUnit({ excelData: data, mainSpace: req.space });
-    // FORMAT THE DATA FROM EXCEL FILE
-
-    // const users = await User.insertMany(data);
+    for (let current of data) {
+      current = await deleteDuplicateEmailField(current);
+      const newUser = await handleConstructUpdateUser({ excelData: current, mainSpace });
+      await newUser.save();
+    }
     // Save the data to the database
     console.log('Data saved successfully');
     res.status(httpStatus.OK).json({
@@ -279,17 +270,25 @@ export async function sendTokenEmail(req: RequestCustom, res: Response) {
 
 export const updateUserById = async (req: RequestCustom, res: Response) => {
   try {
-    const { idMongoose } = req.params;
-    const foundUser = await User.findById(idMongoose);
+    // const { idMongoose } = req.params;
+    // const foundUser = await User.findById(idMongoose);
 
-    await checkDuplicateEmail(User, req.body.email);
-    foundUser.set(req.body);
-    const updatedModel = await foundUser.save();
+    // const emailDuplicates = await checkDuplicateEmail({ model: User, user: foundUser as IUser, email: req.body.email });
+    // const reqBody = emptyFieldsToUndefined(req.body);
+    // if (emailDuplicates) {
+    //   throw new Error('Email is already in use. Please check the email.');
+    // }
+    // if (!reqBody.password) {
+    //   delete reqBody.password;
+    // }
+    // foundUser.set(reqBody);
+    const modifiedModel = await findAndModifyUserFields(req);
+    await modifiedModel.save();
     res.status(httpStatus.OK).json({
       success: true,
       message: _MSG.OBJ_UPDATED,
       collection: entity,
-      data: updatedModel,
+      data: modifiedModel,
       count: 1
     });
   } catch (err) {
@@ -297,3 +296,44 @@ export const updateUserById = async (req: RequestCustom, res: Response) => {
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: err.message || err });
   }
 };
+
+export const userOnBoarding = async (req: RequestCustom, res: Response) => {
+  try {
+    const modifiedModel = await findAndModifyUserFields(req);
+    modifiedModel.set({ active: true });
+    await modifiedModel.save();
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: _MSG.OBJ_UPDATED,
+      collection: entity,
+      data: modifiedModel,
+      count: 1
+    });
+  } catch (err) {
+    logger.error(err.message || err);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: err.message || err });
+  }
+};
+
+/**
+ *
+ * @param req
+ * @description find user by req.params.idMongoose and modify the fields of the user. but does not save the user. Also checks duplicate mail(breaks single responsibility principle)=> 1 find, 2 modify, 3 check duplicate mail. there are 3 responsibilities.
+ * @returns modified user
+ */
+async function findAndModifyUserFields(req: RequestCustom): Promise<Document<unknown, object, IUser>> {
+  const { idMongoose } = req.params;
+  const foundUser = await User.findById(idMongoose);
+
+  const emailDuplicates = await checkDuplicateEmail({ model: User, user: foundUser as IUser, email: req.body.email });
+  const reqBody = emptyFieldsToUndefined(req.body);
+  if (emailDuplicates) {
+    throw new Error('Email is already in use. Please check the email.');
+  }
+  if (!reqBody.password) {
+    delete reqBody.password;
+  }
+  foundUser.set(reqBody);
+  // const updatedModel = await foundUser.save();
+  return foundUser;
+}

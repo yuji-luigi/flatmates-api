@@ -21,7 +21,15 @@ import { IMaintenance } from '../types/mongoose-types/model-types/maintenance-in
 export const isLoggedIn =
   (roles: USER_ROLES[] = USER_ROLES) =>
   async (req: RequestCustom, res: Response, next: NextFunction) => {
-    if (roles.includes(req.user?.role)) {
+    const { user } = req;
+    if (user.role === SUPER_ADMIN) {
+      return next();
+    }
+    const isAdminMainSpace = stringifyAdmins(req.space?.admins)?.includes(user._id.toString());
+    if (roles.includes(ADMIN) && isAdminMainSpace) {
+      return next();
+    }
+    if (roles.includes(user.role)) {
       return next();
     }
     return res.status(httpStatus.UNAUTHORIZED).json({
@@ -125,6 +133,11 @@ function setMaintenance(req: RequestCustom, res: Response, next: NextFunction) {
 
 export const handleMaintenanceJWTInReq = (req: RequestCustom, res: Response, next: NextFunction) =>
   passport.authenticate('handleMaintenanceJwt', { session: false }, setMaintenance(req, res, next))(req, res, next);
+
+export function stringifyAdmins(admins: ObjectId[] = []) {
+  if (!admins.length) return [];
+  return admins.map((admin) => admin.toString());
+}
 
 export const ADMIN = 'admin';
 export const LOGGED_USER = 'user';

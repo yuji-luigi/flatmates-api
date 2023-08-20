@@ -8,6 +8,7 @@ import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
 import { generateTokenUrl } from '../../utils/authTokenUtil';
+import { checkDuplicateEmail } from './mongoose.helper';
 
 export type userExcelData = {
   name: string;
@@ -17,6 +18,41 @@ export type userExcelData = {
   floor: number;
   room: number;
 };
+
+/**  @description create clone and delete email field if duplicate found */
+export async function deleteDuplicateEmailField(excelData: userExcelData) {
+  const clonedJson = structuredClone(excelData);
+  const duplicateEmailFound = await checkDuplicateEmail({ model: User, email: clonedJson.email });
+  if (duplicateEmailFound) {
+    delete clonedJson.email;
+  }
+  return clonedJson;
+}
+
+export async function handleConstructUpdateUser({ excelData, mainSpace }: { excelData: userExcelData; mainSpace: ISpace }) {
+  try {
+    const duplicateEmailFound = await checkDuplicateEmail({ model: User, email: excelData.email });
+    if (duplicateEmailFound) {
+      delete excelData.email;
+    }
+    let user = new User({
+      ...excelData,
+      rootSpaces: [mainSpace]
+    });
+    const foundUser = await User.findOne({ name: excelData.name, surname: excelData.surname });
+    if (foundUser) {
+      user = foundUser;
+      foundUser.set({
+        ...excelData,
+        rootSpaces: [mainSpace]
+      });
+    }
+    return user;
+  } catch (error) {
+    logger.error(error.message || error, 'error in registerUserCondominium');
+    throw new Error(error.message || error);
+  }
+}
 
 export async function handleCreateSpaceByUserUnit({ excelData, mainSpace }: { excelData: userExcelData[]; mainSpace: ISpace }) {
   try {
@@ -84,7 +120,8 @@ export async function handleCreateSpaceByUserUnit({ excelData, mainSpace }: { ex
             rootSpaces: [mainSpace],
             active: false,
             organization: mainSpace.organization,
-            authToken
+            authToken,
+            role: 'user'
           });
           tailSpaceToSave.user = newUser as IUser;
           await tailSpaceToSave.save();

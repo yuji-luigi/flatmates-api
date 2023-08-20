@@ -5,6 +5,7 @@ import { ObjectId } from 'mongodb';
 import { generateWord, replaceSpecialCharsWith } from '../../utils/functions';
 import { MongooseBaseModel } from '../../types/mongoose-types/model-types/base-types/base-model-interface';
 import { Entities } from '../../types/mongoose-types/model-types/Entities';
+import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 // todo: aggregation method
 interface LookUpQueryInterface {
   [key: string]: mongoose.PipelineStage.FacetPipelineStage[];
@@ -155,8 +156,20 @@ export async function createSlug<T extends Document>(document: T & DocumentWithS
     throw new Error('error in slug generation of space');
   }
 }
-
-export async function checkDuplicateEmail(model: Model<any, any>, email: string) {
-  const count = await model.count({ email });
+/**
+ * @description check if the email is already registered in the database. Pass user document if you are updating the user. For user arg should be undefined
+ */
+export async function checkDuplicateEmail({ model, email, user }: { model: Model<any>; email: string; user?: IUser }) {
+  // ignore email is undefined.
+  if (!email) {
+    return false;
+  }
+  // case user does not exist yet(new creation)
+  if (!user) {
+    const count = await model.count({ email });
+    return !!count;
+  }
+  // case user exists so compare with other users(update route)
+  const count = await model.count({ email, _id: { $ne: user._id } });
   return !!count;
 }

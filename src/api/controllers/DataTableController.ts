@@ -72,7 +72,7 @@ export const createCrudObjectAndSendDataWithPagination = async (req: RequestCust
 export const deleteCrudObjectByIdAndSendDataWithPagination = async (req: RequestCustom, res: Response) => {
   try {
     const { idMongoose } = req.params;
-    const entity: string = req.params.entity || getEntity(req.url);
+    const entity: string = req.params.entity || getEntityFromOriginalUrl(req.originalUrl);
     const { deletedCount } = await mongoose.model(entity).deleteOne({ _id: idMongoose });
     if (deletedCount === 0) {
       return res.status(httpStatus.NO_CONTENT).json({

@@ -18,6 +18,24 @@ export const deleteEmptyFields = function <T = any>(obj: any): T {
   //todo: fix this
   return obj as unknown as T;
 };
+/**
+ *
+ * @description the difference between this and deleteEmptyFields is that this function will convert empty fields to undefined thus mongoose will delete field from original document.
+ */
+export const emptyFieldsToUndefined = function <T = any>(obj: any): T {
+  // const objCopy = { ...obj };
+  for (const key in obj) {
+    if (Array.isArray(obj[key])) {
+      const sameObj = obj;
+      sameObj[key] = sameObj[key].filter((el: string) => el !== '');
+    }
+    if (!obj[key]) {
+      obj[key] = undefined;
+    }
+  }
+  //todo: fix this
+  return obj as unknown as T;
+};
 
 // get /THISPART/of/url
 const regex = /\//;

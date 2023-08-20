@@ -40,7 +40,7 @@ export interface IUser extends Document, LoginInstance, MongooseBaseModel {
   // tailSpace: ISpace | string;
   authToken: ObjectId;
   passwordMatches: (password: string) => boolean;
-  hasOrganization: (organizationId: string) => Promise<boolean>;
+  // hasOrganization: (organizationId: string) => Promise<boolean>;
   token: () => string;
   save: () => void;
   getOrganizations: () => Promise<IOrganization[]>;

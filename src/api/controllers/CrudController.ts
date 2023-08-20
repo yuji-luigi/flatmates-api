@@ -167,7 +167,7 @@ export const updateCrudObjectById = async (req: Request, res: Response) => {
 export const deleteCrudObjectById = async (req: Request, res: Response) => {
   try {
     const { idMongoose } = req.params;
-    const entity: string = req.params.entity || getEntity(req.url);
+    const entity: string = req.params.entity || getEntityFromOriginalUrl(req.originalUrl);
     const { deletedCount } = await mongoose.model(entity).deleteOne({ _id: idMongoose });
     if (deletedCount === 0) {
       return res.status(httpStatus.NO_CONTENT).json({
