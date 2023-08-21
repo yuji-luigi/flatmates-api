@@ -79,8 +79,8 @@ export const userSchema = new Schema<IUser, UserModel>(
     ],
     organization: {
       type: Schema.Types.ObjectId,
-      ref: 'organizations',
-      required: true
+      ref: 'organizations'
+      // required: true
     },
     authToken: {
       type: Schema.Types.ObjectId,

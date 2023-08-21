@@ -134,12 +134,12 @@ const login = async (req: Request, res: Response) => {
     // Send Set-Cookie header
     const domain = cookieDomain;
     logger.info({ domain });
-    res.clearCookie('jwt');
-    res.clearCookie('space');
+    // res.clearCookie('jwt');
+    // res.clearCookie('space');
     res.cookie('jwt', token.accessToken, sensitiveCookieOptions);
-    if (!user.isSuperAdmin()) {
-      res.cookie('organization', user.organization._id.toString(), sensitiveCookieOptions);
-    }
+    // if (!user.isSuperAdmin()) {
+    //   // res.cookie('organization', user.organization._id.toString(), sensitiveCookieOptions);
+    // }
 
     res.send({
       success: true,

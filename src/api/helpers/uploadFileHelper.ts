@@ -156,11 +156,9 @@ export const separateFiles = function (files: any) {
     const existingFilesId = [];
     for (const key in files) {
       let file = files[key];
-
       if (!Array.isArray(file)) {
         file = [file];
       }
-
       for (const index in file) {
         const singleFile = file[index];
         if (typeof singleFile == 'object') {
@@ -178,20 +176,11 @@ export const separateFiles = function (files: any) {
         }
       }
     }
-    // const fileToUpload = file.filter(file => typeof file == 'object');
-    // const existingFilesId = file.filter(file => typeof file == 'string');
     return [filesToUpload, existingFilesId];
   }
-  // /** case for single file. so only one value */
-  // if (typeof file == 'object') {
-  //   return [[file], []];
-  // }
-  // if (typeof file == 'string') {
-  //   return [[], [file]];
-  // }
-  // return [[], []];
 };
 
+//! todo: deprecate this. Now not using anymore
 export const createFilesDirName = async function (user: IUser, folderName?: string) {
   try {
     const organization = await Organization.findById(user.organization);
@@ -223,10 +212,17 @@ export const deleteFileFromStorage = async function (key: string) {
   }
 };
 
+export async function getFileDirName(req: RequestCustom) {
+  const organization = await Organization.findById(req.space.organization);
+  const orgName = replaceSpecialChars(organization.name || 'super_admin');
+  const nestedDir = `${replaceSpecialChars(req.space.name)}/${req.params.entity}`;
+  return `${orgName}/${nestedDir}`;
+}
+
 export const handleImagesAndAttachments = async function (req: RequestCustom): Promise<{ images: IUpload[]; attachments: IUpload[] }> {
   try {
     const [filesToUpload] = separateFiles(req.files);
-    const generalDirName = await createFilesDirName(req.user, req.body.folderName);
+    const generalDirName = await getFileDirName(req);
     const uploadModelsData = await saveInStorage(filesToUpload, generalDirName);
     const uploads: UploadsThread = { images: [], attachments: [] };
 

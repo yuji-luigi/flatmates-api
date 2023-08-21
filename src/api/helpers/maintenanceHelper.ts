@@ -7,9 +7,12 @@ import Maintainer from '../../models/Maintainer';
 import { MaintainerInterface } from '../../types/mongoose-types/model-types/maintainer-interface';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 
-export async function createOptionsForMaintenance({ maintenance }: { maintenance: IMaintenance }): Promise<Mail.Options> {
+export async function createOptionsForMaintenance({ maintenance }: { maintenance: IMaintenance }): Promise<Mail.Options | false> {
   try {
     const maintainer = await Maintainer.findById(maintenance.maintainer);
+    if (!maintainer) {
+      return false;
+    }
     const space = await Space.findById(maintenance.space);
     const html = createBodyForMaintenance({ maintenance, maintainer, space });
     const options: Mail.Options = {

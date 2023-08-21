@@ -4,7 +4,7 @@ import httpStatus from 'http-status';
 import logger from '../../config/logger';
 import { Request, Response } from 'express';
 import { deleteEmptyFields } from '../../utils/functions';
-import { createFilesDirName, saveInStorage, separateFiles } from '../helpers/uploadFileHelper';
+import { getFileDirName, saveInStorage, separateFiles } from '../helpers/uploadFileHelper';
 import Upload from '../../models/Upload';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { sendEmail } from '../helpers/nodemailerHelper';
@@ -29,11 +29,14 @@ const createMaintenance = async (req: RequestCustom, res: Response) => {
     reqBody.organization = req.query.organization;
     reqBody.space = req.query.space;
 
-    const maintenance = await Maintenance.create(reqBody);
+    const maintenance = new Maintenance(reqBody);
     //!todo send email to the maintainers of the space of type of maintenance
     //!todo log the email
     const mailOptions = await createOptionsForMaintenance({ maintenance });
-    await sendEmail(mailOptions);
+    if (mailOptions) {
+      await sendEmail(mailOptions);
+    }
+    await maintenance.save();
 
     const maintenances = await Maintenance.find(req.query).sort({ createdAt: -1 });
     for (const maintenance of maintenances) {
@@ -61,7 +64,7 @@ const updateMaintenance = async (req: RequestCustom, res: Response) => {
     const reqBody = deleteEmptyFields<IMaintenance>(req.body);
     if (req.files) {
       const [filesToUpload] = separateFiles(req.files);
-      const generalDirName = await createFilesDirName(req.user, req.body.folderName);
+      const generalDirName = await getFileDirName(req);
       const uploadModelsData = await saveInStorage(filesToUpload, generalDirName);
       const uploads: UploadFields = { images: [], attachments: [] };
 

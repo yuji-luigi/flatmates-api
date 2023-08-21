@@ -85,10 +85,10 @@ const setQueries = (req: RequestCustom, res: Response, next: NextFunction) => as
       req.body.space = space?._id;
     }
 
-    if (req.user?.role !== 'super_admin' && !req.query.organization) {
-      res.clearCookie('jwt', { domain: vars.cookieDomain });
-      // throw new Error('organization cookie is not set. select organization first');
-    }
+    // if (req.user?.role !== 'super_admin' && !req.query.organization) {
+    //   res.clearCookie('jwt', { domain: vars.cookieDomain });
+    //   // throw new Error('organization cookie is not set. select organization first');
+    // }
     return next();
   } catch (error) {
     logger.error(error.message || error);

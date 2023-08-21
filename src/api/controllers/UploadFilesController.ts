@@ -30,9 +30,9 @@ import {
   saveInStorage,
   getPrivateUrlOfSpace,
   separateFiles,
-  createFilesDirName,
   deleteFileFromStorage,
-  getFolderName
+  getFolderName,
+  getFileDirName
 } from '../helpers/uploadFileHelper';
 
 import httpStatus from 'http-status';
@@ -43,7 +43,6 @@ import { Request, Response } from 'express';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import mongoose from 'mongoose';
 import { UploadResponseObject } from '../helpers/types-uploadFileHelper';
-import { replaceSpecialChars } from '../../utils/functions';
 import vars from '../../config/vars';
 // const { storageBucketName } = vars;
 
@@ -66,8 +65,7 @@ const uploadFilesController = {
     try {
       // const { forSingleField } = req.body;
       const [filesToUpload /* existingFilesId */] = separateFiles(req.files);
-      const folderName = `${replaceSpecialChars(req.space.name)}/${req.params.entity}`;
-      const generalDirName = await createFilesDirName(req.user, folderName);
+      const generalDirName = await getFileDirName(req);
 
       const uploadModelsData = await saveInStorage(filesToUpload, generalDirName);
       // ok, with reference of existing files
