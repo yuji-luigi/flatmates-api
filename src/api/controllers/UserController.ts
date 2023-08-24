@@ -4,7 +4,7 @@ import logger from '../../config/logger';
 import Space from '../../models/Space';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { aggregateWithPagination, checkDuplicateEmail, convert_idToMongooseId } from '../helpers/mongoose.helper';
-import vars, { sensitiveCookieOptions } from '../../config/vars';
+import vars from '../../config/vars';
 import User from '../../models/User';
 import { _MSG } from '../../utils/messages';
 import { deleteEmptyFields, emptyFieldsToUndefined } from '../../utils/functions';
@@ -12,7 +12,6 @@ import { createMailOptionsForUserToken, deleteDuplicateEmailField, handleConstru
 import { convertExcelToJson } from '../../utils/excelHelper';
 import { sendEmail } from '../helpers/nodemailerHelper';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
-import { Document } from 'mongoose';
 
 const entity = 'users';
 
@@ -290,9 +289,9 @@ export const userOnBoarding = async (req: RequestCustom, res: Response) => {
     const modifiedModel = await findAndModifyUserFields(req);
     modifiedModel.set({ active: true });
     await modifiedModel.save();
-    const token = modifiedModel.token();
-    res.clearCookie('jwt', { domain: vars.cookieDomain });
-    res.cookie('jwt', token, sensitiveCookieOptions);
+    // const token = modifiedModel.token();
+    // res.clearCookie('jwt', { domain: vars.cookieDomain });
+    // res.cookie('jwt', token, sensitiveCookieOptions);
     res.status(httpStatus.OK).json({
       success: true,
       message: _MSG.OBJ_UPDATED,
