@@ -22,15 +22,17 @@ export const isLoggedIn =
   (roles: USER_ROLES[] = USER_ROLES) =>
   async (req: RequestCustom, res: Response, next: NextFunction) => {
     const { user } = req;
-    if (user.role === SUPER_ADMIN) {
-      return next();
-    }
-    const isAdminMainSpace = stringifyAdmins(req.space?.admins)?.includes(user._id.toString());
-    if (roles.includes(ADMIN) && isAdminMainSpace) {
-      return next();
-    }
-    if (roles.includes(user.role)) {
-      return next();
+    if (user) {
+      if (user.role === SUPER_ADMIN) {
+        return next();
+      }
+      const isAdminMainSpace = stringifyAdmins(req.space?.admins)?.includes(user._id.toString());
+      if (roles.includes(ADMIN) && isAdminMainSpace) {
+        return next();
+      }
+      if (roles.includes(user.role)) {
+        return next();
+      }
     }
     return res.status(httpStatus.UNAUTHORIZED).json({
       success: false,
