@@ -1,0 +1,10 @@
+GET http://generic.host:5001/ api/v1/users HTTP/1.1
+
+###
+PUT http://generic.host:5001/api/v1/users/on-boarding/64c684c9740674e92952308c HTTP/1.1
+content-type: application/json
+
+{
+
+}
+

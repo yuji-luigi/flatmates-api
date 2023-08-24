@@ -4,7 +4,7 @@ import logger from '../../config/logger';
 import Space from '../../models/Space';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { aggregateWithPagination, checkDuplicateEmail, convert_idToMongooseId } from '../helpers/mongoose.helper';
-import vars from '../../config/vars';
+import vars, { sensitiveCookieOptions } from '../../config/vars';
 import User from '../../models/User';
 import { _MSG } from '../../utils/messages';
 import { deleteEmptyFields, emptyFieldsToUndefined } from '../../utils/functions';
@@ -270,18 +270,6 @@ export async function sendTokenEmail(req: RequestCustom, res: Response) {
 
 export const updateUserById = async (req: RequestCustom, res: Response) => {
   try {
-    // const { idMongoose } = req.params;
-    // const foundUser = await User.findById(idMongoose);
-
-    // const emailDuplicates = await checkDuplicateEmail({ model: User, user: foundUser as IUser, email: req.body.email });
-    // const reqBody = emptyFieldsToUndefined(req.body);
-    // if (emailDuplicates) {
-    //   throw new Error('Email is already in use. Please check the email.');
-    // }
-    // if (!reqBody.password) {
-    //   delete reqBody.password;
-    // }
-    // foundUser.set(reqBody);
     const modifiedModel = await findAndModifyUserFields(req);
     await modifiedModel.save();
     res.status(httpStatus.OK).json({
@@ -302,6 +290,9 @@ export const userOnBoarding = async (req: RequestCustom, res: Response) => {
     const modifiedModel = await findAndModifyUserFields(req);
     modifiedModel.set({ active: true });
     await modifiedModel.save();
+    const token = modifiedModel.token();
+    res.clearCookie('jwt', { domain: vars.cookieDomain });
+    res.cookie('jwt', token, sensitiveCookieOptions);
     res.status(httpStatus.OK).json({
       success: true,
       message: _MSG.OBJ_UPDATED,
@@ -321,7 +312,7 @@ export const userOnBoarding = async (req: RequestCustom, res: Response) => {
  * @description find user by req.params.idMongoose and modify the fields of the user. but does not save the user. Also checks duplicate mail(breaks single responsibility principle)=> 1 find, 2 modify, 3 check duplicate mail. there are 3 responsibilities.
  * @returns modified user
  */
-async function findAndModifyUserFields(req: RequestCustom): Promise<Document<unknown, object, IUser>> {
+async function findAndModifyUserFields(req: RequestCustom) {
   const { idMongoose } = req.params;
   const foundUser = await User.findById(idMongoose);
 

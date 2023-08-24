@@ -29,6 +29,8 @@ router.post('/with-pagination', isLoggedIn([ADMIN, SUPER_ADMIN]), createUserAndS
 router.post('/import-excel', isLoggedIn([ADMIN, SUPER_ADMIN]), importExcelFromClient);
 
 router.put('/:idMongoose', isLoggedIn(), compareTargetAndCurrentUser, updateUserById);
+
+// need to set authentication for this route. the token checker.
 router.put('/on-boarding/:idMongoose', isLoggedIn(), compareTargetAndCurrentUser, userOnBoarding);
 
 router.delete('/with-pagination/:idMongoose', isLoggedIn([ADMIN, SUPER_ADMIN]), deleteCrudObjectByIdAndSendDataWithPagination);

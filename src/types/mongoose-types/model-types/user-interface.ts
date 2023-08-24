@@ -15,7 +15,7 @@ export type UserError = {
 };
 
 type userRoles = 'user' | 'admin' | 'super_admin';
-export interface IUser extends Document, LoginInstance, MongooseBaseModel {
+export interface IUser extends LoginInstance, MongooseBaseModel {
   name: string | undefined;
   surname: string | undefined;
   email: string | undefined;
@@ -51,6 +51,7 @@ export interface IUser extends Document, LoginInstance, MongooseBaseModel {
 export interface IUserStatics {
   findAndGenerateToken: (body: tokenGeneratePayload) => Promise<{
     user: IUser;
+    // user: IUser;
     accessToken: string;
   }>;
   // other static methods here

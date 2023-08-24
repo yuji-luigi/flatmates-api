@@ -1,4 +1,3 @@
-import vars from './../config/vars';
 /* eslint-disable no-undef */
 
 import { Response, NextFunction } from 'express';
