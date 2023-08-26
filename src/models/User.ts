@@ -98,6 +98,7 @@ export const userSchema = new Schema<IUser, UserModel>(
 // HASH PASSWORD BEFORE CREATION OF USER
 userSchema.pre('save', async function save(next) {
   try {
+    this.email = this.email.toLowerCase().trim();
     if (this.isModified('password')) {
       const rounds = 10;
       const hash = await bcrypt.hash(this.password, rounds);

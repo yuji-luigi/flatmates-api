@@ -6,7 +6,7 @@ import { _MSG } from '../../utils/messages';
 import { MongooseBaseModel } from '../../types/mongoose-types/model-types/base-types/base-model-interface';
 import AuthToken from '../../models/AuthToken';
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
-import { verifyPinFromRequest } from '../helpers/authTokenHelper';
+import { stringifyAuthToken, verifyPinFromRequest } from '../helpers/authTokenHelper';
 import User from '../../models/User';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { sensitiveCookieOptions } from '../../config/vars';
@@ -63,7 +63,7 @@ export const sendLinkIdToClient = async (req: Request, res: Response) => {
 
 export const verifyPinAndSendBooleanToClient = async (req: RequestCustom, res: Response) => {
   try {
-    const verified = await verifyPinFromRequest(req);
+    const { verified } = await verifyPinFromRequest(req);
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity,
@@ -80,12 +80,15 @@ export const verifyPinAndSendBooleanToClient = async (req: RequestCustom, res: R
 export const verifyPinAndSendUserToClient = async (req: RequestCustom, res: Response) => {
   try {
     // throws error
-    const verified = await verifyPinFromRequest(req);
+    const { verified, authToken } = await verifyPinFromRequest(req);
+    // case 1: pin not verified
     if (!verified) {
       throw new Error('pin not verified');
     }
     const user = await User.findOne({ authToken: req.params.idMongoose });
     res.cookie('jwt', user.token(), sensitiveCookieOptions);
+    const stringifiedAuthToken = stringifyAuthToken(authToken);
+    res.cookie('auth-token', stringifiedAuthToken, sensitiveCookieOptions);
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity,

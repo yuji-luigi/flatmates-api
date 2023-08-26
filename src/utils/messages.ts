@@ -72,5 +72,6 @@ export const _MSG = {
   NOT_ALLOWED: 'you are not allowed to do this',
   MAINTAINER_EXISTS: 'maintainer already exists. search maintainer by email and add to your Building/Space',
   INVALID_ACCESS: 'Invalid access',
-  NOT_IMPLEMENTED: 'Not implemented'
+  NOT_IMPLEMENTED: 'Not implemented',
+  PASSWORD_REQUIRED: 'Password is required'
 };

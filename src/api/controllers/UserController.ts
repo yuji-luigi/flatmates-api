@@ -12,6 +12,7 @@ import { createMailOptionsForUserToken, deleteDuplicateEmailField, handleConstru
 import { convertExcelToJson } from '../../utils/excelHelper';
 import { sendEmail } from '../helpers/nodemailerHelper';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
+import { findAuthTokenFromCookie } from '../helpers/authTokenHelper';
 
 const entity = 'users';
 
@@ -286,17 +287,25 @@ export const updateUserById = async (req: RequestCustom, res: Response) => {
 
 export const userOnBoarding = async (req: RequestCustom, res: Response) => {
   try {
-    const modifiedModel = await findAndModifyUserFields(req);
-    modifiedModel.set({ active: true });
-    await modifiedModel.save();
-    // const token = modifiedModel.token();
-    // res.clearCookie('jwt', { domain: vars.cookieDomain });
-    // res.cookie('jwt', token, sensitiveCookieOptions);
+    const authToken = await findAuthTokenFromCookie(req.cookies['auth-token']);
+    if (!authToken) {
+      throw new Error(_MSG.INVALID_ACCESS);
+    }
+    if (!req.body.password) {
+      throw new Error(_MSG.PASSWORD_REQUIRED);
+    }
+    const modifiedUser = await findAndModifyUserFields(req);
+    modifiedUser.set({ active: true });
+    await modifiedUser.save();
+
+    authToken.set({ active: false });
+    await authToken.save();
+    res.clearCookie('auth-token', { domain: vars.cookieDomain });
     res.status(httpStatus.OK).json({
       success: true,
       message: _MSG.OBJ_UPDATED,
       collection: entity,
-      data: modifiedModel,
+      data: modifiedUser,
       count: 1
     });
   } catch (err) {
