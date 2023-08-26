@@ -9,15 +9,15 @@ export const authTokenSchema = new Schema<AuthTokenInterface>(
   {
     linkId: {
       type: String,
-      default: replaceSpecialChars(generateRandomStringByLength(80))
+      default: () => replaceSpecialChars(generateRandomStringByLength(80))
     },
     nonce: {
       type: Number,
-      default: generateNonceCode()
+      default: () => generateNonceCode()
     },
-    used: {
+    active: {
       type: Boolean,
-      default: false
+      default: true
     }
   },
   {
@@ -30,4 +30,4 @@ authTokenSchema.statics = {};
 
 authTokenSchema.plugin(autoPopulate);
 
-export default mongoose.model('authTokens', authTokenSchema);
+export default mongoose.model<AuthTokenInterface>('authTokens', authTokenSchema);
