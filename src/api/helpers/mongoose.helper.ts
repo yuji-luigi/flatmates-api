@@ -1,4 +1,4 @@
-import mongoose, { Document, Model, SortOrder } from 'mongoose';
+import mongoose, { Document, Model, PipelineStage, SortOrder } from 'mongoose';
 import Thread from '../../models/Thread';
 import logger from '../../config/logger';
 import { ObjectId } from 'mongodb';
@@ -38,7 +38,11 @@ type ResultAggregateWithPagination = PaginatedResult & Counts;
  *
  * @returns {[Document[],Counts]}
  */
-export async function aggregateWithPagination(query: any, entity: string): Promise<ResultAggregateWithPagination[]> {
+export async function aggregateWithPagination(
+  query: any,
+  entity: string,
+  customPipeline: PipelineStage.FacetPipelineStage[] = []
+): Promise<ResultAggregateWithPagination[]> {
   /** define skip value, then delete as follows */
   const limit = 10;
   let skip = +query.skip - 1 <= 0 ? 0 : (+query.skip - 1) * limit;
@@ -63,7 +67,7 @@ export async function aggregateWithPagination(query: any, entity: string): Promi
   const data = await mongoose.model(entity).aggregate<ResultAggregateWithPagination>([
     {
       $facet: {
-        paginatedResult: [{ $match: query }, { $skip: skip }, { $limit: limit }],
+        paginatedResult: [{ $match: query }, ...customPipeline, { $skip: skip }, { $limit: limit }],
 
         counts: [{ $match: query }, { $count: 'total' }]
       }

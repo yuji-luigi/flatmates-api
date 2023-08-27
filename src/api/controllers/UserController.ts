@@ -13,9 +13,13 @@ import { convertExcelToJson } from '../../utils/excelHelper';
 import { sendEmail } from '../helpers/nodemailerHelper';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { findAuthTokenFromCookie } from '../helpers/authTokenHelper';
+import { PipelineStage } from 'mongoose';
 
 const entity = 'users';
 
+const lookupSpaces: PipelineStage.FacetPipelineStage = {
+  $lookup: { from: 'spaces', localField: 'rootSpaces', foreignField: '_id', as: 'rootSpaces' }
+};
 export const createUserAndSendDataWithPagination = async (req: RequestCustom, res: Response) => {
   try {
     if (!req.space) {
@@ -46,7 +50,7 @@ export const createUserAndSendDataWithPagination = async (req: RequestCustom, re
 
     req.query = convert_idToMongooseId(req.query);
 
-    const data = await aggregateWithPagination(req.query, entity);
+    const data = await aggregateWithPagination(req.query, entity, [lookupSpaces]);
 
     res.status(httpStatus.CREATED).json({
       success: true,
@@ -70,7 +74,7 @@ export async function sendUsersToClient(req: RequestCustom, res: Response) {
     }
     delete req.query.space;
 
-    const users = await aggregateWithPagination(req.query, 'users');
+    const users = await aggregateWithPagination(req.query, 'users', [lookupSpaces]);
 
     res.status(httpStatus.OK).json({
       success: true,
