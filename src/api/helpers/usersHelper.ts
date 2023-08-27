@@ -35,16 +35,24 @@ export async function handleConstructUpdateUser({ excelData, mainSpace }: { exce
     if (duplicateEmailFound) {
       delete excelData.email;
     }
+    const authToken = await AuthToken.create({});
+
     let user = new User({
       ...excelData,
-      rootSpaces: [mainSpace]
+      rootSpaces: [mainSpace],
+      authToken
     });
-    const foundUser = await User.findOne({ name: excelData.name, surname: excelData.surname });
+    const foundUser = await User.findOne({
+      name: excelData.name,
+      surname: excelData.surname,
+      rootSpaces: { $in: [mainSpace] }
+    });
     if (foundUser) {
       user = foundUser;
       foundUser.set({
         ...excelData,
-        rootSpaces: [mainSpace]
+        rootSpaces: [mainSpace],
+        authToken
       });
     }
     return user;
@@ -54,6 +62,7 @@ export async function handleConstructUpdateUser({ excelData, mainSpace }: { exce
   }
 }
 
+// not using now
 export async function handleCreateSpaceByUserUnit({ excelData, mainSpace }: { excelData: userExcelData[]; mainSpace: ISpace }) {
   try {
     const buildings = excelData.map((user) => user.building);

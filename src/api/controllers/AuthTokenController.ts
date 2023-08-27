@@ -50,7 +50,7 @@ export const sendLinkIdToClient = async (req: Request, res: Response) => {
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity,
-      data: { linkId: data.linkId, _id: data._id },
+      data: { linkId: data.linkId, _id: data._id, active: data.active },
       totalDocuments: 1
     });
   } catch (err) {

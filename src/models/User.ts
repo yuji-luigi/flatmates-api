@@ -98,7 +98,9 @@ export const userSchema = new Schema<IUser, UserModel>(
 // HASH PASSWORD BEFORE CREATION OF USER
 userSchema.pre('save', async function save(next) {
   try {
-    this.email = this.email.toLowerCase().trim();
+    if (this.isModified('email')) {
+      this.email = this.email.toLowerCase().trim();
+    }
     if (this.isModified('password')) {
       const rounds = 10;
       const hash = await bcrypt.hash(this.password, rounds);
@@ -236,7 +238,14 @@ userSchema.statics = {
     return error;
   }
 };
+userSchema.virtual('__entity').get(function () {
+  return 'users';
+});
 
+// https://mongoosejs.com/docs/2.7.x/docs/virtuals.html
+userSchema.set('toJSON', {
+  virtuals: true
+});
 userSchema.plugin(autopopulate);
 
 // const UserSchema = mongoose.model('users', userSchema) as unknown;

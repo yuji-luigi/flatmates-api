@@ -460,7 +460,7 @@ export async function sendHeadToTailToClient(req: RequestCustom, res: Response) 
   try {
     const user = (await User.findById(req.user._id)) as IUser;
     const spaceIds = await aggregateDescendantIds(req.params.spaceId, user);
-    const spaces = await Space.find({ _id: { $in: spaceIds } }).lean();
+    // const spaces = await Space.find({ _id: { $in: spaceIds } }).lean();
     // const headToTail = buildHierarchy({spaces, rootSpace: });
     res.status(httpStatus.OK).json({
       success: true,

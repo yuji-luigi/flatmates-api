@@ -63,12 +63,13 @@ export const createUserAndSendDataWithPagination = async (req: RequestCustom, re
 export async function sendUsersToClient(req: RequestCustom, res: Response) {
   try {
     const user = await User.findById(req.user._id);
-
+    //! todo: put array of root spaces instead of setting organization. because user can be admin/inhabitant of multiple organizations.
     if (!user.isSuperAdmin()) {
-      req.query.organization = user.organization;
+      // req.query.organization = user.organization;
       req.query.rootSpaces = req.space ? { $in: [req.space._id] } : null;
     }
     delete req.query.space;
+
     const users = await aggregateWithPagination(req.query, 'users');
 
     res.status(httpStatus.OK).json({
@@ -228,6 +229,7 @@ export async function importExcelFromClient(req: RequestCustom, res: Response) {
     const data = convertExcelToJson<userExcelData>(fileFromClient);
     const mainSpace = req.space;
 
+    // data is array of user data, current is single user data
     for (let current of data) {
       current = await deleteDuplicateEmailField(current);
       const newUser = await handleConstructUpdateUser({ excelData: current, mainSpace });
@@ -235,10 +237,12 @@ export async function importExcelFromClient(req: RequestCustom, res: Response) {
     }
     // Save the data to the database
     console.log('Data saved successfully');
+    const users = await aggregateWithPagination(req.query, 'users');
     res.status(httpStatus.OK).json({
+      collection: 'users',
       success: true,
-      message: 'Data saved successfully',
-      data
+      data: users[0].paginatedResult || [],
+      message: 'Data saved successfully'
     });
   } catch (error) {
     logger.error(error);

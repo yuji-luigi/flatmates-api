@@ -11,7 +11,6 @@ import {
   userOnBoarding
 } from '../controllers/UserController';
 import { RequestCustom } from '../../types/custom-express/express-custom';
-import CrudController from '../controllers/CrudController';
 import { deleteCrudObjectByIdAndSendDataWithPagination } from '../controllers/DataTableController';
 
 const router = express.Router();

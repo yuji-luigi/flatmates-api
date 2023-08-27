@@ -72,7 +72,7 @@ const setQueries = (req: RequestCustom, res: Response, next: NextFunction) => as
     // if space is present set organization and space in query
     if (req.space) {
       req.query.space = req.space._id;
-      req.query.organization = req.space.organization;
+      // req.query.organization = req.space.organization;
     }
 
     if (!req.query.organization && req.cookies.organization) {
