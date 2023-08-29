@@ -16,7 +16,7 @@ import Maintenance from '../../models/Maintenance';
 import Maintainer from '../../models/Maintainer';
 import { ObjectId } from 'mongodb';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
-
+const entity = 'spaces';
 // import MSG from '../../utils/messages';
 // import { runInNewContext } from 'vm';
 // import { deleteEmptyFields, getEntity } from '../../utils/functions';
@@ -24,6 +24,31 @@ import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 //================================================================================
 // CUSTOM CONTROLLER...
 //================================================================================
+
+export const sendSpacesToClient = async (req: RequestCustom, res: Response) => {
+  try {
+    if (!req.user) {
+      throw new Error(_MSG.NOT_AUTHORIZED);
+    }
+
+    //  TODO: use req.query for querying in find method and paginating. maybe need to delete field to query in find method
+    const Model = mongoose.model(entity);
+
+    const data = await Model.find(req.query);
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: entity,
+      data: data,
+      totalDocuments: data.length
+    });
+  } catch (err) {
+    res.status(err).json({
+      message: err.message || err
+    });
+  }
+};
+
 export const createHeadSpaceWithPagination = async (req: RequestCustom, res: Response) => {
   try {
     const newSpace = new Space({

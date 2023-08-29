@@ -39,7 +39,7 @@ type ResultAggregateWithPagination = PaginatedResult & Counts;
  * @returns {[Document[],Counts]}
  */
 export async function aggregateWithPagination(
-  query: any,
+  query: Record<string, string | boolean | number | ObjectId>,
   entity: string,
   customPipeline: PipelineStage.FacetPipelineStage[] = []
 ): Promise<ResultAggregateWithPagination[]> {
@@ -50,9 +50,10 @@ export async function aggregateWithPagination(
   delete query.skip; // not good way for functional programming. set new query object for querying the DB
   delete query.limit;
 
-  if (query.parentId) {
+  if (query.parentId instanceof ObjectId) {
     query.parentId = new mongoose.Types.ObjectId(query.parentId);
   }
+
   const validFields = Object.keys(mongoose.model(entity).schema.paths);
 
   for (const key in query) {
@@ -176,4 +177,17 @@ export async function checkDuplicateEmail({ model, email, user }: { model: Model
   // case user exists so compare with other users(update route)
   const count = await model.count({ email, _id: { $ne: user._id } });
   return !!count;
+}
+
+export function getValidFields({ entity, query }: { entity: Entities; query: Record<string, string | boolean | number> }) {
+  const validFields = Object.keys(mongoose.model(entity).schema.paths);
+
+  for (const key in query) {
+    if (!validFields.includes(key)) {
+      delete query[key];
+    } else {
+      query[key] === 'true' ? (query[key] = true) : query[key];
+      query[key] === 'false' ? (query[key] = false) : query[key];
+    }
+  }
 }

@@ -1,6 +1,5 @@
 import express, { Request, Response } from 'express';
 import { ADMIN, checkSSGSecret, isLoggedIn, LOGGED_USER, SUPER_ADMIN } from '../../middlewares/auth';
-import { sendCrudObjectToLoggedClient } from '../controllers/CrudController';
 import {
   // createHeadSpace,
   sendSpaceAsCookie,
@@ -15,7 +14,8 @@ import {
   sendSpaceDataForHome,
   sendMainSpacesSlug,
   sendSingleSpaceBySlugToClient,
-  sendHeadToTailToClient
+  sendHeadToTailToClient,
+  sendSpacesToClient
 } from '../controllers/SpaceController';
 
 import { sendLinkedChildrenWithPaginationToClient } from '../controllers/DataTableController';
@@ -23,7 +23,7 @@ import { createLinkedChild } from '../controllers/CrudCustomController';
 import httpStatus from 'http-status';
 const router = express.Router();
 
-router.get('/', isLoggedIn(), sendCrudObjectToLoggedClient);
+router.get('/', isLoggedIn(), sendSpacesToClient);
 // GET FOR DASHBOARD/HOME IN WEB APP
 router.get('/home', isLoggedIn(), sendSpaceDataForHome);
 

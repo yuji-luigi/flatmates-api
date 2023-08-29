@@ -1,10 +1,10 @@
 import { describe } from 'node:test';
-import mongoose from '../../../config/mongoose';
-import { createOptionsForMaintenance } from '../../../api/helpers/maintenanceHelper';
-import { IMaintenance } from '../../../types/mongoose-types/model-types/maintenance-interface';
+import mongoose from '../../../../config/mongoose';
+import { createOptionsForMaintenance } from '../../../../api/helpers/maintenanceHelper';
+import { IMaintenance } from '../../../../types/mongoose-types/model-types/maintenance-interface';
 
 import 'jest';
-import Maintenance from '../../../models/Maintenance';
+import Maintenance from '../../../../models/Maintenance';
 
 describe('test for creating body/html for email', () => {
   let maintenance = {} as IMaintenance;

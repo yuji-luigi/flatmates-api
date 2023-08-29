@@ -98,7 +98,7 @@ export const deleteCrudObjectByIdAndSendDataWithPagination = async (req: Request
   }
 };
 
-export const sendLinkedChildrenWithPaginationToClient = async (req: Request, res: Response) => {
+export const sendLinkedChildrenWithPaginationToClient = async (req: RequestCustom, res: Response) => {
   try {
     //! set pagination logic here and next > parentId page set the pagination logic
     const { parentId } = req.params;
