@@ -50,9 +50,11 @@ export const sendCrudDocumentsToClient = async (req: Request, res: Response) => 
 
     const Model = mongoose.model(entity);
 
-    const data = await Model.find<MongooseBaseModel>(req.query).sort({
-      createdAt: -1
-    });
+    const data = await Model.find<MongooseBaseModel>(req.query)
+      .sort({
+        createdAt: -1
+      })
+      .lean();
 
     res.status(httpStatus.OK).json({
       success: true,

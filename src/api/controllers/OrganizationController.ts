@@ -16,11 +16,18 @@ export async function sendOrganizations(req: RequestCustom, res: Response) {
     const user = await User.findById<IUser>(req.user._id);
     const userSpaces = await Space.find({ _id: { $in: user.rootSpaces } }).lean();
 
-    const organizationIds = userSpaces.map((space) => space.organization);
+    let organizationIds = userSpaces.map((space) => {
+      if (typeof space.organization === 'string') {
+        return space.organization;
+      }
+      return space.organization._id;
+    });
+    const filteredArray = new Set(organizationIds);
+    organizationIds = [...filteredArray];
     // super admin gets all organizations, other users get only their organizations
     const query = user.isSuperAdmin() ? req.query : { ...req.query, _id: { $in: organizationIds } };
     // TEST CODE const query = { _id: { $in: ['6444f0a8c9243bfee443c53e', '643861526aec086124b0e0e7', '6432ceb45647e578ce20f896'] } };
-
+    delete query.space;
     const data = await Organization.find(query).lean();
 
     res.status(httpStatus.OK).json({
