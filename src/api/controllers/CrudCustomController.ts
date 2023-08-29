@@ -43,7 +43,7 @@ export const createHeadSpace = async (req: RequestCustom, res: Response) => {
   }
 };
 
-export const getLinkedChildren = async (req: Request, res: Response) => {
+export const getLinkedChildren = async (req: RequestCustom, res: Response) => {
   try {
     //! set pagination logic here and next > parentId page set the pagination logic
     const { parentId, entity } = req.params;
