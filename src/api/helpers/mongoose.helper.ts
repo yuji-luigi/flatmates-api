@@ -50,7 +50,7 @@ export async function aggregateWithPagination(
   delete query.skip; // not good way for functional programming. set new query object for querying the DB
   delete query.limit;
 
-  if (query.parentId instanceof ObjectId) {
+  if (!(query.parentId instanceof ObjectId) && typeof query.parentId === 'string') {
     query.parentId = new mongoose.Types.ObjectId(query.parentId);
   }
 

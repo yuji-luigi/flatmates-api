@@ -147,7 +147,8 @@ const login = async (req: Request, res: Response) => {
       // accessToken: token
     });
   } catch (error) {
-    res.status(error.status).json({ ...error, message: error.message || error });
+    logger.error(error.message || error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ ...error, message: error.message || error });
   }
 };
 

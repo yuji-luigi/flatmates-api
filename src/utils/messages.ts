@@ -72,6 +72,8 @@ export const _MSG = {
   NOT_ALLOWED: 'you are not allowed to do this',
   MAINTAINER_EXISTS: 'maintainer already exists. search maintainer by email and add to your Building/Space',
   INVALID_ACCESS: 'Invalid access',
+  INVALID_CREDENTIALS: 'Invalid credentials',
   NOT_IMPLEMENTED: 'Not implemented',
-  PASSWORD_REQUIRED: 'Password is required'
+  PASSWORD_REQUIRED: 'Password is required',
+  REGISTER_FIRST: 'Account must initialize first. Password or active is not set'
 };

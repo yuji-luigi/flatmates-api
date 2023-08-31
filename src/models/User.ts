@@ -12,6 +12,7 @@ import Space from './Space';
 import Organization from './Organization';
 import { ISpace } from '../types/mongoose-types/model-types/space-interface';
 import { IUser, UserError, UserModel } from '../types/mongoose-types/model-types/user-interface';
+import { _MSG } from '../utils/messages';
 
 export type modules = {
   [key: string]: boolean;
@@ -140,7 +141,7 @@ userSchema.method({
     });
   },
   async passwordMatches(password: string) {
-    return bcrypt.compare(password, this.password);
+    return await bcrypt.compare(password, this.password);
   },
   async getOrganizations() {
     try {
@@ -178,38 +179,48 @@ userSchema.statics = {
    * @returns {Promise<User, APIError>}
    */
   async findAndGenerateToken(options) {
-    const { email, password, refreshObject } = options;
-    if (!email)
-      throw new APIError({
-        message: 'An email is required to generate a token'
-      });
+    try {
+      const { email, password, refreshObject } = options;
+      if (!email)
+        throw new APIError({
+          message: 'An email is required to generate a token'
+        });
 
-    const user = await this.findOne({ email }).exec();
-    const err: UserError = {
-      status: httpStatus.UNAUTHORIZED,
-      isPublic: true
-    };
-    if (password) {
-      if (user && (await user.passwordMatches(password))) {
-        return {
-          user,
-          accessToken: user.token()
-        };
+      const user = await this.findOne({ email }).exec();
+      if (!user.active || !user.password) {
+        throw new APIError({
+          message: _MSG.REGISTER_FIRST
+        });
       }
-      err.message = 'Incorrect email or password';
-    } else if (refreshObject && refreshObject.userEmail === email) {
-      if (moment(refreshObject.expires).isBefore()) {
-        err.message = 'Invalid refresh token.';
+      const err: UserError = {
+        status: httpStatus.UNAUTHORIZED,
+        isPublic: true
+      };
+      if (password) {
+        if (user && (await user.passwordMatches(password))) {
+          return {
+            user,
+            accessToken: user.token()
+          };
+        }
+        err.message = 'Incorrect email or password';
+      } else if (refreshObject && refreshObject.userEmail === email) {
+        if (moment(refreshObject.expires).isBefore()) {
+          err.message = 'Invalid refresh token.';
+        } else {
+          return {
+            user,
+            accessToken: user.token()
+          };
+        }
       } else {
-        return {
-          user,
-          accessToken: user.token()
-        };
+        err.message = 'Incorrect email or refreshToken';
       }
-    } else {
-      err.message = 'Incorrect email or refreshToken';
+      throw new APIError(err);
+    } catch (error) {
+      logger.error(error.message, error);
+      throw new Error(_MSG.INVALID_CREDENTIALS);
     }
-    throw new APIError(err);
   },
 
   /**

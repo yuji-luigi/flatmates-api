@@ -8,7 +8,7 @@ import {
   sendTokenEmail,
   sendUsersToClient,
   updateUserById,
-  userOnBoarding
+  registerUserOnBoardingAndSendUserToClient
 } from '../controllers/UserController';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { deleteCrudObjectByIdAndSendDataWithPagination } from '../controllers/DataTableController';
@@ -30,7 +30,7 @@ router.post('/import-excel', isLoggedIn([ADMIN, SUPER_ADMIN]), importExcelFromCl
 router.put('/:idMongoose', isLoggedIn(), compareTargetAndCurrentUser, updateUserById);
 
 // need to set authentication for this route. the token checker.
-router.put('/on-boarding/:idMongoose', isLoggedIn(), compareTargetAndCurrentUser, userOnBoarding);
+router.put('/on-boarding/:idMongoose', isLoggedIn(), compareTargetAndCurrentUser, registerUserOnBoardingAndSendUserToClient);
 
 router.delete('/with-pagination/:idMongoose', isLoggedIn([ADMIN, SUPER_ADMIN]), deleteCrudObjectByIdAndSendDataWithPagination);
 

@@ -79,7 +79,8 @@ export async function sendUsersToClient(req: RequestCustom, res: Response) {
     res.status(httpStatus.OK).json({
       success: true,
       collection: 'organizations',
-      data: users[0].paginatedResult || []
+      data: users[0].paginatedResult || [],
+      totalDocuments: users[0].counts[0]?.total || 0
     });
   } catch (error) {
     logger.error(error.message || error);
@@ -293,7 +294,7 @@ export const updateUserById = async (req: RequestCustom, res: Response) => {
   }
 };
 
-export const userOnBoarding = async (req: RequestCustom, res: Response) => {
+export const registerUserOnBoardingAndSendUserToClient = async (req: RequestCustom, res: Response) => {
   try {
     const authToken = await findAuthTokenFromCookie(req.cookies['auth-token']);
     if (!authToken) {
@@ -303,6 +304,7 @@ export const userOnBoarding = async (req: RequestCustom, res: Response) => {
       throw new Error(_MSG.PASSWORD_REQUIRED);
     }
     const modifiedUser = await findAndModifyUserFields(req);
+
     modifiedUser.set({ active: true });
     await modifiedUser.save();
 
@@ -336,9 +338,6 @@ async function findAndModifyUserFields(req: RequestCustom) {
   const reqBody = emptyFieldsToUndefined(req.body);
   if (emailDuplicates) {
     throw new Error('Email is already in use. Please check the email.');
-  }
-  if (!reqBody.password) {
-    delete reqBody.password;
   }
   foundUser.set(reqBody);
   // const updatedModel = await foundUser.save();
