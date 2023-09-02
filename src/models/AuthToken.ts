@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
 import { AuthTokenInterface } from '../types/mongoose-types/model-types/auth-token-interface';
 import { generateNonceCode, generateRandomStringByLength, replaceSpecialChars } from '../utils/functions';
+import { loginInstanceEntities } from '../types/mongoose-types/model-types/Entities';
 
 const { Schema } = mongoose;
 
@@ -18,6 +19,13 @@ export const authTokenSchema = new Schema<AuthTokenInterface>(
     active: {
       type: Boolean,
       default: true
+    },
+    docHolder: {
+      ref: {
+        type: String,
+        enum: loginInstanceEntities
+      },
+      instanceId: Schema.Types.ObjectId
     }
   },
   {

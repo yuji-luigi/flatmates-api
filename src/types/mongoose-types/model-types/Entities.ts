@@ -1,3 +1,4 @@
+export const loginInstanceEntities = ['users', 'maintainers'] as const;
 export const entities = [
   'bookmarks',
   'comments',
@@ -7,16 +8,18 @@ export const entities = [
   'proposals',
   'tags',
   'threads',
-  'users',
   'userSettings',
   'wallets',
   'organizations',
   'notifications',
   'spaces',
-  'maintainers',
   'maintenances',
   'checks',
-  'auth-tokens'
+  'auth-tokens',
+  ...loginInstanceEntities
+  // 'users',
+  // 'maintainers'
 ] as const;
 
 export type Entities = (typeof entities)[number];
+export type LoginInstanceEntities = (typeof loginInstanceEntities)[number];

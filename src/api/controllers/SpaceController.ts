@@ -139,8 +139,8 @@ export const sendSpaceDataForHome = async (req: RequestCustom, res: Response) =>
 
     if (!space) throw new Error('space not found. please check the slug.');
 
-    const threads = await Thread.find({ space: space._id }).sort({ createdAt: -1 });
-    const maintenances = await Maintenance.find({ space: space._id });
+    const threads = await Thread.find({ space: space._id }).limit(10);
+    const maintenances = await Maintenance.find({ space: space._id }).limit(10);
     const maintainers = await Maintainer.find({ spaces: { $in: [space._id] } });
 
     space.cover && (await space.cover.setUrl());

@@ -2,6 +2,10 @@ import AuthToken from '../../models/AuthToken';
 
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
+import { IUser } from '../../types/mongoose-types/model-types/user-interface';
+import { _MSG } from '../../utils/messages';
+import logger from '../../config/logger';
+import { ObjectId } from 'bson';
 
 export async function verifyPinFromRequest(req: RequestCustom): Promise<{ verified: boolean; authToken: AuthTokenInterface }> {
   const { linkId, idMongoose } = req.params;
@@ -36,11 +40,53 @@ export async function findAuthTokenFromCookie(cookie: string) {
   const foundToken = await AuthToken.findOne({
     _id,
     linkId,
-    nonce,
-    used: false
+    nonce
   });
-  // if (!foundToken) {
-  //   throw new Error(_MSG.INVALID_ACCESS);
-  // }
+
   return foundToken;
+}
+
+export function checkAuthTokenForError(authToken: AuthTokenInterface) {
+  if (!authToken) {
+    throw new Error(_MSG.INVALID_ACCESS);
+  }
+  if (!authToken.active) {
+    throw new Error(_MSG.AUTH_TOKEN_EXPIRED);
+  }
+}
+
+export async function handleCreateAuthTokenForUser(newUser: IUser) {
+  try {
+    const docHolder = {
+      ref: 'users',
+      instanceId: newUser._id
+    };
+    const foundToken = await AuthToken.findOne({ docHolder });
+    if (foundToken) return;
+
+    const created = await AuthToken.create({ docHolder });
+    console.log(created.toObject());
+  } catch (error) {
+    logger.error('error creating auth token for user. function: handleCreateAuthTokenForUser in authTokenHelper.ts');
+    throw new Error(error.message || error);
+  }
+}
+/**
+ *
+ * @param newUsers
+ * @description create auth token handled by ids array
+ */
+export async function handleCreateAuthTokensForUser(newUserIds: ObjectId[]) {
+  try {
+    const foundTokens = await AuthToken.find({ 'docHolder.instanceId': { $in: newUserIds } });
+    if (foundTokens.length === newUserIds.length) return;
+    const filteredIds = newUserIds.filter((id) => !foundTokens.some((token) => token.docHolder.instanceId.toString() === id.toString()));
+    const docHolders = filteredIds.map((id) => ({ ref: 'users', instanceId: id }));
+
+    const created = await AuthToken.insertMany(docHolders.map((docHolder) => ({ docHolder })));
+    console.log(created);
+  } catch (error) {
+    logger.error('error creating auth tokens for users. function: handleCreateAuthTokensForUser in authTokenHelper.ts');
+    throw new Error(error.message || error);
+  }
 }

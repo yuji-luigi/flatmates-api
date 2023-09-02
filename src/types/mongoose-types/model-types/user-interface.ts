@@ -15,7 +15,7 @@ export type UserError = {
 };
 
 type userRoles = 'user' | 'admin' | 'super_admin';
-export interface IUser extends LoginInstance, MongooseBaseModel {
+export interface IUser extends LoginInstance<IUser>, MongooseBaseModel {
   name: string | undefined;
   surname: string | undefined;
   email: string | undefined;
@@ -38,7 +38,6 @@ export interface IUser extends LoginInstance, MongooseBaseModel {
   };
   last_login?: Date;
   // tailSpace: ISpace | string;
-  authToken: ObjectId;
   passwordMatches: (password: string) => boolean;
   // hasOrganization: (organizationId: string) => Promise<boolean>;
   token: () => string;
@@ -57,4 +56,4 @@ export interface IUserStatics {
   // other static methods here
 }
 
-export interface UserModel extends Model<IUser, object, IUserStatics>, LoginInstanceMethods {}
+export interface UserModel extends Model<IUser, object, IUserStatics>, LoginInstanceMethods<IUser> {}

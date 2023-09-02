@@ -7,12 +7,23 @@ import { aggregateWithPagination, checkDuplicateEmail, convert_idToMongooseId } 
 import vars from '../../config/vars';
 import User from '../../models/User';
 import { _MSG } from '../../utils/messages';
-import { deleteEmptyFields, emptyFieldsToUndefined } from '../../utils/functions';
-import { createMailOptionsForUserToken, deleteDuplicateEmailField, handleConstructUpdateUser, userExcelData } from '../helpers/usersHelper';
+import { chunkArray, deleteEmptyFields, emptyFieldsToUndefined } from '../../utils/functions';
+import {
+  createMailOptionsForUserToken,
+  createUserExcelPromises,
+  deleteDuplicateEmailField,
+  handleConstructUpdateUser,
+  userExcelData
+} from '../helpers/usersHelper';
 import { convertExcelToJson } from '../../utils/excelHelper';
 import { sendEmail } from '../helpers/nodemailerHelper';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
-import { findAuthTokenFromCookie } from '../helpers/authTokenHelper';
+import {
+  checkAuthTokenForError,
+  findAuthTokenFromCookie,
+  handleCreateAuthTokenForUser,
+  handleCreateAuthTokensForUser
+} from '../helpers/authTokenHelper';
 import { PipelineStage } from 'mongoose';
 
 const entity = 'users';
@@ -233,15 +244,28 @@ export async function importExcelFromClient(req: RequestCustom, res: Response) {
     // Parse the file based on its type
     const data = convertExcelToJson<userExcelData>(fileFromClient);
     const mainSpace = req.space;
+    if (!mainSpace) throw new Error('main space is not set');
 
-    // data is array of user data, current is single user data
-    for (let current of data) {
-      current = await deleteDuplicateEmailField(current);
-      const newUser = await handleConstructUpdateUser({ excelData: current, mainSpace });
-      await newUser.save();
+    // SECOND IMPLEMENTATION: PROMISE.ALL
+    const promises = createUserExcelPromises({ excelData: data, mainSpace });
+    const CHUNK_SIZE = 100;
+    const chunks = chunkArray(promises, CHUNK_SIZE);
+    for (const chunk of chunks) {
+      // Execute each promise in the chunk so every 100 promises are executed in parallel
+      await Promise.all(chunk.map((fn) => fn()));
     }
-    // Save the data to the database
-    console.log('Data saved successfully');
+
+    const querQueries = data.map((excelData) => {
+      return {
+        name: excelData.name,
+        surname: excelData.surname,
+        rootSpaces: { $in: [mainSpace] }
+      };
+    });
+    const foundUsers = await User.find({ $or: querQueries }, '_id').lean();
+
+    await handleCreateAuthTokensForUser(foundUsers.map((user) => user._id));
+
     const users = await aggregateWithPagination(req.query, 'users');
     res.status(httpStatus.OK).json({
       collection: 'users',
@@ -296,15 +320,14 @@ export const updateUserById = async (req: RequestCustom, res: Response) => {
 
 export const registerUserOnBoardingAndSendUserToClient = async (req: RequestCustom, res: Response) => {
   try {
-    const authToken = await findAuthTokenFromCookie(req.cookies['auth-token']);
-    if (!authToken) {
-      throw new Error(_MSG.INVALID_ACCESS);
-    }
     if (!req.body.password) {
       throw new Error(_MSG.PASSWORD_REQUIRED);
     }
-    const modifiedUser = await findAndModifyUserFields(req);
+    const authToken = await findAuthTokenFromCookie(req.cookies['auth-token']);
+    // throws error if token is not valid
+    checkAuthTokenForError(authToken);
 
+    const modifiedUser = await findAndModifyUserFields(req);
     modifiedUser.set({ active: true });
     await modifiedUser.save();
 

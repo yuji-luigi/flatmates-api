@@ -4,7 +4,7 @@ import { ISpace } from './space-interface';
 import { IUpload } from './upload-interface';
 import { IUser } from './user-interface';
 
-export interface MaintainerInterface extends MongooseBaseModel, LoginInstance {
+export interface MaintainerInterface extends MongooseBaseModel, LoginInstance<MaintainerInterface> {
   name: string;
   company: string;
   cover?: IUpload | string;

@@ -82,11 +82,11 @@ export const userSchema = new Schema<IUser, UserModel>(
       type: Schema.Types.ObjectId,
       ref: 'organizations'
       // required: true
-    },
-    authToken: {
-      type: Schema.Types.ObjectId,
-      ref: 'authTokens'
     }
+    // authToken: {
+    //   type: Schema.Types.ObjectId,
+    //   ref: 'authTokens'
+    // }
   },
   {
     versionKey: false,
