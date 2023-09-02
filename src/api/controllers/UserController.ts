@@ -255,22 +255,23 @@ export async function importExcelFromClient(req: RequestCustom, res: Response) {
       await Promise.all(chunk.map((fn) => fn()));
     }
 
-    const querQueries = data.map((excelData) => {
+    const userQueries = data.map((excelData) => {
       return {
         name: excelData.name,
         surname: excelData.surname,
         rootSpaces: { $in: [mainSpace] }
       };
     });
-    const foundUsers = await User.find({ $or: querQueries }, '_id').lean();
+    const foundUsers = await User.find({ $or: userQueries }, '_id');
 
     await handleCreateAuthTokensForUser(foundUsers.map((user) => user._id));
-
     const users = await aggregateWithPagination(req.query, 'users');
+
     res.status(httpStatus.OK).json({
       collection: 'users',
       success: true,
       data: users[0].paginatedResult || [],
+      totalDocuments: users[0].counts[0]?.total || 0,
       message: 'Data saved successfully'
     });
   } catch (error) {
