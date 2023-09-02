@@ -76,5 +76,8 @@ export const _MSG = {
   NOT_IMPLEMENTED: 'Not implemented',
   PASSWORD_REQUIRED: 'Password is required',
   REGISTER_FIRST: 'Account must initialize first. Password or active is not set',
-  AUTH_TOKEN_EXPIRED: 'Please contact your admin to get a new link. Your link has expired'
+  AUTH_TOKEN_EXPIRED: 'Please contact your admin to get a new link. Your link has expired',
+  ERRORS: {
+    GENERIC: 'Something went wrong'
+  }
 };

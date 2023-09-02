@@ -47,8 +47,9 @@ export const userSchema = new Schema<IUser, UserModel>(
     },
     role: {
       type: String,
-      enum: USER_ROLES
-      // required: true,
+      enum: USER_ROLES,
+      default: 'user',
+      required: true
     },
     email: {
       type: String,
@@ -249,9 +250,6 @@ userSchema.statics = {
     return error;
   }
 };
-userSchema.virtual('__entity').get(function () {
-  return 'users';
-});
 
 // https://mongoosejs.com/docs/2.7.x/docs/virtuals.html
 userSchema.set('toJSON', {

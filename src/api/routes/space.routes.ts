@@ -47,7 +47,7 @@ router.get('/slug/:slug', isLoggedIn(), sendSingleSpaceBySlugToClient);
 router.get('/cookie/:spaceId', isLoggedIn(), sendSpaceAsCookie);
 router.delete('/cookie', isLoggedIn(), deleteSpaceCookie);
 
-router.post('/with-pagination/linkedChildren/:parentId', isLoggedIn(), createLinkedChild);
+router.post('/with-pagination/linkedChildren/:parentId', isLoggedIn([ADMIN, SUPER_ADMIN]), createLinkedChild);
 router.post('/with-pagination', isLoggedIn([ADMIN, LOGGED_USER, SUPER_ADMIN]), createHeadSpaceWithPagination);
 router.post('/', isLoggedIn([ADMIN, LOGGED_USER, SUPER_ADMIN]), (req: Request, res: Response) => res.status(httpStatus.FORBIDDEN).send('forbidden'));
 

@@ -20,7 +20,6 @@ router.put('/:linkId/:idMongoose', sendNotImplemented);
 router.post('/:entity/with-pagination', sendNotImplemented);
 
 router.delete('/:linkId/:idMongoose', sendNotImplemented);
-router.get('/:entity/with-pagination', sendNotImplemented);
 
 // GENERIC DATA TABLE/PAGINATION GET ROUTE
 

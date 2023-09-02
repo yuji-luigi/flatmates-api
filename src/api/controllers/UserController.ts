@@ -8,23 +8,13 @@ import vars from '../../config/vars';
 import User from '../../models/User';
 import { _MSG } from '../../utils/messages';
 import { chunkArray, deleteEmptyFields, emptyFieldsToUndefined } from '../../utils/functions';
-import {
-  createMailOptionsForUserToken,
-  createUserExcelPromises,
-  deleteDuplicateEmailField,
-  handleConstructUpdateUser,
-  userExcelData
-} from '../helpers/usersHelper';
+import { createMailOptionsForUserToken, createUserExcelPromises, userExcelData } from '../helpers/usersHelper';
 import { convertExcelToJson } from '../../utils/excelHelper';
 import { sendEmail } from '../helpers/nodemailerHelper';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
-import {
-  checkAuthTokenForError,
-  findAuthTokenFromCookie,
-  handleCreateAuthTokenForUser,
-  handleCreateAuthTokensForUser
-} from '../helpers/authTokenHelper';
+import { checkAuthTokenForError, findAuthTokenFromCookie, handleCreateAuthTokensForUser } from '../helpers/authTokenHelper';
 import { PipelineStage } from 'mongoose';
+import AuthToken from '../../models/AuthToken';
 
 const entity = 'users';
 
@@ -296,6 +286,29 @@ export async function sendTokenEmail(req: RequestCustom, res: Response) {
   } catch (error) {
     logger.error(error);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: _MSG.ERRORS.GENERIC,
+      details: error.message || error,
+      location: 'UserController.sendTokenEmail',
+      success: false
+    });
+  }
+}
+
+export async function sendAuthTokenOfUserToClient(req: RequestCustom, res: Response) {
+  try {
+    console.log(User.collection.collectionName);
+    let authToken = await AuthToken.findOne({ 'docHolder.ref': User.collection.collectionName, 'docHolder.instanceId': req.params.idMongoose });
+    if (!authToken) {
+      authToken = await AuthToken.create({ docHolder: { ref: User.collection.collectionName, instanceId: req.params.idMongoose } });
+    }
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: 'users',
+      data: { _id: authToken._id, linkId: authToken._id, active: authToken.active }
+    });
+  } catch (error) {
+    logger.error(error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
       message: error.message || error,
       success: false
     });
@@ -363,7 +376,8 @@ async function findAndModifyUserFields(req: RequestCustom) {
   if (emailDuplicates) {
     throw new Error('Email is already in use. Please check the email.');
   }
-  foundUser.set(reqBody);
+  const { email, password, name, surname, phone } = reqBody;
+  foundUser.set({ email, password, name, surname, phone, role: 'user' });
   // const updatedModel = await foundUser.save();
   return foundUser;
 }

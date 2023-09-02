@@ -3,7 +3,6 @@ import httpStatus from 'http-status';
 import logger from '../../config/logger';
 
 import { _MSG } from '../../utils/messages';
-import { MongooseBaseModel } from '../../types/mongoose-types/model-types/base-types/base-model-interface';
 import AuthToken from '../../models/AuthToken';
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
 import { stringifyAuthToken, verifyPinFromRequest } from '../helpers/authTokenHelper';
@@ -19,7 +18,7 @@ const entity = 'authTokens';
 export const sendAuthTokenByIdsToClient = async (req: Request, res: Response) => {
   try {
     const { linkId, idMongoose } = req.params;
-    const data = await AuthToken.findOne<MongooseBaseModel>({
+    const data = await AuthToken.findOne({
       linkId,
       _id: idMongoose
     });
@@ -29,7 +28,7 @@ export const sendAuthTokenByIdsToClient = async (req: Request, res: Response) =>
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity,
-      data,
+      data: { linkId: data.linkId },
       totalDocuments: 1
     });
   } catch (err) {
@@ -45,7 +44,7 @@ export const sendLinkIdToClient = async (req: Request, res: Response) => {
     const { idMongoose } = req.params;
     const data = await AuthToken.findById<AuthTokenInterface>(idMongoose);
     if (!data) {
-      throw new Error('no data found');
+      throw new Error(_MSG.OBJ_NOT_FOUND);
     }
     res.status(httpStatus.OK).json({
       success: true,
@@ -85,7 +84,7 @@ export const verifyPinAndSendUserToClient = async (req: RequestCustom, res: Resp
     if (!verified) {
       throw new Error('pin not verified');
     }
-    const user = await User.findOne({ authToken: req.params.idMongoose });
+    const user = await User.findById(authToken.docHolder.instanceId);
     res.cookie('jwt', user.token(), sensitiveCookieOptions);
     const stringifiedAuthToken = stringifyAuthToken(authToken);
     res.cookie('auth-token', stringifiedAuthToken, sensitiveCookieOptions);
@@ -97,7 +96,9 @@ export const verifyPinAndSendUserToClient = async (req: RequestCustom, res: Resp
   } catch (err) {
     logger.error(_MSG.INVALID_ACCESS, err.message);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-      message: err.message || err
+      details: err.message || err,
+      message: _MSG.ERRORS.GENERIC,
+      success: false
     });
   }
 };

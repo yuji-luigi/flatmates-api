@@ -8,7 +8,8 @@ import {
   sendTokenEmail,
   sendUsersToClient,
   updateUserById,
-  registerUserOnBoardingAndSendUserToClient
+  registerUserOnBoardingAndSendUserToClient,
+  sendAuthTokenOfUserToClient
 } from '../controllers/UserController';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { deleteCrudObjectByIdAndSendDataWithPagination } from '../controllers/DataTableController';
@@ -19,18 +20,21 @@ const router = express.Router();
  * ORGANIZATION
  */
 
-router.get('/', isLoggedIn(), sendUsersToClient);
+router.get('/', isLoggedIn(), isLoggedIn([ADMIN, SUPER_ADMIN]), sendUsersToClient);
 
 router.get('/with-pagination', isLoggedIn([ADMIN, SUPER_ADMIN]), sendUsersToClient);
 
-router.get('/send-token-email/:idMongoose', isLoggedIn([ADMIN, SUPER_ADMIN]), sendTokenEmail);
+router.get('/:idMongoose/send-token-email', isLoggedIn([ADMIN, SUPER_ADMIN]), sendTokenEmail);
+
+router.get('/:idMongoose/auth-tokens', isLoggedIn([ADMIN, SUPER_ADMIN]), sendAuthTokenOfUserToClient);
+
 router.post('/with-pagination', isLoggedIn([ADMIN, SUPER_ADMIN]), createUserAndSendDataWithPagination);
 router.post('/import-excel', isLoggedIn([ADMIN, SUPER_ADMIN]), importExcelFromClient);
 
 router.put('/:idMongoose', isLoggedIn(), compareTargetAndCurrentUser, updateUserById);
 
 // need to set authentication for this route. the token checker.
-router.put('/on-boarding/:idMongoose', isLoggedIn(), compareTargetAndCurrentUser, registerUserOnBoardingAndSendUserToClient);
+router.put('/:idMongoose/on-boarding', isLoggedIn(), compareTargetAndCurrentUser, registerUserOnBoardingAndSendUserToClient);
 
 router.delete('/with-pagination/:idMongoose', isLoggedIn([ADMIN, SUPER_ADMIN]), deleteCrudObjectByIdAndSendDataWithPagination);
 

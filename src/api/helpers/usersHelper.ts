@@ -45,16 +45,16 @@ export async function handleConstructUpdateUser({ excelData, mainSpace }: { exce
     if (user) {
       user.set({
         ...excelData,
-        rootSpaces: [mainSpace]
-        // authToken
+        rootSpaces: [mainSpace],
+        role: 'user'
       });
     }
     // case new user. create new one + new authToken
     if (!user) {
       user = new User({
         ...excelData,
-        rootSpaces: [mainSpace]
-        // authToken
+        rootSpaces: [mainSpace],
+        role: 'user'
       });
     }
     return user;
@@ -149,11 +149,12 @@ export async function handleCreateSpaceByUserUnit({ excelData, mainSpace }: { ex
 export async function createMailOptionsForUserToken({ userId }: { userId: string }): Promise<Mail.Options> {
   try {
     const user = await User.findById(userId);
-    const authToken = await AuthToken.findById({ docHolder: { ref: User.collection.collectionName, instanceId: user._id } });
+    const authToken = await AuthToken.findOne({ 'docHolder.ref': User.collection.collectionName, 'docHolder.instanceId': user._id });
     const html = createTokenMailBodyByUser(user as IUser, authToken);
     const options: Mail.Options = {
       from: vars.displayMail,
-      to: user.email,
+      to: 'u.ji.jp777@gmail.com',
+      // to: user.email,
       subject: 'Flatmates: Access to platform for register.',
       html
     };
