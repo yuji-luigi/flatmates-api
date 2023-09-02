@@ -51,8 +51,10 @@ describe('test for createMailOptionsForMaintenance', () => {
     expect(options).toHaveProperty('to');
     expect(options).toHaveProperty('subject');
     expect(options).toHaveProperty('html');
-    expect(options.to).toBe(maintainer.email);
-    expect(options.subject).toBe(`Maintenance assigned. ${mainSpace.name}: ${maintenance.title}`);
+    if (options !== false) {
+      expect(options.to).toBe(maintenance.maintainer.email);
+      expect(options.subject).toBe(`Maintenance assigned. ${maintenance.space.name}: ${maintenance.title}`);
+    }
   });
 
   afterAll(() => {
