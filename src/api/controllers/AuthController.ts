@@ -57,7 +57,7 @@ const register = async (req: Request, res: Response) => {
       password,
       name,
       surname,
-      role: 'user'
+      role: 'admin'
     }) as any;
 
     const newOrganization = await Organization.create({

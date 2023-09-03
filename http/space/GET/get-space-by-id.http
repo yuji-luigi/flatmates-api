@@ -1,0 +1,6 @@
+
+### Get by id
+GET {{host}}/api/v1/spaces/64c684c9740674e92952307e HTTP/1.1
+
+
+

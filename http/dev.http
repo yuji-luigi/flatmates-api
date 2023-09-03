@@ -7,4 +7,4 @@ content-type: application/json
 }
 
 ###
-GET http://generic.host:5001/api/v1/buildings?name=adfhg HTTP/1.1
+GET {{host}}/api/v1/buildings?name=adfhg HTTP/1.1

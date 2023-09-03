@@ -78,14 +78,30 @@ const uploadSchema = new Schema<IUpload, IUploadModel, IUploadMethods>(
         const thisData: IUpload = await mongoose.model('uploads').findByIdAndDelete(this._id);
         return thisData;
       },
-      async setUrl() {
-        if (this.ACL === ACL_STATUS.PUBLIC_READ) {
-          this.url = vars.storageUrl + '/' + this.fullPath;
+      async setUrl(compact = true) {
+        let url = vars.storageUrl + '/' + this.fullPath;
+        if (this.ACL !== ACL_STATUS.PUBLIC_READ) {
+          const obj = { params: { key: this.fullPath } };
+          url = await getPrivateUrlOfSpace(obj);
           return;
         }
+        if (compact) {
+          this.fileName = undefined;
+          // delete this.originalFileName
+          // delete this.extension
+          this.folder = undefined;
+          this.fieldInParent = undefined;
+          this.fullPath = undefined;
+          this.size = undefined;
+          this.ACL = undefined;
+          this.mimetype = undefined;
+          this.uploadedBy = {
+            name: this.uploadedBy?.name,
+            surname: this.uploadedBy?.surname
+          };
+          // delete this.uploadedBy
+        }
 
-        const obj = { params: { key: this.fullPath } };
-        const url = await getPrivateUrlOfSpace(obj);
         this.url = url;
       },
 

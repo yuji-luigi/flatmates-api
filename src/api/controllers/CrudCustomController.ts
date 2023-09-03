@@ -79,11 +79,7 @@ export const createLinkedChild = async (req: RequestCustom, res: Response) => {
 
     // get the model
     const Model = mongoose.model(entity);
-    // const organizationOfUser = req.user.role !== 'super_admin' ? req.user.organization : null;
 
-    // const parentModel = await Model.findById(parentId); // find parentModel
-
-    // const organization = organizationOfUser || (await getOrganizationOfHead(parentId, 'spaces'));
     const childDoc = new Model({ ...req.body });
     const savedChildDoc = await childDoc.save();
     logger.debug(savedChildDoc._doc);

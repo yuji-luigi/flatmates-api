@@ -3,8 +3,12 @@ GET {{host}}/api/v1/spaces HTTP/1.1
 
 ### Get by id
 GET {{host}}/api/v1/spaces/64c684c9740674e92952307e HTTP/1.1
+
+
+
+
 ### Get by id children
-GET {{host}}/api/v1/spaces/with-pagination/linkedChildren/64ce6ffbc478f43f05497ca5 HTTP/1.1
+GET {{host}}/api/v1/spaces/with-pagination HTTP/1.1
 
 
 

@@ -79,11 +79,18 @@ export const userSchema = new Schema<IUser, UserModel>(
         // autopopulate: true
       }
     ],
-    organization: {
-      type: Schema.Types.ObjectId,
-      ref: 'organizations'
-      // required: true
-    }
+    organizations: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'organizations'
+        // required: true
+      }
+    ]
+    // organization: {
+    //   type: Schema.Types.ObjectId,
+    //   ref: 'organizations'
+    //   // required: true
+    // }
     // authToken: {
     //   type: Schema.Types.ObjectId,
     //   ref: 'authTokens'

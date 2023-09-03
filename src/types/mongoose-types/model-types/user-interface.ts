@@ -31,7 +31,8 @@ export interface IUser extends LoginInstance<IUser>, MongooseBaseModel {
   // userSetting: string | boolean;
   rootSpaces?: ISpace[] | [];
   active: boolean;
-  organization?: IOrganization | null | undefined;
+  // organization?: IOrganization | null | undefined;
+  organizations?: IOrganization[] | [];
   cover: IUpload;
   _update?: {
     password?: Buffer | string;

@@ -40,6 +40,7 @@ router.get('/with-pagination/linkedChildren/:parentId', isLoggedIn(), sendLinked
 
 // GET SINGLES
 router.get('/single-by-cookie', isLoggedIn(), sendSingleSpaceToClientByCookie);
+// todo: set ACL for this route
 router.get('/:spaceId', isLoggedIn(), sendSingleSpaceByIdToClient);
 router.get('/slug/:slug', isLoggedIn(), sendSingleSpaceBySlugToClient);
 

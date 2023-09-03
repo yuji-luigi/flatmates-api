@@ -3,6 +3,7 @@
 // ex: const MSG = require('./messages')()
 import { StringSchemaDefinition } from 'mongoose';
 import { detailedDate } from './functions';
+import { RequestCustom } from '../types/custom-express/express-custom';
 type message = { message: string };
 type argument = {
   employee?: string;
@@ -79,5 +80,23 @@ export const _MSG = {
   AUTH_TOKEN_EXPIRED: 'Please contact your admin to get a new link. Your link has expired',
   ERRORS: {
     GENERIC: 'Something went wrong'
+  },
+  RESPONSE: {
+    NOT_FOUND: (req: RequestCustom) => NOTFOUND_HTML(req)
   }
 };
+
+export function NOTFOUND_HTML(req: RequestCustom) {
+  return `
+  <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="utf-8">
+            <title>Error</title>
+        </head>
+        <body>
+            <pre>Cannot ${req.method} ${req.originalUrl}</pre>
+        </body>
+        </html>
+  `;
+}

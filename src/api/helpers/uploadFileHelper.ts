@@ -16,7 +16,6 @@ import { RequestCustom } from '../../types/custom-express/express-custom';
 import Organization from '../../models/Organization';
 import { Response } from 'express';
 import { IUpload } from '../../types/mongoose-types/model-types/upload-interface';
-import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 
 const { storageAccessKeyId, storageSecretAccessKey, storageBucketName, storageEndPoint, storageRegion } = vars;
 
@@ -177,23 +176,6 @@ export const separateFiles = function (files: any) {
       }
     }
     return [filesToUpload, existingFilesId];
-  }
-};
-
-//! todo: deprecate this. Now not using anymore
-export const createFilesDirName = async function (user: IUser, folderName?: string) {
-  try {
-    const organization = await Organization.findById(user.organization);
-
-    const formattedOrganizationName = replaceSpecialChars(organization.name || 'super_admin');
-
-    const organizationNameId = `${formattedOrganizationName}_${user.organization?._id || ''}`;
-    const folderNameInBody = folderName ? `/${folderName}` : '';
-    const generalDirName = organizationNameId + folderNameInBody;
-    return generalDirName;
-  } catch (error) {
-    logger.error(error.message || error);
-    throw new Error('Error: creating Directory name. createFiledDirName function');
   }
 };
 

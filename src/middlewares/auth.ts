@@ -113,7 +113,7 @@ export function clearQueriesForSAdmin(req: RequestCustom, res: Response, next: N
 }
 export function checkSSGSecret(req: RequestCustom, res: Response, next: NextFunction) {
   if (req.query.ssg_secret !== process.env.SSG_SECRET) {
-    next('route');
+    res.status(httpStatus.NOT_FOUND).send(_MSG.RESPONSE.NOT_FOUND(req));
     return;
   }
   next();

@@ -110,7 +110,7 @@ export const sendSingleSpaceToClientByCookie = async (req: RequestCustom, res: R
     // const { query } = req;
 
     const data = await Space.findById(req.space._id);
-    data.cover && (await data.cover.setUrl());
+    data.cover && (await data.cover.setUrl(true));
 
     res.status(httpStatus.OK).json({
       success: true,
