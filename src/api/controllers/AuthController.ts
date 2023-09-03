@@ -14,6 +14,8 @@ import Space from '../../models/Space';
 import Organization from '../../models/Organization';
 import { IOrganization } from '../../types/mongoose-types/model-types/organization-interface';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
+import { userHasSpace } from '../helpers/spaceHelper';
+import { createJsonObject, signJwt } from '../../utils/authTokenUtil';
 
 const { jwtExpirationInterval, cookieDomain } = vars;
 
@@ -39,7 +41,7 @@ function generateTokenResponse(user: any, accessToken: string) {
 
 const register = async (req: Request, res: Response) => {
   try {
-    const { email, password, password2, name, surname, purpose, organization, space } = req.body as RegisterData;
+    const { email, password, password2, name, surname, space } = req.body as RegisterData;
 
     if (password !== password2) {
       throw new Error('Password non corrispondenti');
@@ -57,25 +59,29 @@ const register = async (req: Request, res: Response) => {
       password,
       name,
       surname,
+      active: true,
       role: 'admin'
     }) as any;
 
-    const newOrganization = await Organization.create({
-      name: organization
+    const newOrganization = new Organization({
+      name: `${name} ${surname}'s organization`
     });
 
     const accessToken = newUser.token();
     const token = generateTokenResponse(newUser as any, accessToken);
-    res.cookie('jwt', token.accessToken, {
-      httpOnly: true,
-      sameSite: true,
-      maxAge: 99999999,
-      domain: cookieDomain
-    });
-    const newRootSpace = await createNewSpace({ space, purpose, user: newUser, organization: newOrganization });
+
+    const newRootSpace = await createNewSpaceAtRegister({ space, user: newUser, organization: newOrganization, isMain: true });
+    const spaceJwt = newRootSpace.token();
+
+    await newOrganization.save();
 
     newUser.rootSpaces.push(newRootSpace);
+    newUser.organizations.push(newOrganization);
     const createdUser = await newUser.save();
+
+    // res.cookie('organization', organizationToken, sensitiveCookieOptions);
+    res.cookie('space', spaceJwt, sensitiveCookieOptions);
+    res.cookie('jwt', token.accessToken, sensitiveCookieOptions);
 
     res.status(httpStatus.CREATED).send({
       success: true,
@@ -90,26 +96,28 @@ const register = async (req: Request, res: Response) => {
   }
 };
 
-async function createNewSpace({
+async function createNewSpaceAtRegister({
   space,
   // purpose,
   user,
-  organization
+  organization,
+  isMain
 }: {
   space: { name: string; address: string; maxUsers: number; password: string };
-  purpose: PurposeUser;
+  // purpose: PurposeUser;
   user: IUser;
+  isMain: boolean;
   organization: IOrganization | string;
 }) {
   try {
     const createdSpace = await Space.create({
       name: space.name,
       address: space.address,
-      spaceType: 'building',
       isHead: true,
       isTail: true,
+      isMain,
       admins: [user._id],
-      maxUsers: space.maxUsers,
+      maxUsers: space.maxUsers, // this will cost per users or per user/x
       password: space.password,
       organization
     });
@@ -185,6 +193,60 @@ const me = async (req: RequestCustom, res: Response) => {
   } catch (error) {
     logger.error(error.message || error);
     res.send('error');
+  }
+};
+
+export const sendMainSpaceSelectionsToClient = async (req: RequestCustom, res: Response) => {
+  try {
+    // case user show user.rootSpaces
+    let mainSpaces = await Space.find({ isMain: true, _id: { $in: req.user.rootSpaces } }).lean();
+    // case admin show all main spaces of his organizations
+    if (req.user.role === 'admin') {
+      mainSpaces = await Space.find({ isMain: true, organization: { $in: req.user.organizations } }).lean();
+    }
+    res.status(httpStatus.OK).json({ success: true, data: mainSpaces });
+  } catch (error) {
+    logger.error(error.message || error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: _MSG.ERRORS.GENERIC
+    });
+  }
+};
+
+export const setSpaceAndOrgInJwt = async (req: RequestCustom, res: Response) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (!user.isSuperAdmin() && !userHasSpace(user as IUser, req.params.idMongoose)) {
+      throw new Error(_MSG.NOT_ALLOWED);
+    }
+    // user is super admin or has the root space.
+    const space = await Space.findById(req.params.idMongoose);
+    const updatedJwt = createJsonObject({ user: req.user, space });
+    const jwt = signJwt(updatedJwt);
+
+    res.clearCookie('jwt', { domain: vars.cookieDomain });
+    res.cookie('jwt', jwt, sensitiveCookieOptions);
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: 'spaces',
+      data: {
+        space: {
+          _id: space._id,
+          name: space.name,
+          address: space.address,
+          organization: space.organization
+        }
+      },
+      count: 1
+    });
+  } catch (error) {
+    logger.error(error.message || error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: error.message || error
+    });
   }
 };
 

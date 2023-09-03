@@ -1,14 +1,9 @@
 import express, { Request, Response } from 'express';
 
 const router = express.Router();
-import authCtrl from '../controllers/AuthController';
-import {
-  handleUserFromRequest,
-  isLoggedIn
-  // ADMIN,
-  // LOGGED_USER,
-  // SUPER_ADMIN
-} from '../../middlewares/auth';
+import authCtrl, { sendMainSpaceSelectionsToClient, setSpaceAndOrgInJwt } from '../controllers/AuthController';
+import { handleUserFromRequest } from '../../middlewares/handleUserFromRequest';
+import { isLoggedIn } from '../../middlewares/isLoggedIn';
 
 router.get('/', (req: Request, res: Response) => {
   res.send('auth routes');
@@ -21,9 +16,15 @@ router.post('/login', authCtrl.login);
 
 router.post('/register', authCtrl.register);
 
-router.get('/me', handleUserFromRequest, isLoggedIn(), authCtrl.me);
-
 router.get('/logout', authCtrl.logout);
+
+// router.get('/static-props/:slug', checkSSGSecret, sendSpaceDataForHome);
+// router.get('/ssg-paths', checkSSGSecret, sendMainSpacesSlug);
+
+router.use(handleUserFromRequest);
+router.get('/space-selections', isLoggedIn(), sendMainSpaceSelectionsToClient);
+router.get('/space-selected/:idMongoose', isLoggedIn(), setSpaceAndOrgInJwt);
+router.get('/me', handleUserFromRequest, isLoggedIn(), authCtrl.me);
 
 // router.post('/logout', authCtrl.logout);
 

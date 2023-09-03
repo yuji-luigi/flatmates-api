@@ -1,6 +1,7 @@
 import express from 'express';
-import { isLoggedIn, SUPER_ADMIN } from '../../middlewares/auth';
+import { SUPER_ADMIN } from '../../middlewares/auth-middlewares';
 import uploadFileController from '../controllers/UploadFilesController';
+import { isLoggedIn } from '../../middlewares/isLoggedIn';
 
 const router = express.Router();
 

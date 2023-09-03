@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { ADMIN, checkSSGSecret, isLoggedIn, LOGGED_USER, SUPER_ADMIN } from '../../middlewares/auth';
+import { ADMIN, LOGGED_USER, SUPER_ADMIN } from '../../middlewares/auth-middlewares';
 import {
   // createHeadSpace,
   sendSpaceAsCookie,
@@ -12,7 +12,6 @@ import {
   sendMainSpacesWithPaginationToClient,
   sendSingleSpaceToClientByCookie,
   sendSpaceDataForHome,
-  sendMainSpacesSlug,
   sendSingleSpaceBySlugToClient,
   sendHeadToTailToClient,
   sendSpacesToClient
@@ -21,6 +20,7 @@ import {
 import { sendLinkedChildrenWithPaginationToClient } from '../controllers/DataTableController';
 import { createLinkedChild } from '../controllers/CrudCustomController';
 import httpStatus from 'http-status';
+import { isLoggedIn } from '../../middlewares/isLoggedIn';
 const router = express.Router();
 
 router.get('/', isLoggedIn(), sendSpacesToClient);
@@ -28,13 +28,15 @@ router.get('/', isLoggedIn(), sendSpacesToClient);
 router.get('/home', isLoggedIn(), sendSpaceDataForHome);
 
 // SSG PATHS
-router.get('/static-props/:slug', checkSSGSecret, sendSpaceDataForHome);
-router.get('/ssg-paths', checkSSGSecret, sendMainSpacesSlug);
+// ! deprecated moved to auth route both
+// router.get('/static-props/:slug', checkSSGSecret, sendSpaceDataForHome);
+// router.get('/ssg-paths', checkSSGSecret, sendMainSpacesSlug);
 
 router.get('/descendants/:spaceId', isLoggedIn(), sendDescendantIdsToClient);
 router.get('/head-to-tail/:spaceId', isLoggedIn(), sendHeadToTailToClient);
 router.get('/with-pagination', isLoggedIn(), sendMainSpacesWithPaginationToClient);
 
+// ! deprecated moved to auth route
 router.get('/selections', isLoggedIn(), sendSpaceSelectionToClient);
 router.get('/with-pagination/linkedChildren/:parentId', isLoggedIn(), sendLinkedChildrenWithPaginationToClient);
 
@@ -45,7 +47,9 @@ router.get('/:spaceId', isLoggedIn(), sendSingleSpaceByIdToClient);
 router.get('/slug/:slug', isLoggedIn(), sendSingleSpaceBySlugToClient);
 
 // CUSTOM crud ROUTES
+// !deprecated moved to auth route
 router.get('/cookie/:spaceId', isLoggedIn(), sendSpaceAsCookie);
+
 router.delete('/cookie', isLoggedIn(), deleteSpaceCookie);
 
 router.post('/with-pagination/linkedChildren/:parentId', isLoggedIn([ADMIN, SUPER_ADMIN]), createLinkedChild);

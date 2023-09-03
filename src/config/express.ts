@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -41,7 +41,8 @@ app.use(cors({ credentials: true, origin: true }));
 app.use(passport.initialize());
 // find user by token. then done.
 passport.use('jwt', strategies.jwt);
-passport.use('handleSpaceJwt', strategies.handleSpaceJwt);
+// passport.use('handleSpaceJwt', strategies.handleSpaceJwt);
+// passport.use('handleOrganizationJwt', strategies.handleOrganizationJwt);
 // passport.use('handleMaintenanceJwt', strategies.handleMaintenanceJwt);
 
 // app.use(handleOrganization());

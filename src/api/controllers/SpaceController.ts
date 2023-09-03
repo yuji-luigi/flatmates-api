@@ -134,7 +134,7 @@ export const sendSpaceDataForHome = async (req: RequestCustom, res: Response) =>
     //  TODO: use req.query for querying in find method and paginating. maybe need to delete field to query in find method
     // const { query } = req;
 
-    let space = await Space.findById(req.space._id);
+    let space = await Space.findById(req.space?._id);
     space = !space ? await Space.findOne({ slug: req.params.slug }) : space;
 
     if (!space) throw new Error('space not found. please check the slug.');
@@ -171,8 +171,10 @@ export const sendSpaceDataForHome = async (req: RequestCustom, res: Response) =>
       totalDocuments: 1
     });
   } catch (err) {
+    logger.error(err.message || err);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-      message: err.message || err
+      success: false,
+      message: _MSG.ERRORS.GENERIC
     });
   }
 };

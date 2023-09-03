@@ -3,7 +3,9 @@ import { Request } from 'express';
 import vars from './vars';
 import User from '../models/User';
 import Space from '../models/Space';
-// import Maintenance from '../models/Maintenance';
+import Organization from '../models/Organization';
+import { IUser } from '../types/mongoose-types/model-types/user-interface';
+import { ObjectId } from 'bson';
 
 const { jwtSecret } = vars;
 const JwtStrategy = passport.Strategy;
@@ -33,11 +35,11 @@ const cookieExtractor = (req: Request) => {
 };
 
 /** created for other than user auth cookie  * */
-const cookieExtractorEx = (req: Request) => {
-  return (headerKey: string) => {
-    return req.cookies[headerKey] || req.headers[headerKey] || '';
-  };
-};
+// const cookieExtractorEx = (req: Request) => {
+//   return (headerKey: string) => {
+//     return req.cookies[headerKey] || req.headers[headerKey] || '';
+//   };
+// };
 
 const jwtOptions = {
   secretOrKey: jwtSecret,
@@ -45,56 +47,90 @@ const jwtOptions = {
   // jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('Bearer'),
 };
 
+export type JwtReturnType = Partial<IUser & { spaceName: string; spaceId: ObjectId; organizationId: ObjectId }>;
 const jwt = async (payload: any, done: any) => {
   try {
-    // const user = await User.findById(payload.id);
+    // const user = await User.findOne({ email: payload.email }).lean();
+    // if (user) return done(null, user);
+    // return done(null, false);
     const user = await User.findOne({ email: payload.email }).lean();
-    // .populate({ path: 'organization', select: 'name' });
-    if (user) return done(null, user);
-    return done(null, false);
+    const result: JwtReturnType = { ...user };
+    if (!user) {
+      return done(null, false);
+    }
+    // Fetch space and organization if they're in the payload
+
+    if (payload.spaceId) {
+      const space = await Space.findById(payload.spaceId).lean();
+      result.spaceName = space.name;
+      result.spaceId = space._id;
+    }
+    if (payload.organizationId) {
+      const organization = await Organization.findById(payload.organizationId).lean();
+      result.organizationId = organization._id;
+    }
+    // You can attach space and organization to the user object if you like
+
+    return done(null, result);
   } catch (error) {
     return done(error, false);
   }
 };
 
-const handleSpaceJwt = async (payload: any, done: any) => {
-  try {
-    // const user = await User.findById(payload.id);
-    const space = await Space.findById(payload._id).lean();
-    // .populate({ path: 'organization', select: 'name' });
-    if (space) return done(null, space);
-    return done(null, false);
-  } catch (error) {
-    return done(error, false);
-  }
-};
-
-// const handleMaintenanceJwt = async (payload: any, done: any) => {
+// const handleSpaceJwt = async (payload: any, done: any) => {
 //   try {
 //     // const user = await User.findById(payload.id);
-//     const maintenance = await Maintenance.findById(payload._id)
-//       .populate({ path: 'mainSpace', select: 'name' })
-//       .populate({ path: 'organization', select: 'name' })
-//       .populate({ path: 'maintainer', select: 'name' });
+//     const space = await Space.findById(payload._id).lean();
 //     // .populate({ path: 'organization', select: 'name' });
-//     if (maintenance) return done(null, maintenance);
+//     if (space) return done(null, space);
 //     return done(null, false);
 //   } catch (error) {
 //     return done(error, false);
 //   }
 // };
 
-const spaceJwtOptions = {
-  secretOrKey: jwtSecret,
-  jwtFromRequest: (req: Request) => cookieExtractorEx(req)('space')
-};
-// const maintenanceJwtOptions = {
-//   secretOrKey: jwtSecret,
-//   jwtFromRequest: (req: Request) => cookieExtractorEx(req)('maintenance')
+// const handleOrganizationJwt = async (payload: any, done: any) => {
+//   try {
+//     // const user = await User.findById(payload.id);
+//     const organization = await Organization.findById(payload).lean();
+//     // .populate({ path: 'organization', select: 'name' });
+//     if (organization) return done(null, organization);
+//     return done(null, false);
+//   } catch (error) {
+//     return done(error, false);
+//   }
 // };
 
+// const spaceJwtOptions = {
+//   secretOrKey: jwtSecret,
+//   jwtFromRequest: (req: Request) => cookieExtractorEx(req)('space')
+// };
+// const organizationJwtOptions = {
+//   secretOrKey: jwtSecret,
+//   jwtFromRequest: (req: Request) => cookieExtractorEx(req)('organization')
+// };
+
+// const queryJwtOptions = {
+//   secretOrKey: jwtSecret,
+//   jwtFromRequest: (req: Request) => spaceOrgCookieExtractor(req)
+// };
+// /** created for other than user auth cookie  * */
+// const spaceOrgCookieExtractor = (req: Request) => {
+//   const space = req.cookies['space'] || req.headers['space'];
+//   const organization = req.cookies['organization'] || req.headers['organization'];
+//   const cookies: { space: ISpace | null; organization: string | null } = {
+//     space,
+//     organization
+//   };
+//   return cookies;
+// }
+// async function handleQueryJwt(payload, done) {
+// return done(null, payload);
+// }
+
 export default {
-  jwt: new JwtStrategy(jwtOptions, jwt),
-  handleSpaceJwt: new JwtStrategy(spaceJwtOptions, handleSpaceJwt)
-  // handleMaintenanceJwt: new JwtStrategy(maintenanceJwtOptions, handleMaintenanceJwt)
+  jwt: new JwtStrategy(jwtOptions, jwt)
+  // handleSpaceJwt: new JwtStrategy(spaceJwtOptions, handleSpaceJwt),
+  // handleOrganizationJwt: new JwtStrategy(organizationJwtOptions, handleOrganizationJwt)
+  // handleQueryJwt: new JwtStrategy(queryJwtOptions, handleQueryJwt)
 };

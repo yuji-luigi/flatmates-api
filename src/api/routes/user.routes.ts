@@ -1,5 +1,5 @@
 import express, { NextFunction, Request, Response } from 'express';
-import { ADMIN, isLoggedIn, stringifyAdmins, SUPER_ADMIN } from '../../middlewares/auth';
+import { ADMIN, stringifyAdmins, SUPER_ADMIN } from '../../middlewares/auth-middlewares';
 
 import httpStatus from 'http-status';
 import {
@@ -13,6 +13,7 @@ import {
 } from '../controllers/UserController';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { deleteCrudObjectByIdAndSendDataWithPagination } from '../controllers/DataTableController';
+import { isLoggedIn } from '../../middlewares/isLoggedIn';
 
 const router = express.Router();
 
@@ -20,7 +21,7 @@ const router = express.Router();
  * ORGANIZATION
  */
 
-router.get('/', isLoggedIn(), isLoggedIn([ADMIN, SUPER_ADMIN]), sendUsersToClient);
+router.get('/', isLoggedIn([ADMIN, SUPER_ADMIN]), sendUsersToClient);
 
 router.get('/with-pagination', isLoggedIn([ADMIN, SUPER_ADMIN]), sendUsersToClient);
 

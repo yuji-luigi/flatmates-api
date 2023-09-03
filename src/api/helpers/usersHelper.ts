@@ -35,16 +35,19 @@ export async function handleConstructUpdateUser({ excelData, mainSpace }: { exce
     if (duplicateEmailFound) {
       delete excelData.email;
     }
-
+    const { organization } = mainSpace;
     let user = await User.findOne({
       name: excelData.name,
       surname: excelData.surname,
-      rootSpaces: { $in: [mainSpace] }
+      rootSpaces: { $in: [mainSpace] },
+      organizations: { $in: [organization] }
     });
     // case already imported once. update the user
     if (user) {
       user.set({
-        ...excelData,
+        name: excelData.name,
+        surname: excelData.surname,
+        email: excelData.email,
         rootSpaces: [mainSpace],
         role: 'user'
       });
@@ -52,9 +55,12 @@ export async function handleConstructUpdateUser({ excelData, mainSpace }: { exce
     // case new user. create new one + new authToken
     if (!user) {
       user = new User({
-        ...excelData,
+        name: excelData.name,
+        surname: excelData.surname,
+        email: excelData.email,
         rootSpaces: [mainSpace],
-        role: 'user'
+        role: 'user',
+        organizations: [mainSpace.organization]
       });
     }
     return user;

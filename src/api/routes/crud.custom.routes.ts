@@ -1,9 +1,10 @@
 import express from 'express';
-import { ADMIN, isLoggedIn, SUPER_ADMIN } from '../../middlewares/auth';
+import { ADMIN, SUPER_ADMIN } from '../../middlewares/auth-middlewares';
 import { checkEntity } from '../../middlewares/checkEntity';
 import { getPublicCrudObjects } from '../controllers/CrudController';
 import { createLinkedChild, getLinkedChildren } from '../controllers/CrudCustomController';
 import DataTableController from '../controllers/DataTableController';
+import { isLoggedIn } from '../../middlewares/isLoggedIn';
 const router = express.Router();
 
 // ! Todo: create users routes user can't be created by themselves with generic crud routes

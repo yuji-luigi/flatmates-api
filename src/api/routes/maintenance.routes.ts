@@ -1,8 +1,8 @@
 import express from 'express';
-import { isLoggedIn } from '../../middlewares/auth';
 import { getPublicCrudObjects } from '../controllers/CrudController';
 import maintenanceCtrl, { authUserMaintenanceFiles } from '../controllers/MaintenanceController';
 import { sendCrudObjectsWithPaginationToClient } from '../controllers/DataTableController';
+import { isLoggedIn } from '../../middlewares/isLoggedIn';
 const router = express.Router();
 // notify maintainer by email
 // todo: create /notify-maintainer-by-email route: differentiate notify and not notify

@@ -1,4 +1,4 @@
-import { SUPER_ADMIN } from './../../middlewares/auth';
+import { SUPER_ADMIN } from '../../middlewares/auth-middlewares';
 import express, { Request, Response } from 'express';
 
 const router = express.Router();
@@ -7,8 +7,9 @@ import dataTableCtrl, {
   createCrudObjectAndSendDataWithPagination,
   deleteCrudObjectByIdAndSendDataWithPagination
 } from '../controllers/DataTableController';
-import { isLoggedIn, ADMIN, LOGGED_USER } from '../../middlewares/auth';
+import { ADMIN, LOGGED_USER } from '../../middlewares/auth-middlewares';
 import { checkEntity } from '../../middlewares/checkEntity';
+import { isLoggedIn } from '../../middlewares/isLoggedIn';
 // import { createLinkedChild } from '../controllers/CrudCustomController';
 
 router.get('/', (req: Request, res: Response) => {

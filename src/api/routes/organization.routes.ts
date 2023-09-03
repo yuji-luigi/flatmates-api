@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { ADMIN, isLoggedIn, LOGGED_USER, SUPER_ADMIN } from '../../middlewares/auth';
+import { ADMIN, LOGGED_USER, SUPER_ADMIN } from '../../middlewares/auth-middlewares';
 import {
   deleteOrganizationByIdWithPagination,
   deleteOrganizationCookie,
@@ -10,6 +10,7 @@ import {
   updateOrganizationById
 } from '../controllers/OrganizationController';
 import httpStatus from 'http-status';
+import { isLoggedIn } from '../../middlewares/isLoggedIn';
 
 const router = express.Router();
 

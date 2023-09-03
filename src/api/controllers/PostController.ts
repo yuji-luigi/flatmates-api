@@ -1,4 +1,4 @@
-import { SUPER_ADMIN } from './../../middlewares/auth';
+import { SUPER_ADMIN } from '../../middlewares/auth-middlewares';
 import Thread from '../../models/Thread';
 import httpStatus from 'http-status';
 import logger from '../../config/logger';
@@ -18,6 +18,7 @@ const createThread = async (req: RequestCustom, res: Response) => {
     const reqBody = deleteEmptyFields<IThread>(req.body);
 
     reqBody.organization = req.space.organization;
+    reqBody.space = req.space._id;
     reqBody.user = req.user;
     await Thread.create(reqBody);
     const threadsToSend = await getThreadsForPlatForm({ entity: 'threads', query: req.query, sortQuery: { isImportant: -1, createdAt: -1 } });

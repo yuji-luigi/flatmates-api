@@ -1,4 +1,5 @@
 import { Chance } from 'chance';
+import { RequestCustom } from '../types/custom-express/express-custom';
 
 const chance = new Chance();
 
@@ -201,3 +202,5 @@ export function chunkArray<T>(arr: T[], chunkSize: number): T[][] {
   }
   return result;
 }
+
+export const showBodyAsJson = (req: RequestCustom) => console.log(JSON.stringify(req.body, null, 2));

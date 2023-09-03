@@ -1,4 +1,4 @@
-import { SUPER_ADMIN } from '../../middlewares/auth';
+import { SUPER_ADMIN } from '../../middlewares/auth-middlewares';
 import Maintenance from '../../models/Maintenance';
 import httpStatus from 'http-status';
 import logger from '../../config/logger';
