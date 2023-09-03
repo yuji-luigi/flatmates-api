@@ -17,6 +17,7 @@ import maintenanceRoutes from './maintenance.routes';
 import spaceAuthRoutes from './space-auth.routes';
 import userRoutes from './user.routes';
 import { handleUserFromRequest } from '../../middlewares/handleUserFromRequest';
+import { queryHandler } from '../../middlewares/handleSetQuery';
 //= ===============================================================================
 // AUTH ROUTES
 //= ===============================================================================
@@ -25,6 +26,7 @@ router.use('/space-auth', spaceAuthRoutes);
 // call passport jwt strategy defined in passport.ts
 // set user in req.user
 router.use(handleUserFromRequest);
+router.use(queryHandler);
 // router.use(parseSpaceJwt);
 
 // set space in req.space

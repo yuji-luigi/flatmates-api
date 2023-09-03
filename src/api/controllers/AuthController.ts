@@ -149,7 +149,7 @@ const login = async (req: Request, res: Response) => {
     //   // res.cookie('organization', user.organization._id.toString(), sensitiveCookieOptions);
     // }
 
-    res.send({
+    return res.send({
       success: true,
       data: { token /* , user: userTransformed */ }
       // accessToken: token

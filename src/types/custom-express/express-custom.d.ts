@@ -94,8 +94,8 @@ export interface RequestCustom<
   Locals extends Record<string, any> = Record<string, any>
 > extends Request<P, ResBody, ReqBody, ReqQuery, Locals> {
   user?: IUser | undefined;
-  space?: ISpace | null;
-  organization: IOrganization;
+  // space?: ISpace | null;
+  // organization: IOrganization;
   maintenance?: IMaintenance;
   // files?: File[];
   // query: QueryInterface;
