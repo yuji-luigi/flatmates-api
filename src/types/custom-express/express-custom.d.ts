@@ -1,4 +1,5 @@
 import { Request } from 'express';
+import { JwtReturnType } from '../../config/passport';
 
 interface TypedRequestBody<T, U> extends Request {
   params: { [key: string]: string };
@@ -93,7 +94,24 @@ export interface RequestCustom<
   ReqQuery = QueryCustom,
   Locals extends Record<string, any> = Record<string, any>
 > extends Request<P, ResBody, ReqBody, ReqQuery, Locals> {
-  user?: IUser | undefined;
+  user?: JwtReturnType | undefined;
+  // user?: (IUser & { spaceId?: ObjectId; spaceName?: string; organizationId: ObjectId }) | undefined;
+  // space?: ISpace | null;
+  // organization: IOrganization;
+  maintenance?: IMaintenance;
+  // files?: File[];
+  // query: QueryInterface;
+}
+
+export interface LoggedInRequest<
+  P = core.ParamsDictionary,
+  ResBody = any,
+  ReqBody = any,
+  ReqQuery = QueryCustom,
+  Locals extends Record<string, any> = Record<string, any>
+> extends Request<P, ResBody, ReqBody, ReqQuery, Locals> {
+  user: JwtReturnType | undefined;
+  // user?: (IUser & { spaceId?: ObjectId; spaceName?: string; organizationId: ObjectId }) | undefined;
   // space?: ISpace | null;
   // organization: IOrganization;
   maintenance?: IMaintenance;

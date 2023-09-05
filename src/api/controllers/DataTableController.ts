@@ -5,7 +5,7 @@ import logger from '../../config/logger';
 
 import MSG from '../../utils/messages';
 import { deleteEmptyFields, getEntity, getEntityFromOriginalUrl } from '../../utils/functions';
-import { RequestCustom } from '../../types/custom-express/express-custom';
+import { LoggedInRequest, RequestCustom } from '../../types/custom-express/express-custom';
 import { aggregateWithPagination, convert_idToMongooseId } from '../helpers/mongoose.helper';
 
 //================================================================================
@@ -36,15 +36,15 @@ export const sendCrudObjectsWithPaginationToClient = async (req: RequestCustom, 
   }
 };
 
-export const createCrudObjectAndSendDataWithPagination = async (req: RequestCustom, res: Response) => {
+export const createCrudObjectAndSendDataWithPagination = async (req: LoggedInRequest, res: Response) => {
   try {
     // get req.params.entity
     const entity = req.params.entity || getEntity(req.url);
     req.body = deleteEmptyFields(req.body);
-    req.body.user = req.user._id;
+    req.body.user = req.user?._id;
     const Model = mongoose.model(entity);
-    req.body.organization = req.space.organization;
-    req.body.space = req.space._id;
+    req.body.organization = req.user?.organizationId;
+    req.body.space = req.user.spaceId;
     const newModel = new Model(req.body);
 
     await newModel.save();

@@ -23,13 +23,13 @@ export const createMaintainer = async (req: RequestCustom, res: Response) => {
     const reqBody = deleteEmptyFields<MaintainerInterface>(req.body);
     const newMaintainer = new Maintainer(reqBody);
 
-    const organization = await Organization.findById(req.organization);
+    const organization = await Organization.findById(req.user.organizationId);
     if (organization) {
       organization.maintainers.push(newMaintainer);
       await organization.save();
     }
 
-    const space = await Space.findById(req.space);
+    const space = await Space.findById(req.user.spaceId);
     if (space) {
       newMaintainer.spaces.push(space);
       // space.maintainers.push(newMaintainer);
@@ -55,7 +55,7 @@ export const createMaintainer = async (req: RequestCustom, res: Response) => {
 
 export const sendMaintainersWithPaginationToClient = async (req: RequestCustom, res: Response) => {
   try {
-    // const queryMaintainer = req.space?.maintainers || req.organization?.maintainers;
+    // const queryMaintainer = req.user.spaceId?.maintainers || req.organization?.maintainers;
 
     const maintainers = await Maintainer.find();
     // const maintainers = await Maintainer.find({ _id: { $in: queryMaintainer } });
@@ -84,9 +84,9 @@ export const sendMaintainersWithPaginationToClient = async (req: RequestCustom, 
 
 export const sendMaintainersOfBuildingToClient = async (req: RequestCustom, res: Response) => {
   try {
-    // const queryMaintainer = req.space?.maintainers || req.organization?.maintainers;
+    // const queryMaintainer = req.user.spaceId?.maintainers || req.organization?.maintainers;
 
-    const maintainers = await Maintainer.find({ spaces: { $in: [req.space?._id] } });
+    const maintainers = await Maintainer.find({ spaces: { $in: [req.user.spaceId] } });
     // const maintainers = await Maintainer.find({ _id: { $in: queryMaintainer } });
 
     res.status(httpStatus.OK).json({

@@ -1,8 +1,8 @@
+import { JwtReturnType } from './../config/passport';
 import jwt from 'jsonwebtoken';
 import vars from '../config/vars';
 import { AuthTokenInterface } from '../types/mongoose-types/model-types/auth-token-interface';
 import { ISpace } from '../types/mongoose-types/model-types/space-interface';
-import { IUser } from '../types/mongoose-types/model-types/user-interface';
 const baseUrl = vars.frontendUrl + '/auth-tokens';
 
 export const generateTokenUrl = {
@@ -13,7 +13,7 @@ export const signJwt = (payload: string | Record<string, any>) => jwt.sign(paylo
 
 type JsonObjPayload = {
   space?: ISpace | null;
-  user?: IUser | null;
+  user?: JwtReturnType | null;
 };
 
 export const createJsonObject = (payload: JsonObjPayload) => ({

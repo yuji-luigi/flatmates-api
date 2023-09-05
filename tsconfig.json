@@ -4,6 +4,7 @@
     // "transpileOnly": true //  if you want to use ts-node without type checking
   },
   "compilerOptions": {
+    // "strict": true,
     "module": "commonjs",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,

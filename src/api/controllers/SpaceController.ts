@@ -30,11 +30,12 @@ export const sendSpacesToClient = async (req: RequestCustom, res: Response) => {
     if (!req.user) {
       throw new Error(_MSG.NOT_AUTHORIZED);
     }
+    const currentSpaceId = req.user.spaceId.toString();
+    const user = await User.findById(req.user._id);
+    const spaceIds = await aggregateDescendantIds(currentSpaceId, user);
 
     //  TODO: use req.query for querying in find method and paginating. maybe need to delete field to query in find method
-    const Model = mongoose.model(entity);
-
-    const data = await Model.find(req.query);
+    const data = await Space.find({ _id: { $in: [...spaceIds, currentSpaceId] } });
 
     res.status(httpStatus.OK).json({
       success: true,
@@ -43,8 +44,9 @@ export const sendSpacesToClient = async (req: RequestCustom, res: Response) => {
       totalDocuments: data.length
     });
   } catch (err) {
-    res.status(err).json({
-      message: err.message || err
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: _MSG.ERRORS.GENERIC,
+      details: err.message || err
     });
   }
 };
@@ -109,7 +111,7 @@ export const sendSingleSpaceToClientByCookie = async (req: RequestCustom, res: R
     //  TODO: use req.query for querying in find method and paginating. maybe need to delete field to query in find method
     // const { query } = req;
 
-    const data = await Space.findById(req.space._id);
+    const data = await Space.findById(req.user.spaceId);
     data.cover && (await data.cover.setUrl(true));
 
     res.status(httpStatus.OK).json({
@@ -132,10 +134,10 @@ export const sendSpaceDataForHome = async (req: RequestCustom, res: Response) =>
     // const limit = 10;
 
     //  TODO: use req.query for querying in find method and paginating. maybe need to delete field to query in find method
-    // const { query } = req;
+    let query: Record<string, string | ObjectId> = req.user?.spaceId ? { _id: req.user.spaceId } : undefined;
+    query = req.params.slug ? { slug: req.params.slug } : req.query;
 
-    let space = await Space.findById(req.space?._id);
-    space = !space ? await Space.findOne({ slug: req.params.slug }) : space;
+    const space = await Space.findOne(query);
 
     if (!space) throw new Error('space not found. please check the slug.');
 
@@ -144,20 +146,6 @@ export const sendSpaceDataForHome = async (req: RequestCustom, res: Response) =>
     const maintainers = await Maintainer.find({ spaces: { $in: [space._id] } });
 
     space.cover && (await space.cover.setUrl());
-
-    // for (const thread of threads) {
-    //   for (const image of thread.images) {
-    //     image && (await image.setUrl());
-    //   }
-    // }
-    // for (const maintenance of maintenances) {
-    //   for (const image of maintenance.images) {
-    //     image && (await image.setUrl());
-    //   }
-    // }
-    // for (const maintainer of maintainers) {
-    //   maintainer.avatar && (await maintainer.avatar.setUrl());
-    // }
 
     res.status(httpStatus.OK).json({
       success: true,
@@ -373,12 +361,12 @@ export const deleteHeadSpaceWithPagination = async (req: Request, res: Response)
      */
     const { spaceId } = req.params;
 
-    const foundChildren = await mongoose.model('spaces').find({ parentId: spaceId }).limit(1).lean();
+    const foundChildren = await Space.find({ parentId: spaceId }).limit(1).lean();
     if (foundChildren.length) {
-      throw new Error('Cannot delete a head space with children. Please delete the children first.');
+      throw new Error('Cannot delete the space. Please delete other spaces under the space you are deleting.');
     }
 
-    await mongoose.model('spaces').findByIdAndDelete({ _id: spaceId });
+    await Space.findByIdAndDelete({ _id: spaceId });
 
     const query = { isHead: true };
     const data = await aggregateWithPagination(query, 'spaces');

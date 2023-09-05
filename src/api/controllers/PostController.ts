@@ -10,15 +10,14 @@ import { RequestCustom } from '../../types/custom-express/express-custom';
 import { getThreadsForPlatForm } from '../helpers/mongoose.helper';
 import mongoose from 'mongoose';
 import { UploadsThread } from '../helpers/types-uploadFileHelper';
-import { IThread } from '../../types/mongoose-types/model-types/thread-interface';
 
 const createThread = async (req: RequestCustom, res: Response) => {
   try {
     req.body.createdBy = req.user;
-    const reqBody = deleteEmptyFields<IThread>(req.body);
+    const reqBody = deleteEmptyFields(req.body);
 
-    reqBody.organization = req.space.organization;
-    reqBody.space = req.space._id;
+    reqBody.organization = req.user.organizationId;
+    reqBody.space = req.user.spaceId;
     reqBody.user = req.user;
     await Thread.create(reqBody);
     const threadsToSend = await getThreadsForPlatForm({ entity: 'threads', query: req.query, sortQuery: { isImportant: -1, createdAt: -1 } });

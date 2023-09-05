@@ -3,8 +3,8 @@ import { checkSSGSecret } from '../../middlewares/auth-middlewares';
 import {
   // createHeadSpace,
 
-  sendSpaceDataForHome,
-  sendMainSpacesSlug
+  sendMainSpacesSlug,
+  sendSpaceDataForHome
 } from '../controllers/SpaceController';
 import { sendMainSpaceSelectionsToClient, setSpaceAndOrgInJwt } from '../controllers/AuthController';
 import { handleUserFromRequest } from '../../middlewares/handleUserFromRequest';

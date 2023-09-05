@@ -4,6 +4,7 @@ import { RequestCustom } from '../types/custom-express/express-custom';
 import { JwtReturnType } from '../config/passport';
 import logger from '../config/logger';
 import httpStatus from 'http-status';
+
 export const handleUserFromRequest = (req: RequestCustom, res: Response, next: NextFunction) =>
   passport.authenticate('jwt', { session: false }, setUserInRequest(req, res, next))(req, res, next);
 

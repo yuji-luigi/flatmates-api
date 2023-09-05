@@ -24,7 +24,7 @@ interface UploadFields {
 
 const createMaintenance = async (req: RequestCustom, res: Response) => {
   try {
-    const reqBody = deleteEmptyFields<IMaintenance>(req.body);
+    const reqBody = deleteEmptyFields(req.body);
     reqBody.createdBy = req.user;
     reqBody.organization = req.query.organization;
     reqBody.space = req.query.space;

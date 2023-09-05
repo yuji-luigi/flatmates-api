@@ -16,6 +16,8 @@ import { IOrganization } from '../../types/mongoose-types/model-types/organizati
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { userHasSpace } from '../helpers/spaceHelper';
 import { createJsonObject, signJwt } from '../../utils/authTokenUtil';
+import { CurrentSpace } from '../../types/mongoose-types/model-types/space-interface';
+import { getJwtExpirationDate } from '../../utils/functions';
 
 const { jwtExpirationInterval, cookieDomain } = vars;
 
@@ -229,6 +231,18 @@ export const setSpaceAndOrgInJwt = async (req: RequestCustom, res: Response) => 
     res.clearCookie('jwt', { domain: vars.cookieDomain });
     res.cookie('jwt', jwt, sensitiveCookieOptions);
 
+    const spaceCookie: CurrentSpace = {
+      _id: space._id,
+      name: space.name,
+      address: space.address,
+      slug: space.slug
+      // organization: space.organization
+    };
+    const expires = getJwtExpirationDate();
+    res.cookie('space', spaceCookie, { domain: vars.cookieDomain, expires });
+    res.cookie('spaceName', space.name, { domain: vars.cookieDomain, expires });
+    res.cookie('organization', space.organization, { domain: vars.cookieDomain, expires });
+
     res.status(httpStatus.OK).json({
       success: true,
       collection: 'spaces',
@@ -237,7 +251,8 @@ export const setSpaceAndOrgInJwt = async (req: RequestCustom, res: Response) => 
           _id: space._id,
           name: space.name,
           address: space.address,
-          organization: space.organization
+          slug: space.slug
+          // organization: space.organization
         }
       },
       count: 1

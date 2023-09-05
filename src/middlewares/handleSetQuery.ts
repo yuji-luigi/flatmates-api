@@ -19,6 +19,16 @@ export function queryHandler(req: RequestCustom, res: Response, next: NextFuncti
     if (req.user.organizationId) {
       req.query.organization = req.user.organizationId;
     }
+    if (req.user.role === 'super_admin') {
+      delete req.query.organization;
+      delete req.query.space;
+      if (req.cookies.spaceId) {
+        req.query.space = req.cookies.spaceId;
+      }
+      if (req.cookies.organizationId) {
+        req.query.organization = req.cookies.organizationId;
+      }
+    }
     return next();
   } catch (error) {
     logger.error(error.message || error);

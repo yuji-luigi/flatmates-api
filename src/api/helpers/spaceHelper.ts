@@ -1,10 +1,9 @@
 import { ObjectId } from 'mongodb';
-import Space, { SpaceModel } from '../../models/Space';
+import Space from '../../models/Space';
 import logger from '../../config/logger';
 import { _MSG } from '../../utils/messages';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
-import { headToTailPipeline } from '../pipelines/spacePipelines';
 
 /**  searches only root spaces of user */
 export async function userHasSpace(user: IUser, selectedSpace: string): Promise<boolean> {
@@ -76,7 +75,7 @@ export async function userHasSpaceBFS(user: IUser, selectedSpace: ISpace): Promi
 export async function aggregateDescendantIds(spaceId: string, user: IUser): Promise<string[]> {
   try {
     const space = await Space.findById(spaceId);
-    if (!(await user.isAdminOrganization(space._id)) || !(await userHasSpaceBFS(user, space))) {
+    if (!(await user.isAdminOrganization(space._id)) && !(await userHasSpaceBFS(user, space))) {
       throw new Error(_MSG.NOT_ALLOWED);
     }
     const selectedId = new ObjectId(spaceId);
@@ -117,7 +116,7 @@ export async function aggregateDescendantIds(spaceId: string, user: IUser): Prom
 
     const result = await Space.aggregate(pipeline).exec();
 
-    const spaceIds = result[0].descendantIds;
+    const spaceIds = result[0]?.descendantIds || [];
     spaceIds.push(selectedId);
     // const spaceIds = result.map((space) => space._id);
     // const spaceIds = result.flatMap((space) => space.descendantIds.toString().split(','));

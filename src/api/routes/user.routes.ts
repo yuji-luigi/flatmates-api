@@ -45,7 +45,7 @@ export default router;
 async function compareTargetAndCurrentUser(req: RequestCustom, res: Response, next: NextFunction) {
   const { idMongoose } = req.params;
   const { user } = req;
-  const isAdmin = user.role === SUPER_ADMIN || stringifyAdmins(req.space?.admins)?.includes(user._id.toString());
+  const isAdmin = user.role === SUPER_ADMIN || stringifyAdmins(req.user.spaceAdmins)?.includes(user._id.toString());
   if (isAdmin) {
     return next();
   }

@@ -4,6 +4,7 @@ const router = express.Router();
 import authCtrl, { sendMainSpaceSelectionsToClient, setSpaceAndOrgInJwt } from '../controllers/AuthController';
 import { handleUserFromRequest } from '../../middlewares/handleUserFromRequest';
 import { isLoggedIn } from '../../middlewares/isLoggedIn';
+import { deleteSpaceCookie } from '../controllers/SpaceController';
 
 router.get('/', (req: Request, res: Response) => {
   res.send('auth routes');
@@ -24,7 +25,9 @@ router.get('/logout', authCtrl.logout);
 router.use(handleUserFromRequest);
 router.get('/space-selections', isLoggedIn(), sendMainSpaceSelectionsToClient);
 router.get('/space-selected/:idMongoose', isLoggedIn(), setSpaceAndOrgInJwt);
-router.get('/me', handleUserFromRequest, isLoggedIn(), authCtrl.me);
+router.delete('/space-selected', isLoggedIn(), deleteSpaceCookie);
+
+router.get('/me', isLoggedIn(), authCtrl.me);
 
 // router.post('/logout', authCtrl.logout);
 

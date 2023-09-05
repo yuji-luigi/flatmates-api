@@ -82,12 +82,7 @@ export const spacesSchema = new Schema<ISpace, SpaceModel, ISpaceMethods>(
       required: true
       // autopopulate: true
     },
-    children: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'spaces'
-      }
-    ],
+
     slug: {
       type: String,
       // slug: 'name',
@@ -197,10 +192,10 @@ spacesSchema.pre('validate', async function (next) {
   next();
 });
 //! REMEMBER: after save the children array is empty
-spacesSchema.pre('save', async function (next) {
-  this.children = [];
-  next();
-});
+// spacesSchema.pre('save', async function (next) {
+//   this.children = [];
+//   next();
+// });
 
 spacesSchema.plugin(autoPopulate);
 // spacesSchema.plugin(urlSlug);

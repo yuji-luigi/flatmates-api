@@ -195,9 +195,9 @@ export const deleteFileFromStorage = async function (key: string) {
 };
 
 export async function getFileDirName(req: RequestCustom) {
-  const organization = await Organization.findById(req.space.organization);
+  const organization = await Organization.findById(req.user.organizationId);
   const orgName = replaceSpecialChars(organization.name || 'super_admin');
-  const nestedDir = `${replaceSpecialChars(req.space.name)}/${req.params.entity}`;
+  const nestedDir = `${replaceSpecialChars(req.user.spaceName)}/${req.params.entity}`;
   return `${orgName}/${nestedDir}`;
 }
 

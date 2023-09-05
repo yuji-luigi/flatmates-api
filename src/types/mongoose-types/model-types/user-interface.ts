@@ -58,3 +58,5 @@ export interface IUserStatics {
 }
 
 export interface UserModel extends Model<IUser, object, IUserStatics>, LoginInstanceMethods<IUser> {}
+
+export type LeanUser = Omit<IUser, 'passwordMatches' | 'token' | 'save' | 'getOrganizations' | 'isSuperAdmin' | 'isAdminOrganization'>;

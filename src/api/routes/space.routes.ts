@@ -11,10 +11,10 @@ import {
   sendDescendantIdsToClient,
   sendMainSpacesWithPaginationToClient,
   sendSingleSpaceToClientByCookie,
-  sendSpaceDataForHome,
   sendSingleSpaceBySlugToClient,
   sendHeadToTailToClient,
-  sendSpacesToClient
+  sendSpacesToClient,
+  sendSpaceDataForHome
 } from '../controllers/SpaceController';
 
 import { sendLinkedChildrenWithPaginationToClient } from '../controllers/DataTableController';
@@ -22,15 +22,9 @@ import { createLinkedChild } from '../controllers/CrudCustomController';
 import httpStatus from 'http-status';
 import { isLoggedIn } from '../../middlewares/isLoggedIn';
 const router = express.Router();
-
+router.get('/home', isLoggedIn(), sendSpaceDataForHome);
 router.get('/', isLoggedIn(), sendSpacesToClient);
 // GET FOR DASHBOARD/HOME IN WEB APP
-router.get('/home', isLoggedIn(), sendSpaceDataForHome);
-
-// SSG PATHS
-// ! deprecated moved to auth route both
-// router.get('/static-props/:slug', checkSSGSecret, sendSpaceDataForHome);
-// router.get('/ssg-paths', checkSSGSecret, sendMainSpacesSlug);
 
 router.get('/descendants/:spaceId', isLoggedIn(), sendDescendantIdsToClient);
 router.get('/head-to-tail/:spaceId', isLoggedIn(), sendHeadToTailToClient);
@@ -50,7 +44,7 @@ router.get('/slug/:slug', isLoggedIn(), sendSingleSpaceBySlugToClient);
 // !deprecated moved to auth route
 router.get('/cookie/:spaceId', isLoggedIn(), sendSpaceAsCookie);
 
-router.delete('/cookie', isLoggedIn(), deleteSpaceCookie);
+// router.delete('/cookie', isLoggedIn(), deleteSpaceCookie);
 
 router.post('/with-pagination/linkedChildren/:parentId', isLoggedIn([ADMIN, SUPER_ADMIN]), createLinkedChild);
 router.post('/with-pagination', isLoggedIn([ADMIN, LOGGED_USER, SUPER_ADMIN]), createHeadSpaceWithPagination);

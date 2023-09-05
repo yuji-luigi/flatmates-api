@@ -204,3 +204,6 @@ export function chunkArray<T>(arr: T[], chunkSize: number): T[][] {
 }
 
 export const showBodyAsJson = (req: RequestCustom) => console.log(JSON.stringify(req.body, null, 2));
+
+/** @returns {Date} 24h ahead from time of execution */
+export const getJwtExpirationDate = () => new Date(Date.now() + 24 * 60 * 60 * 1000);

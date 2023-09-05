@@ -29,7 +29,7 @@ router.use(handleUserFromRequest);
 router.use(queryHandler);
 // router.use(parseSpaceJwt);
 
-// set space in req.space
+// set space in req.user.spaceId
 // and set queries in req.query
 // req.query.organizationId, req.query.rootSpaceId
 router.use('/upload-files', uploadFilesRoutes);

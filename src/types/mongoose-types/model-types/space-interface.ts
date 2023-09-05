@@ -1,3 +1,4 @@
+import { ObjectId } from 'bson';
 import { MongooseBaseModel } from './base-types/base-model-interface';
 import { IOrganization } from './organization-interface';
 import { IUpload } from './upload-interface';
@@ -19,7 +20,7 @@ export interface ISpace extends MongooseBaseModel {
   typeOfSpace: TypeOfSpace;
   // spaceType: 'city' | 'district' | 'neighborhood' | 'street' | 'building' | 'floor' | 'space';
   /** now user does not have role as admin, they will be registered as admin in the space. */
-  admins: IUser[] | string[] | [];
+  admins: ObjectId[] | [];
   /** meaning that this is the end of the chain of spaces.
    *
    * Also meaning that has no children */
@@ -42,7 +43,7 @@ export interface ISpace extends MongooseBaseModel {
   // maintainers: MaintainerInterface[];
   user?: IUser;
   // set spaces as children in some operations
-  children: any;
+  // children: any;
   getParent(): Promise<ISpace | null | undefined>;
 }
 
@@ -57,3 +58,14 @@ export interface ISpaceMethods {
 }
 
 type TypeOfSpace = 'condominium' | 'officeBuilding' | 'flat';
+
+/**
+ * @description used to get current space in frontend.
+ */
+export interface CurrentSpace {
+  _id: ObjectId;
+  name: string;
+  address: string;
+  // organization: ObjectId;
+  slug: string;
+}

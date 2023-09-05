@@ -9,6 +9,7 @@ import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
 import { generateTokenUrl } from '../../utils/authTokenUtil';
 import { checkDuplicateEmail } from './mongoose.helper';
+import { ObjectId } from 'bson';
 
 export type userExcelData = {
   name: string;
@@ -29,13 +30,20 @@ export async function deleteDuplicateEmailField(excelData: userExcelData) {
   return clonedJson;
 }
 
-export async function handleConstructUpdateUser({ excelData, mainSpace }: { excelData: userExcelData; mainSpace: ISpace }) {
+export async function handleConstructUpdateUser({
+  excelData,
+  mainSpace,
+  organization
+}: {
+  excelData: userExcelData;
+  mainSpace: ObjectId;
+  organization: ObjectId;
+}) {
   try {
     const duplicateEmailFound = await checkDuplicateEmail({ model: User, email: excelData.email });
     if (duplicateEmailFound) {
       delete excelData.email;
     }
-    const { organization } = mainSpace;
     let user = await User.findOne({
       name: excelData.name,
       surname: excelData.surname,
@@ -60,7 +68,7 @@ export async function handleConstructUpdateUser({ excelData, mainSpace }: { exce
         email: excelData.email,
         rootSpaces: [mainSpace],
         role: 'user',
-        organizations: [mainSpace.organization]
+        organizations: [organization]
       });
     }
     return user;
@@ -182,10 +190,18 @@ function createTokenMailBodyByUser(user: IUser, authToken: AuthTokenInterface) {
   return html;
 }
 
-export function createUserExcelPromises({ excelData, mainSpace }: { excelData: userExcelData[]; mainSpace: ISpace }) {
+export function createUserExcelPromises({
+  excelData,
+  mainSpace,
+  organization
+}: {
+  excelData: userExcelData[];
+  mainSpace: ObjectId;
+  organization: ObjectId;
+}) {
   const promises = excelData.map((current) => async () => {
     current = await deleteDuplicateEmailField(current); // Await some async operation
-    const newUser = await handleConstructUpdateUser({ excelData: current, mainSpace }); // Await another async operation
+    const newUser = await handleConstructUpdateUser({ excelData: current, mainSpace, organization }); // Await another async operation
 
     // await handleCreateAuthTokenForUser(newUser); // Another one
     await newUser.save(); // And another one

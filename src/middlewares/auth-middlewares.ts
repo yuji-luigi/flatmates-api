@@ -3,16 +3,7 @@ import httpStatus from 'http-status';
 
 import { _MSG } from '../utils/messages';
 import { RequestCustom } from '../types/custom-express/express-custom';
-import passport from 'passport';
 import { ObjectId } from 'mongodb';
-
-import { setSpaceQuery } from './setSpaceQuery';
-
-export const parseSpaceJwt = (req: RequestCustom, res: Response, next: NextFunction) =>
-  passport.authenticate('handleSpaceJwt', { session: false }, setSpaceQuery(req, res, next))(req, res, next);
-
-export const parseOrganizationJwt = (req: RequestCustom, res: Response, next: NextFunction) =>
-  passport.authenticate('handleOrganizationJwt', { session: false }, setSpaceQuery(req, res, next))(req, res, next);
 
 export function clearQueriesForSAdmin(req: RequestCustom, res: Response, next: NextFunction) {
   if (req.user.role === 'super_admin') {

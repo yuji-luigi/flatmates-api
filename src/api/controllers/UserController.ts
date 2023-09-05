@@ -23,16 +23,16 @@ const lookupSpaces: PipelineStage.FacetPipelineStage = {
 };
 export const createUserAndSendDataWithPagination = async (req: RequestCustom, res: Response) => {
   try {
-    if (!req.space) {
+    if (!req.user.spaceId) {
       throw new Error('space is not set.');
     }
     // get req.params.entity
     const entity = 'users';
     req.body = deleteEmptyFields(req.body);
     req.body.user = req.user._id;
-    req.body.organization = req.space.organization;
-    req.body.space = req.space._id;
-    req.body.rootSpaces = [req.space._id];
+    req.body.organization = req.user.organizationId;
+    req.body.space = req.user.spaceId;
+    req.body.rootSpaces = [req.user.spaceId];
 
     if (!req.body.password) {
       throw new Error('Password is required. Please provide password.');
@@ -46,7 +46,7 @@ export const createUserAndSendDataWithPagination = async (req: RequestCustom, re
 
     await newModel.save();
     // modify query for user model.
-    req.query.rootSpaces = req.space ? { $in: [req.space._id] } : null;
+    req.query.rootSpaces = req.user.spaceId ? { $in: [req.user.spaceId] } : null;
     delete req.query.space;
 
     req.query = convert_idToMongooseId(req.query);
@@ -71,7 +71,7 @@ export async function sendUsersToClient(req: RequestCustom, res: Response) {
     //! todo: put array of root spaces instead of setting organization. because user can be admin/inhabitant of multiple organizations.
     if (!user.isSuperAdmin()) {
       // req.query.organization = user.organization;
-      req.query.rootSpaces = req.space ? { $in: [req.space._id] } : null;
+      req.query.rootSpaces = req.user.spaceId ? { $in: [req.user.spaceId] } : null;
     }
     delete req.query.space;
 
@@ -233,11 +233,12 @@ export async function importExcelFromClient(req: RequestCustom, res: Response) {
     const fileFromClient = req.files.file;
     // Parse the file based on its type
     const data = convertExcelToJson<userExcelData>(fileFromClient);
-    const mainSpace = req.space;
+    const mainSpace = req.user.spaceId;
+    const organization = req.user.organizationId;
     if (!mainSpace) throw new Error('main space is not set');
 
     // SECOND IMPLEMENTATION: PROMISE.ALL
-    const promises = createUserExcelPromises({ excelData: data, mainSpace });
+    const promises = createUserExcelPromises({ excelData: data, mainSpace, organization });
     const CHUNK_SIZE = 100;
     const chunks = chunkArray(promises, CHUNK_SIZE);
     for (const chunk of chunks) {
