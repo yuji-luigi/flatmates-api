@@ -3,7 +3,6 @@ import { Request } from 'express';
 import vars from './vars';
 import User from '../models/User';
 import Space from '../models/Space';
-import Organization from '../models/Organization';
 import { LeanUser } from '../types/mongoose-types/model-types/user-interface';
 import { ObjectId } from 'bson';
 

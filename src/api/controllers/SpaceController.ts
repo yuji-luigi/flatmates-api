@@ -16,6 +16,7 @@ import Maintenance from '../../models/Maintenance';
 import Maintainer from '../../models/Maintainer';
 import { ObjectId } from 'mongodb';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
+import { LOOKUPS, UNWIND } from '../pipelines/lookups';
 const entity = 'spaces';
 // import MSG from '../../utils/messages';
 // import { runInNewContext } from 'vm';
@@ -86,8 +87,9 @@ export const sendMainSpacesWithPaginationToClient = async (req: RequestCustom, r
 
     //  TODO: use req.query for querying in find method and paginating. maybe need to delete field to query in find method
     // const { query } = req;
-
-    const data = await aggregateWithPagination(req.query, entity);
+    req.query.isMain = true;
+    const lookups = [LOOKUPS.ADMINS, UNWIND, LOOKUPS.ORGANIZATION, UNWIND];
+    const data = await aggregateWithPagination(req.query, entity, lookups);
 
     res.status(httpStatus.OK).json({
       success: true,

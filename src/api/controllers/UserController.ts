@@ -74,7 +74,9 @@ export async function sendUsersToClient(req: RequestCustom, res: Response) {
       req.query.rootSpaces = req.user.spaceId ? { $in: [req.user.spaceId] } : null;
     }
     delete req.query.space;
-
+    if (req.query.organization) {
+      req.query.organizations = { $in: [req.query.organization] };
+    }
     const users = await aggregateWithPagination(req.query, 'users', [lookupSpaces]);
 
     res.status(httpStatus.OK).json({
