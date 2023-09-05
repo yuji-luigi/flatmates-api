@@ -9,6 +9,10 @@ export const generateTokenUrl = {
   userRegister: (authToken: AuthTokenInterface) => `${baseUrl}/users/${authToken.linkId}/${authToken._id.toString()}`
 };
 
+export const formatUserDataForJwt = (user: JwtReturnType) => ({
+  email: user.email
+});
+
 export const signJwt = (payload: string | Record<string, any>) => jwt.sign(payload, vars.jwtSecret, { expiresIn: vars.jwtExpirationInterval });
 
 type JsonObjPayload = {

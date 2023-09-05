@@ -68,8 +68,8 @@ const jwt = async (payload: any, done: any) => {
       result.spaceAdmins = space.admins;
     }
     if (payload.organizationId) {
-      const organization = await Organization.findById(payload.organizationId).lean();
-      result.organizationId = organization._id;
+      // const organization = await Organization.findById(payload.organizationId).lean();
+      result.organizationId = new ObjectId(payload.organizationId);
     }
     // You can attach space and organization to the user object if you like
 

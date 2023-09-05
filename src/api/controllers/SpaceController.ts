@@ -134,24 +134,30 @@ export const sendSpaceDataForHome = async (req: RequestCustom, res: Response) =>
     // const limit = 10;
 
     //  TODO: use req.query for querying in find method and paginating. maybe need to delete field to query in find method
-    let query: Record<string, string | ObjectId> = req.user?.spaceId ? { _id: req.user.spaceId } : undefined;
-    query = req.params.slug ? { slug: req.params.slug } : req.query;
+    let { query } = req;
+    let maintainerQuery = {};
 
-    const space = await Space.findOne(query);
+    if (req.user?.spaceId) {
+      query = { space: req.user.spaceId };
+      maintainerQuery = { spaces: { $in: [req.user._id] } };
+    }
+    // case only for super_admin. selected only organization.
+    if (req.user?.organizationId && !req.user?.spaceId) {
+      const spaces = await Space.find({ organization: req.user.organizationId, isMain: true });
+      maintainerQuery = { spaces: { $in: spaces.map((s) => s._id) } };
+    }
 
-    if (!space) throw new Error('space not found. please check the slug.');
+    const threads = await Thread.find(query).limit(10);
+    const maintenances = await Maintenance.find(query).limit(10);
+    const maintainers = await Maintainer.find(maintainerQuery);
 
-    const threads = await Thread.find({ space: space._id }).limit(10);
-    const maintenances = await Maintenance.find({ space: space._id }).limit(10);
-    const maintainers = await Maintainer.find({ spaces: { $in: [space._id] } });
-
-    space.cover && (await space.cover.setUrl());
+    // space.cover && (await space.cover.setUrl());
 
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity,
       data: {
-        space,
+        space: {},
         threads,
         maintenances,
         maintainers

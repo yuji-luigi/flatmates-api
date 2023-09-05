@@ -6,9 +6,11 @@ import { RequestCustom } from '../types/custom-express/express-custom';
 // called in handleQuery middleware.
 export function queryHandler(req: RequestCustom, res: Response, next: NextFunction) {
   try {
+    // case admin: at least organizationId is required
     if (req.user.role === 'admin' && !req.user.organizationId) {
       throw new Error('organization not found');
     }
+    // case user: at least spaceId is required
     if (req.user.role === 'user' && !req.user.spaceId) {
       throw new Error('space not found');
     }
@@ -22,11 +24,11 @@ export function queryHandler(req: RequestCustom, res: Response, next: NextFuncti
     if (req.user.role === 'super_admin') {
       delete req.query.organization;
       delete req.query.space;
-      if (req.cookies.spaceId) {
-        req.query.space = req.cookies.spaceId;
+      if (req.user.spaceId) {
+        req.query.space = req.user.spaceId;
       }
-      if (req.cookies.organizationId) {
-        req.query.organization = req.cookies.organizationId;
+      if (req.user.organizationId) {
+        req.query.organization = req.user.organizationId;
       }
     }
     return next();

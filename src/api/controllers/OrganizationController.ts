@@ -10,6 +10,7 @@ import User from '../../models/User';
 import { _MSG } from '../../utils/messages';
 import { deleteEmptyFields } from '../../utils/functions';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
+import { formatUserDataForJwt, signJwt } from '../../utils/authTokenUtil';
 
 export async function sendOrganizations(req: RequestCustom, res: Response) {
   try {
@@ -73,6 +74,10 @@ export async function organizationSelected(req: RequestCustom, res: Response) {
       throw new Error(_MSG.NOT_AUTHORIZED);
     }
     const organization = await Organization.findById(req.params.organizationId).lean();
+    const formattedUser = formatUserDataForJwt(req.user);
+    const jwt = signJwt({ ...formattedUser, organizationId: req.params.organizationId });
+
+    res.cookie('jwt', jwt, sensitiveCookieOptions);
     res.cookie('organization', req.params.organizationId, sensitiveCookieOptions);
     res.cookie('organizationName', organization.name, { domain: vars.cookieDomain });
     const spaces = await Space.find({ organization: req.params.organizationId, isMain: true }).lean();
@@ -189,8 +194,13 @@ export async function deleteOrganizationCookie(req: RequestCustom, res: Response
   if (req.user.role !== 'super_admin') {
     throw new Error(_MSG.NOT_AUTHORIZED);
   }
-  res.clearCookie('organization', sensitiveCookieOptions);
-  res.clearCookie('organizationName', sensitiveCookieOptions);
+  const payloadUser = formatUserDataForJwt(req.user);
+  const upDatedJwt = signJwt(payloadUser);
+  res.cookie('jwt', upDatedJwt, sensitiveCookieOptions);
+  res.clearCookie('organization', { domain: vars.cookieDomain });
+  res.clearCookie('space', { domain: vars.cookieDomain });
+  res.clearCookie('spaceName', { domain: vars.cookieDomain });
+  res.clearCookie('organizationName', { domain: vars.cookieDomain });
 
   res.status(httpStatus.OK).json({
     success: true,
