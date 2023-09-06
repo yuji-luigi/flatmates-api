@@ -4,7 +4,7 @@
 import { Request, Response } from 'express';
 import moment from 'moment-timezone';
 import httpStatus from 'http-status';
-import User from '../../models/User';
+import User, { isSuperAdmin } from '../../models/User';
 // import { UserModel } from 'model/user';
 import vars, { sensitiveCookieOptions } from '../../config/vars';
 import { _MSG } from '../../utils/messages';
@@ -207,6 +207,21 @@ export const sendMainSpaceSelectionsToClient = async (req: RequestCustom, res: R
       mainSpaces = await Space.find({ isMain: true, organization: { $in: req.user.organizations } }).lean();
     }
     res.status(httpStatus.OK).json({ success: true, data: mainSpaces });
+  } catch (error) {
+    logger.error(error.message || error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: _MSG.ERRORS.GENERIC
+    });
+  }
+};
+
+export const sendMainOrganizationSelectionsToClient = async (req: RequestCustom, res: Response) => {
+  try {
+    // query by users organizations. in all user cases. Since user can have multiple organizations.
+    const query = isSuperAdmin(req.user) ? {} : { _id: { $in: req.user.organizations } };
+    const organizations = await Organization.find(query).lean();
+    res.status(httpStatus.OK).json({ success: true, data: organizations });
   } catch (error) {
     logger.error(error.message || error);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({

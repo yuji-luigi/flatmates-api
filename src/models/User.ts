@@ -11,8 +11,9 @@ import logger from '../config/logger';
 import Space from './Space';
 import Organization from './Organization';
 import { ISpace } from '../types/mongoose-types/model-types/space-interface';
-import { IUser, UserError, UserModel } from '../types/mongoose-types/model-types/user-interface';
+import { IUser, LeanUser, UserError, UserModel } from '../types/mongoose-types/model-types/user-interface';
 import { _MSG } from '../utils/messages';
+import { JwtReturnType } from '../config/passport';
 
 export type modules = {
   [key: string]: boolean;
@@ -268,3 +269,5 @@ userSchema.plugin(autopopulate);
 const User = model<IUser, UserModel>('users', userSchema);
 export default User;
 // export default UserSchema as UserModel<Model<IUserDocument>>;
+
+export const isSuperAdmin = (user: LeanUser | IUser | JwtReturnType) => user.role === 'super_admin';

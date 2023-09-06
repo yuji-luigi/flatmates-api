@@ -1,7 +1,11 @@
 import express, { Request, Response } from 'express';
 
 const router = express.Router();
-import authCtrl, { sendMainSpaceSelectionsToClient, setSpaceAndOrgInJwt } from '../controllers/AuthController';
+import authCtrl, {
+  sendMainOrganizationSelectionsToClient,
+  sendMainSpaceSelectionsToClient,
+  setSpaceAndOrgInJwt
+} from '../controllers/AuthController';
 import { handleUserFromRequest } from '../../middlewares/handleUserFromRequest';
 import { isLoggedIn } from '../../middlewares/isLoggedIn';
 import { deleteSpaceCookie } from '../controllers/SpaceController';
@@ -24,6 +28,7 @@ router.get('/logout', authCtrl.logout);
 
 router.use(handleUserFromRequest);
 router.get('/space-selections', isLoggedIn(), sendMainSpaceSelectionsToClient);
+router.get('/organization-selections', isLoggedIn(), sendMainOrganizationSelectionsToClient);
 router.get('/space-selected/:idMongoose', isLoggedIn(), setSpaceAndOrgInJwt);
 router.delete('/space-selected', isLoggedIn(), deleteSpaceCookie);
 

@@ -6,7 +6,6 @@ import {
   sendSpaceSelectionToClient,
   createHeadSpaceWithPagination,
   deleteHeadSpaceWithPagination,
-  deleteSpaceCookie,
   sendSingleSpaceByIdToClient,
   sendDescendantIdsToClient,
   sendMainSpacesWithPaginationToClient,
