@@ -149,10 +149,10 @@ export const spacesSchema = new Schema<ISpace, SpaceModel, ISpaceMethods>(
 );
 
 // populate the name of the organization field
-spacesSchema.pre('find', function (next) {
-  this.populate('organization', 'name');
-  next();
-});
+// spacesSchema.pre('find', function (next) {
+//   // this.populate('organization', 'name');
+//   next();
+// });
 // set slug for pre save
 spacesSchema.pre('save', async function (next) {
   try {
