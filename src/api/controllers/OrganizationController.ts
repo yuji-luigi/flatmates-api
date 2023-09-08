@@ -10,7 +10,7 @@ import User from '../../models/User';
 import { _MSG } from '../../utils/messages';
 import { deleteEmptyFields } from '../../utils/functions';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
-import { formatUserDataForJwt, signJwt } from '../../utils/authTokenUtil';
+import { createJWTObjectFromJWTAndSpace, formatUserDataForJwt, setJwtCookie, signJwt } from '../../utils/authTokenUtil';
 
 export async function sendOrganizations(req: RequestCustom, res: Response) {
   try {
@@ -74,14 +74,15 @@ export async function organizationSelected(req: RequestCustom, res: Response) {
       throw new Error(_MSG.NOT_AUTHORIZED);
     }
     const organization = await Organization.findById(req.params.organizationId).lean();
-    const formattedUser = formatUserDataForJwt(req.user);
-    const jwt = signJwt({ ...formattedUser, organizationId: req.params.organizationId });
+    // const jwt = signJwt({ ...formattedUser, organizationId: req.params.organizationId });
 
-    res.cookie('jwt', jwt, sensitiveCookieOptions);
-    res.cookie('organization', req.params.organizationId, sensitiveCookieOptions);
-    res.cookie('organizationName', organization.name, { domain: vars.cookieDomain });
+    // res.cookie('jwt', jwt, sensitiveCookieOptions);
+    // res.cookie('organization', req.params.organizationId, sensitiveCookieOptions);
+    // res.cookie('organizationName', organization.name, { domain: vars.cookieDomain });
     const spaces = await Space.find({ organization: req.params.organizationId, isMain: true }).lean();
 
+    const jwtPayload = createJWTObjectFromJWTAndSpace({ user: req.user, space: { organization: organization._id.toString() } });
+    setJwtCookie(res, jwtPayload);
     res.status(httpStatus.OK).json({
       success: true,
       collection: 'organizations spaces',

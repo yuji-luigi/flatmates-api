@@ -18,7 +18,7 @@ type userRoles = 'user' | 'admin' | 'super_admin';
 export interface IUser extends LoginInstance<IUser>, MongooseBaseModel {
   name: string | undefined;
   surname: string | undefined;
-  email: string | undefined;
+  email?: string | undefined;
   password: string;
   avatar?: IUpload;
   phone?: string | undefined;

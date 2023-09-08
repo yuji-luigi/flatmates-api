@@ -6,7 +6,11 @@ import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { _MSG } from '../../utils/messages';
 import logger from '../../config/logger';
 import { ObjectId } from 'bson';
-
+import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
+import { IOrganization } from '../../types/mongoose-types/model-types/organization-interface';
+/**
+ * @description verify pin from request body and return authToken document with populated space
+ */
 export async function verifyPinFromRequest(req: RequestCustom): Promise<{ verified: boolean; authToken: AuthTokenInterface }> {
   const { linkId, idMongoose } = req.params;
   const { pin } = req.body;
@@ -15,7 +19,7 @@ export async function verifyPinFromRequest(req: RequestCustom): Promise<{ verifi
     _id: idMongoose,
     nonce: pin,
     active: true
-  });
+  }).populate({ path: 'space', select: 'name organization' });
   const found = data ? true : false;
 
   return { verified: found, authToken: data };
@@ -76,17 +80,42 @@ export async function handleCreateAuthTokenForUser(newUser: IUser) {
  * @param newUsers
  * @description create auth token handled by ids array
  */
-export async function handleCreateAuthTokensForUser(newUserIds: ObjectId[]) {
+export async function handleCreateAuthTokensForUser(newUserIds: ObjectId[], spaceId: ObjectId) {
   try {
     const foundTokens = await AuthToken.find({ 'docHolder.instanceId': { $in: newUserIds } });
-    if (foundTokens.length === newUserIds.length) return;
-    const filteredIds = newUserIds.filter((id) => !foundTokens.some((token) => token.docHolder.instanceId.toString() === id.toString()));
-    const docHolders = filteredIds.map((id) => ({ ref: 'users', instanceId: id }));
 
-    const created = await AuthToken.insertMany(docHolders.map((docHolder) => ({ docHolder })));
+    if (foundTokens.length === newUserIds.length) return;
+    // check if the token exists for each users. returns array of users that doesn't have token
+    const filteredIds = newUserIds.filter((id) => !foundTokens.some((token) => token.docHolder.instanceId.toString() === id.toString()));
+    // create docHolders array to save in AuthToken collection
+    const authTokenMap = filteredIds.map((id) => ({
+      space: spaceId,
+      docHolder: { ref: 'users', instanceId: id }
+    }));
+
+    const created = await AuthToken.insertMany(authTokenMap.map((tokenModel) => tokenModel));
     console.log(created);
   } catch (error) {
     logger.error('error creating auth tokens for users. function: handleCreateAuthTokensForUser in authTokenHelper.ts');
     throw new Error(error.message || error);
   }
+}
+
+function isPopulatedSpace(space: ObjectId | ISpace): space is ISpace {
+  return !(space instanceof ObjectId);
+}
+
+function isObjectIdOrganization(organization: ObjectId | IOrganization | string): organization is ObjectId {
+  return organization instanceof ObjectId;
+}
+
+export function typeGuardAuthTokenSpaceOrg(
+  authToken: AuthTokenInterface
+): authToken is AuthTokenInterface & { space: ISpace & { organization: ObjectId } } {
+  if (!authToken) {
+    throw new Error('pin not verified');
+  }
+  if (!isPopulatedSpace(authToken.space)) throw new Error('space is not populated');
+  if (!isObjectIdOrganization(authToken.space.organization)) throw new Error('organization is not ObjectId');
+  return true;
 }

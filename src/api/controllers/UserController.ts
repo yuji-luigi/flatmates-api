@@ -15,6 +15,8 @@ import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { checkAuthTokenForError, findAuthTokenFromCookie, handleCreateAuthTokensForUser } from '../helpers/authTokenHelper';
 import { PipelineStage } from 'mongoose';
 import AuthToken from '../../models/AuthToken';
+import ErrorEx from '../../errors/extendable.error';
+import { deleteCrudObjectByIdAndSendDataWithPagination } from './DataTableController';
 
 const entity = 'users';
 
@@ -237,7 +239,13 @@ export async function importExcelFromClient(req: RequestCustom, res: Response) {
     const data = convertExcelToJson<userExcelData>(fileFromClient);
     const mainSpace = req.user.spaceId;
     const organization = req.user.organizationId;
-    if (!mainSpace) throw new Error('main space is not set');
+    if (!mainSpace)
+      throw new ErrorEx({
+        status: httpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Please set the select input value in some building/space',
+        stack: 'importExcelFromClient',
+        detail: 'detail'
+      });
 
     // SECOND IMPLEMENTATION: PROMISE.ALL
     const promises = createUserExcelPromises({ excelData: data, mainSpace, organization });
@@ -257,7 +265,10 @@ export async function importExcelFromClient(req: RequestCustom, res: Response) {
     });
     const foundUsers = await User.find({ $or: userQueries }, '_id');
 
-    await handleCreateAuthTokensForUser(foundUsers.map((user) => user._id));
+    await handleCreateAuthTokensForUser(
+      foundUsers.map((user) => user._id),
+      req.user.spaceId
+    );
     const users = await aggregateWithPagination(req.query, 'users');
 
     res.status(httpStatus.OK).json({
@@ -270,7 +281,7 @@ export async function importExcelFromClient(req: RequestCustom, res: Response) {
   } catch (error) {
     logger.error(error);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-      message: error.message || error,
+      message: error.message,
       success: false
     });
   }
@@ -280,7 +291,7 @@ export async function sendTokenEmail(req: RequestCustom, res: Response) {
   try {
     const mailOptions = await createMailOptionsForUserToken({ userId: req.params.idMongoose });
     const result = await sendEmail(mailOptions);
-    logger.info(result);
+    logger.debug({ rejectedEmails: result.rejected });
     res.status(httpStatus.OK).json({
       success: true,
       collection: 'users',
@@ -329,6 +340,16 @@ export const updateUserById = async (req: RequestCustom, res: Response) => {
       data: modifiedModel,
       count: 1
     });
+  } catch (err) {
+    logger.error(err.message || err);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: err.message || err });
+  }
+};
+
+export const deleteUserByIdAndSendDataWithPagination = async (req: RequestCustom, res: Response) => {
+  try {
+    req.query.organizations = req;
+    await deleteCrudObjectByIdAndSendDataWithPagination(req, res);
   } catch (err) {
     logger.error(err.message || err);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: err.message || err });

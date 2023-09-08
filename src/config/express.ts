@@ -5,7 +5,7 @@ import helmet from 'helmet';
 import passport from 'passport';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
-import strategies from './passport';
+import strategies from './resolveJwt';
 import routes from '../api/routes/index';
 // import error from '../middlewares/error';
 import vars from './vars';

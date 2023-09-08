@@ -5,6 +5,7 @@ import User from '../models/User';
 import Space from '../models/Space';
 import { LeanUser } from '../types/mongoose-types/model-types/user-interface';
 import { ObjectId } from 'bson';
+import { stringifyAdmins } from '../middlewares/auth-middlewares';
 
 const { jwtSecret } = vars;
 const JwtStrategy = passport.Strategy;
@@ -46,7 +47,13 @@ const jwtOptions = {
   // jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('Bearer'),
 };
 
-export type JwtReturnType = LeanUser & { spaceName?: string; spaceId?: ObjectId; organizationId?: ObjectId; spaceAdmins: ObjectId[] | [] };
+export type JwtReturnType = LeanUser & {
+  spaceName?: string;
+  spaceId?: ObjectId;
+  organizationId?: ObjectId;
+  isAdminOfSpace: boolean;
+  spaceAdmins: ObjectId[] | [];
+};
 
 const jwt = async (payload: any, done: any) => {
   try {
@@ -54,7 +61,7 @@ const jwt = async (payload: any, done: any) => {
     // if (user) return done(null, user);
     // return done(null, false);
     const user: LeanUser = await User.findOne({ email: payload.email }).lean();
-    const result: JwtReturnType = { ...user, spaceAdmins: [] };
+    const result: JwtReturnType = { ...user, spaceAdmins: [], isAdminOfSpace: false };
     if (!user) {
       return done(null, false);
     }
@@ -65,6 +72,7 @@ const jwt = async (payload: any, done: any) => {
       result.spaceName = space.name;
       result.spaceId = space._id;
       result.spaceAdmins = space.admins;
+      result.isAdminOfSpace = stringifyAdmins(space.admins).includes(user._id.toString());
     }
     if (payload.organizationId) {
       // const organization = await Organization.findById(payload.organizationId).lean();

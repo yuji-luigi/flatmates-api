@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb';
 import Space from '../../models/Space';
 import logger from '../../config/logger';
 import { _MSG } from '../../utils/messages';
-import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
+import { CurrentSpace, ISpace } from '../../types/mongoose-types/model-types/space-interface';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 
 /**  searches only root spaces of user */
@@ -149,6 +149,25 @@ export async function setUrlToSpaceImages(space: ISpace) {
     logger.error(err);
     throw new Error(err);
   }
+}
+
+export function formatCurrentSpace(space: ISpace): CurrentSpace {
+  return {
+    _id: space._id,
+    name: space.name,
+    address: space.address,
+    slug: space.slug
+  };
+}
+
+export function formatCurrentSpaceToJSON(space: ISpace): string {
+  const currentSpace = {
+    _id: space._id,
+    name: space.name,
+    address: space.address,
+    slug: space.slug
+  };
+  return JSON.stringify(currentSpace);
 }
 
 // export async function buildHierarchy({ spaces, rootSpace }: { spaces: ISpace[]; rootSpaceId: string }) {

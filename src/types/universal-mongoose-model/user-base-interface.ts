@@ -4,7 +4,7 @@ export interface LoginInstance<UserType> extends LoginInstanceMethods<UserType> 
   _id: ObjectId;
   name: string;
   surname?: string;
-  email: string;
+  email?: string;
   password: string;
 }
 

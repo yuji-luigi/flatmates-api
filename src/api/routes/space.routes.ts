@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import { ADMIN, LOGGED_USER, SUPER_ADMIN } from '../../middlewares/auth-middlewares';
 import {
   // createHeadSpace,
-  sendSpaceAsCookie,
+  addSpaceToJWTAndSendToClient,
   sendSpaceSelectionToClient,
   createHeadSpaceWithPagination,
   deleteHeadSpaceWithPagination,
@@ -41,7 +41,7 @@ router.get('/slug/:slug', isLoggedIn(), sendSingleSpaceBySlugToClient);
 
 // CUSTOM crud ROUTES
 // !deprecated moved to auth route
-router.get('/cookie/:spaceId', isLoggedIn(), sendSpaceAsCookie);
+router.get('/cookie/:spaceId', isLoggedIn(), addSpaceToJWTAndSendToClient);
 
 // router.delete('/cookie', isLoggedIn(), deleteSpaceCookie);
 

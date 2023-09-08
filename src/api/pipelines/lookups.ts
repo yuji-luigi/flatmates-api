@@ -1,4 +1,5 @@
 import { PipelineStage } from 'mongoose';
+import { Entities } from '../../types/mongoose-types/model-types/Entities';
 
 export const LOOKUPS = {
   USERS: {
@@ -22,6 +23,14 @@ export const LOOKUPS = {
       foreignField: '_id',
       as: 'organization'
     }
+  },
+  ORGANIZATIONS: {
+    $lookup: {
+      from: 'organizations',
+      localField: 'organizations',
+      foreignField: '_id',
+      as: 'organizations'
+    }
   }
 } as const;
 
@@ -30,4 +39,25 @@ export const UNWIND: PipelineStage.FacetPipelineStage = {
     path: '$membersData.avatar',
     preserveNullAndEmptyArrays: true
   }
+};
+
+export const LOOKUP_PIPELINE_STAGES: Record<Entities, PipelineStage.FacetPipelineStage[]> = {
+  users: [LOOKUPS.ROOT_SPACES],
+  spaces: [],
+  organizations: [],
+  funds: [],
+  fundRules: [],
+  instances: [],
+  proposals: [],
+  bookmarks: [],
+  comments: [],
+  tags: [],
+  threads: [],
+  userSettings: [],
+  wallets: [],
+  notifications: [],
+  maintenances: [],
+  maintainers: [],
+  checks: [],
+  'auth-tokens': []
 };

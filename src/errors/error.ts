@@ -8,8 +8,3 @@ export function CustomError(code: string, message: string, error: string) {
     ref: error
   }; // default value
 }
-
-// class methods
-// CustomError.prototype.error = function () {};
-// export the class
-module.exports = CustomError;

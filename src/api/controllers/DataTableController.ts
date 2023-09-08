@@ -7,6 +7,8 @@ import MSG from '../../utils/messages';
 import { deleteEmptyFields, getEntity, getEntityFromOriginalUrl } from '../../utils/functions';
 import { LoggedInRequest, RequestCustom } from '../../types/custom-express/express-custom';
 import { aggregateWithPagination, convert_idToMongooseId } from '../helpers/mongoose.helper';
+import { LOOKUP_PIPELINE_STAGES } from '../pipelines/lookups';
+import { Entities } from '../../types/mongoose-types/model-types/Entities';
 
 //================================================================================
 // CRUD DATA TABLE CONTROLLER METHODS
@@ -72,7 +74,7 @@ export const createCrudObjectAndSendDataWithPagination = async (req: LoggedInReq
 export const deleteCrudObjectByIdAndSendDataWithPagination = async (req: RequestCustom, res: Response) => {
   try {
     const { idMongoose } = req.params;
-    const entity: string = req.params.entity || getEntityFromOriginalUrl(req.originalUrl);
+    const entity: Entities = req.params.entity || getEntityFromOriginalUrl(req.originalUrl);
     const { deletedCount } = await mongoose.model(entity).deleteOne({ _id: idMongoose });
     if (deletedCount === 0) {
       return res.status(httpStatus.NO_CONTENT).json({
@@ -84,7 +86,8 @@ export const deleteCrudObjectByIdAndSendDataWithPagination = async (req: Request
     }
     /** pass to sendCrudObjectsWithPaginationToClient to send the updated (deleted array) */
     // return sendCrudObjectsWithPaginationToClient(req, res);
-    const data = await aggregateWithPagination(req.query, entity);
+    const lookupPipeline = LOOKUP_PIPELINE_STAGES[entity] || [];
+    const data = await aggregateWithPagination(req.query, entity, lookupPipeline);
 
     res.status(httpStatus.OK).json({
       success: true,

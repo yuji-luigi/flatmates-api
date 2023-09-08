@@ -13,7 +13,7 @@ import Organization from './Organization';
 import { ISpace } from '../types/mongoose-types/model-types/space-interface';
 import { IUser, LeanUser, UserError, UserModel } from '../types/mongoose-types/model-types/user-interface';
 import { _MSG } from '../utils/messages';
-import { JwtReturnType } from '../config/passport';
+import { JwtReturnType } from '../config/resolveJwt';
 
 export type modules = {
   [key: string]: boolean;
@@ -108,7 +108,7 @@ export const userSchema = new Schema<IUser, UserModel>(
 // HASH PASSWORD BEFORE CREATION OF USER
 userSchema.pre('save', async function save(next) {
   try {
-    if (this.isModified('email')) {
+    if (this.isModified('email') && this.email) {
       this.email = this.email.toLowerCase().trim();
     }
     if (this.isModified('password')) {

@@ -23,6 +23,7 @@ import { queryHandler } from '../../middlewares/handleSetQuery';
 //= ===============================================================================
 router.use('/auth', authRoutes);
 router.use('/space-auth', spaceAuthRoutes);
+router.use('/auth-tokens', authTokenRoutes);
 // call passport jwt strategy defined in passport.ts
 // set user in req.user
 router.use(handleUserFromRequest);
@@ -43,7 +44,6 @@ router.use('/organizations', organizationRoutes);
 router.use('/maintainers', maintainerRoutes);
 router.use('/users', userRoutes);
 router.use('/checks', checkRoutes);
-router.use('/auth-tokens', authTokenRoutes);
 // router.use('/with-pagination', dataTableRoutes);
 
 router.use('/', customRoutes);

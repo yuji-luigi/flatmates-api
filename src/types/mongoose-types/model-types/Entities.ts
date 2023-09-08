@@ -20,6 +20,10 @@ export const entities = [
   // 'users',
   // 'maintainers'
 ] as const;
-
 export type Entities = (typeof entities)[number];
 export type LoginInstanceEntities = (typeof loginInstanceEntities)[number];
+
+export const ENTITIES = entities.reduce<Partial<Record<Entities, Entities>>>((acc, entity) => {
+  acc[entity] = entity;
+  return acc;
+}, {});

@@ -5,10 +5,11 @@ import logger from '../../config/logger';
 import { _MSG } from '../../utils/messages';
 import AuthToken from '../../models/AuthToken';
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
-import { stringifyAuthToken, verifyPinFromRequest } from '../helpers/authTokenHelper';
+import { stringifyAuthToken, typeGuardAuthTokenSpaceOrg, verifyPinFromRequest } from '../helpers/authTokenHelper';
 import User from '../../models/User';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { sensitiveCookieOptions } from '../../config/vars';
+import { JwtSignPayload, signJwt } from '../../utils/authTokenUtil';
 
 const entity = 'authTokens';
 //= ===============================================================================
@@ -76,16 +77,27 @@ export const verifyPinAndSendBooleanToClient = async (req: RequestCustom, res: R
   }
 };
 
+// for onboarding
 export const verifyPinAndSendUserToClient = async (req: RequestCustom, res: Response) => {
   try {
-    // throws error
-    const { verified, authToken } = await verifyPinFromRequest(req);
+    // verified is when authToken is found. so this is not necessary variable now.
+    const { authToken } = await verifyPinFromRequest(req);
     // case 1: pin not verified
-    if (!verified) {
-      throw new Error('pin not verified');
-    }
-    const user = await User.findById(authToken.docHolder.instanceId);
-    res.cookie('jwt', user.token(), sensitiveCookieOptions);
+
+    if (!typeGuardAuthTokenSpaceOrg(authToken)) return;
+
+    const user = await User.findById(authToken.docHolder.instanceId).lean();
+
+    const jwtObj: JwtSignPayload = {
+      email: user.email,
+      spaceName: authToken.space.name,
+      spaceId: authToken.space._id.toString(),
+      organizationId: authToken.space.organization.toString()
+    };
+    const jwt = signJwt(jwtObj);
+
+    res.cookie('jwt', jwt, sensitiveCookieOptions);
+
     const stringifiedAuthToken = stringifyAuthToken(authToken);
     res.cookie('auth-token', stringifiedAuthToken, sensitiveCookieOptions);
     res.status(httpStatus.OK).json({
@@ -102,3 +114,26 @@ export const verifyPinAndSendUserToClient = async (req: RequestCustom, res: Resp
     });
   }
 };
+
+export async function generateNewAuthTokenForEntity(req: RequestCustom, res: Response) {
+  try {
+    const foundAuthTokens = await AuthToken.find({
+      docHolder: {
+        instanceId: req.params.idMongoose,
+        entity: req.params.entity
+      }
+    });
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: entity,
+      data: foundAuthTokens
+    });
+  } catch (error) {
+    logger.error(error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      collection: entity,
+      message: error.message || error
+    });
+  }
+}

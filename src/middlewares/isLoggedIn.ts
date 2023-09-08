@@ -3,7 +3,7 @@ import httpStatus from 'http-status';
 import { RequestCustom } from '../types/custom-express/express-custom';
 import { USER_ROLES } from '../types/enum/enum';
 import { _MSG } from '../utils/messages';
-import { SUPER_ADMIN, stringifyAdmins, ADMIN } from './auth-middlewares';
+import { SUPER_ADMIN, ADMIN } from './auth-middlewares';
 
 export const isLoggedIn =
   (roles: USER_ROLES[] = USER_ROLES) =>
@@ -13,8 +13,8 @@ export const isLoggedIn =
       if (user.role === SUPER_ADMIN) {
         return next();
       }
-      const isAdminMainSpace = stringifyAdmins(req.user.spaceAdmins)?.includes(user._id.toString());
-      if (roles.includes(ADMIN) && isAdminMainSpace) {
+      // const isAdminMainSpace = stringifyAdmins(req.user.spaceAdmins)?.includes(user._id.toString());
+      if (roles.includes(ADMIN) && req.user.isAdminOfSpace) {
         return next();
       }
       if (roles.includes(user.role)) {

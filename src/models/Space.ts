@@ -2,15 +2,15 @@ import mongoose, { model, Model } from 'mongoose';
 import { getOrganizationOfHead } from '../api/helpers/customHelper';
 import logger from '../config/logger';
 const { Schema } = mongoose;
-import jwt from 'jsonwebtoken';
+// import jwt from 'jsonwebtoken';
 import autoPopulate from 'mongoose-autopopulate';
 
-import vars from '../config/vars';
+// import vars from '../config/vars';
 // import urlSlug from 'mongoose-slug-generator';
 import { generateWord, replaceSpecialCharsWith } from '../utils/functions';
 import { ISpace, ISpaceMethods, spaceTypes } from '../types/mongoose-types/model-types/space-interface';
 
-const { jwtSecret } = vars;
+// const { jwtSecret } = vars;
 
 export type SpaceModel = Model<ISpace, unknown, ISpaceMethods>;
 
@@ -137,9 +137,10 @@ export const spacesSchema = new Schema<ISpace, SpaceModel, ISpaceMethods>(
           organization: this.organization,
           slug: this.slug
         };
-        return jwt.sign(payload, jwtSecret, {
-          expiresIn: '24h' // expires in 24 hours
-        });
+        return JSON.stringify(payload);
+        // return jwt.sign(payload, jwtSecret, {
+        //   expiresIn: '24h' // expires in 24 hours
+        // });
       }
     },
 

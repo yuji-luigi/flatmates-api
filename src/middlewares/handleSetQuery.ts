@@ -17,20 +17,23 @@ export function queryHandler(req: RequestCustom, res: Response, next: NextFuncti
 
     if (req.user.spaceId) {
       req.query.space = req.user.spaceId;
+      req.query.rootSpaces = req.user.spaceId;
     }
     if (req.user.organizationId) {
       req.query.organization = req.user.organizationId;
+      req.query.organizations = req.user.organizationId;
     }
-    if (req.user.role === 'super_admin') {
-      delete req.query.organization;
-      delete req.query.space;
-      if (req.user.spaceId) {
-        req.query.space = req.user.spaceId;
-      }
-      if (req.user.organizationId) {
-        req.query.organization = req.user.organizationId;
-      }
-    }
+    // if (req.user.role === 'super_admin') {
+    //   delete req.query.organization;
+    //   delete req.query.space;
+    //   if (req.user.spaceId) {
+    //     req.query.space = req.user.spaceId;
+    //   }
+    //   if (req.user.organizationId) {
+    //     req.query.organization = req.user.organizationId;
+    //     req.query.organizations = req.user.organizationId;
+    //   }
+    // }
     return next();
   } catch (error) {
     logger.error(error.message || error);

@@ -7,7 +7,7 @@ import Space from '../../models/Space';
 import { deleteEmptyFields } from '../../utils/functions';
 import { aggregateWithPagination } from '../helpers/mongoose.helper';
 import { RequestCustom } from '../../types/custom-express/express-custom';
-import vars, { sensitiveCookieOptions } from '../../config/vars';
+import vars from '../../config/vars';
 import User from '../../models/User';
 import { aggregateDescendantIds, setUrlToSpaceImages, userHasSpace } from '../helpers/spaceHelper';
 import { _MSG } from '../../utils/messages';
@@ -17,6 +17,7 @@ import Maintainer from '../../models/Maintainer';
 import { ObjectId } from 'mongodb';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { LOOKUPS, UNWIND } from '../pipelines/lookups';
+import { createJWTObjectFromJWTAndSpace, setJwtCookie } from '../../utils/authTokenUtil';
 const entity = 'spaces';
 // import MSG from '../../utils/messages';
 // import { runInNewContext } from 'vm';
@@ -56,7 +57,9 @@ export const createHeadSpaceWithPagination = async (req: RequestCustom, res: Res
   try {
     const newSpace = new Space({
       ...req.body,
-      isHead: true
+      organization: req.user.organizationId,
+      isHead: true,
+      isMain: true
     });
     await newSpace.save();
     const query = { ...req.query, isHead: true };
@@ -397,7 +400,7 @@ export const deleteHeadSpaceWithPagination = async (req: Request, res: Response)
   }
 };
 
-export const sendSpaceAsCookie = async (req: RequestCustom, res: Response) => {
+export const addSpaceToJWTAndSendToClient = async (req: RequestCustom, res: Response) => {
   try {
     const user = await User.findById(req.user._id);
 
@@ -406,16 +409,22 @@ export const sendSpaceAsCookie = async (req: RequestCustom, res: Response) => {
     }
     // user is super admin or has the root space.
     const space = await Space.findById(req.params.spaceId);
-    const jwt = space.token();
 
-    res.clearCookie('space');
+    const jwt = createJWTObjectFromJWTAndSpace({ user: req.user, space });
 
-    const httpOnlyFalseCookieOptions = {
-      ...sensitiveCookieOptions,
-      httpOnly: false
-    };
-    res.cookie('space', jwt, httpOnlyFalseCookieOptions);
-    res.cookie('spaceName', space.name, { domain: vars.cookieDomain });
+    // const jwt = space.token();
+
+    // res.clearCookie('space');
+
+    // const httpOnlyFalseCookieOptions = {
+    //   ...sensitiveCookieOptions,
+    //   httpOnly: false
+    // };
+    res.clearCookie('jwt', { domain: vars.cookieDomain });
+    setJwtCookie(res, jwt);
+    // res.cookie('jwt', jwt, sensitiveCookieOptions);
+    // res.cookie('space', jwt, httpOnlyFalseCookieOptions);
+    // res.cookie('spaceName', space.name, { domain: vars.cookieDomain });
 
     res.status(httpStatus.OK).json({
       success: true,

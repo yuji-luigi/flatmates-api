@@ -69,3 +69,7 @@ export interface CurrentSpace {
   // organization: ObjectId;
   slug: string;
 }
+
+export function isSpace(obj: ObjectId | ISpace): obj is ISpace {
+  return (obj as ISpace)._id !== undefined && (obj as ISpace).name !== undefined;
+}

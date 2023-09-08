@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import { JwtReturnType } from '../../config/passport';
+import { JwtReturnType } from '../../config/resolveJwt';
 
 interface TypedRequestBody<T, U> extends Request {
   params: { [key: string]: string };

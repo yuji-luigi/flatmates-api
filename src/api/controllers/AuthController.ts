@@ -15,9 +15,8 @@ import Organization from '../../models/Organization';
 import { IOrganization } from '../../types/mongoose-types/model-types/organization-interface';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { userHasSpace } from '../helpers/spaceHelper';
-import { createJsonObject, signJwt } from '../../utils/authTokenUtil';
-import { CurrentSpace } from '../../types/mongoose-types/model-types/space-interface';
-import { getJwtExpirationDate } from '../../utils/functions';
+import { createJWTObjectFromJWTAndSpace, setJwtCookie } from '../../utils/authTokenUtil';
+// import { CurrentSpace } from '../../types/mongoose-types/model-types/space-interface';
 
 const { jwtExpirationInterval, cookieDomain } = vars;
 
@@ -70,20 +69,20 @@ const register = async (req: Request, res: Response) => {
     });
 
     const accessToken = newUser.token();
-    const token = generateTokenResponse(newUser as any, accessToken);
+    // const token = generateTokenResponse(newUser as any, accessToken);
 
     const newRootSpace = await createNewSpaceAtRegister({ space, user: newUser, organization: newOrganization, isMain: true });
-    const spaceJwt = newRootSpace.token();
-
+    // const spaceCookie = formatCurrentSpaceToJSON(newRootSpace);
     await newOrganization.save();
 
     newUser.rootSpaces.push(newRootSpace);
     newUser.organizations.push(newOrganization);
     const createdUser = await newUser.save();
-
+    const jwt = createJWTObjectFromJWTAndSpace({ user: createdUser, space: newRootSpace });
+    setJwtCookie(res, jwt);
     // res.cookie('organization', organizationToken, sensitiveCookieOptions);
-    res.cookie('space', spaceJwt, sensitiveCookieOptions);
-    res.cookie('jwt', token.accessToken, sensitiveCookieOptions);
+    // res.cookie('space', spaceCookie, sensitiveCookieOptions);
+    // res.cookie('jwt', token.accessToken, sensitiveCookieOptions);
 
     res.status(httpStatus.CREATED).send({
       success: true,
@@ -240,23 +239,18 @@ export const setSpaceAndOrgInJwt = async (req: RequestCustom, res: Response) => 
     }
     // user is super admin or has the root space.
     const space = await Space.findById(req.params.idMongoose);
-    const updatedJwt = createJsonObject({ user: req.user, space });
-    const jwt = signJwt(updatedJwt);
+    const jwt = createJWTObjectFromJWTAndSpace({ user: req.user, space });
+    // const jwt = signJwt(updatedJwt);
 
     res.clearCookie('jwt', { domain: vars.cookieDomain });
-    res.cookie('jwt', jwt, sensitiveCookieOptions);
+    setJwtCookie(res, jwt);
+    // res.cookie('jwt', jwt, sensitiveCookieOptions);
 
-    const spaceCookie: CurrentSpace = {
-      _id: space._id,
-      name: space.name,
-      address: space.address,
-      slug: space.slug
-      // organization: space.organization
-    };
-    const expires = getJwtExpirationDate();
-    res.cookie('space', spaceCookie, { domain: vars.cookieDomain, expires });
-    res.cookie('spaceName', space.name, { domain: vars.cookieDomain, expires });
-    res.cookie('organization', space.organization, { domain: vars.cookieDomain, expires });
+    // const spaceCookie = formatCurrentSpaceToJSON(space);
+    // const expires = getJwtExpirationDate();
+    // res.cookie('space', spaceCookie, { domain: vars.cookieDomain, expires });
+    // res.cookie('spaceName', space.name, { domain: vars.cookieDomain, expires });
+    // res.cookie('organization', space.organization, { domain: vars.cookieDomain, expires });
 
     res.status(httpStatus.OK).json({
       success: true,
