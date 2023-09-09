@@ -34,8 +34,10 @@ class APIError {
   status?: string | number;
   isPublic?: boolean;
   stack?: string;
-  constructor({ message, errors, stack, status = INTERNAL_SERVER_ERROR, isPublic = false }: APIError) {
+  details?: string;
+  constructor({ details, message, errors, stack, status = INTERNAL_SERVER_ERROR, isPublic = false }: APIError) {
     this.message = message;
+    this.details = details;
     this.errors = errors;
     this.status = status;
     this.isPublic = isPublic;
