@@ -7,7 +7,7 @@ import User from '../../models/User';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
-import { generateTokenUrl } from '../../utils/authTokenUtil';
+import { generateTokenUrl } from '../../utils/jwt/jwtUtils';
 import { checkDuplicateEmail } from './mongoose.helper';
 import { ObjectId } from 'bson';
 

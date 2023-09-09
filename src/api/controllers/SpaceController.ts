@@ -17,7 +17,7 @@ import Maintainer from '../../models/Maintainer';
 import { ObjectId } from 'mongodb';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { LOOKUPS, UNWIND } from '../pipelines/lookups';
-import { createJWTObjectFromJWTAndSpace, setJwtCookie } from '../../utils/authTokenUtil';
+import { createJWTObjectFromJWTAndSpace, setJwtCookie } from '../../utils/jwt/jwtUtils';
 import { checkAdminOfSpace } from '../../middlewares/auth-middlewares';
 const entity = 'spaces';
 // import MSG from '../../utils/messages';

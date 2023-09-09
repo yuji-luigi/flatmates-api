@@ -21,7 +21,6 @@ import { sendLinkedChildrenWithPaginationToClient } from '../controllers/DataTab
 import { createLinkedChild } from '../controllers/CrudCustomController';
 import httpStatus from 'http-status';
 import { isLoggedIn } from '../../middlewares/isLoggedIn';
-import { updateCrudObjectById } from '../controllers/CrudController';
 const router = express.Router();
 router.get('/home', isLoggedIn(), sendSpaceDataForHome);
 router.get('/', isLoggedIn(), sendSpacesToClient);

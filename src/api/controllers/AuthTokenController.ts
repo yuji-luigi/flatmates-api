@@ -9,7 +9,8 @@ import { stringifyAuthToken, typeGuardAuthTokenSpaceOrg, verifyPinFromRequest } 
 import User from '../../models/User';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { sensitiveCookieOptions } from '../../config/vars';
-import { JwtSignPayload, signJwt } from '../../utils/authTokenUtil';
+import { signJwt } from '../../utils/jwt/jwtUtils';
+import { JwtSignPayload } from '../../utils/jwt/jwtUtils-types';
 
 const entity = 'authTokens';
 //= ===============================================================================

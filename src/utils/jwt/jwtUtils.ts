@@ -1,9 +1,9 @@
-import { JwtReturnType } from './../config/resolveJwt';
+import { JwtReturnType } from '../../config/resolveJwt';
 import jwt from 'jsonwebtoken';
-import vars, { sensitiveCookieOptions } from '../config/vars';
-import { AuthTokenInterface } from '../types/mongoose-types/model-types/auth-token-interface';
-import { ISpace } from '../types/mongoose-types/model-types/space-interface';
+import vars, { sensitiveCookieOptions } from '../../config/vars';
+import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
 import { Response } from 'express';
+import { JsonObjPayload, JwtSignPayload, SpaceDataType, SpaceDetails } from './jwtUtils-types';
 const baseUrl = vars.frontendUrl + '/auth-tokens';
 
 export const generateTokenUrl = {
@@ -15,21 +15,6 @@ export const formatUserDataForJwt = (user: JwtReturnType) => ({
 });
 
 export const signJwt = (payload: string | Record<string, any>) => jwt.sign(payload, vars.jwtSecret, { expiresIn: vars.jwtExpirationInterval });
-
-type JsonObjPayload = {
-  space?: Partial<ISpace> | null;
-  user?: JwtReturnType | null;
-  organizationId?: string;
-};
-type SpaceDataType =
-  | {
-      spaceName: string;
-      spaceId: string;
-      spaceSlug: string;
-      spaceAddress: string;
-      organizationId: string;
-    }
-  | NonNullable<unknown>;
 
 export const createJWTObjectFromJWTAndSpace = (payload: JsonObjPayload): JwtSignPayload => {
   let spaceData: SpaceDataType = {};
@@ -62,22 +47,7 @@ export function setJwtCookie(res: Response, payload: JwtSignPayload) {
     res.cookie('organizationId', payload.organizationId, { domain: vars.cookieDomain });
   }
 }
-type SpaceDetails = {
-  spaceId: string;
-  spaceName: string;
-  spaceSlug: string;
-  spaceAddress: string;
-};
 
 function hasSpaceDetails(payload: JwtSignPayload): payload is SpaceDetails & { email: string; organizationId?: string } {
   return (payload as SpaceDetails).spaceId !== undefined;
 }
-export type JwtSignPayload =
-  | (SpaceDetails & {
-      email: string;
-      organizationId?: string;
-    })
-  | {
-      email: string;
-      organizationId?: string;
-    };
