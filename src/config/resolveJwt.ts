@@ -5,7 +5,7 @@ import User from '../models/User';
 import Space from '../models/Space';
 import { LeanUser } from '../types/mongoose-types/model-types/user-interface';
 import { ObjectId } from 'bson';
-import { stringifyAdmins } from '../middlewares/auth-middlewares';
+import { stringifyObjectIds } from '../middlewares/auth-middlewares';
 
 const { jwtSecret } = vars;
 const JwtStrategy = passport.Strategy;
@@ -72,7 +72,7 @@ const jwt = async (payload: any, done: any) => {
       result.spaceName = space.name;
       result.spaceId = space._id;
       result.spaceAdmins = space.admins;
-      result.isAdminOfSpace = stringifyAdmins(space.admins).includes(user._id.toString());
+      result.isAdminOfSpace = stringifyObjectIds(space.admins).includes(user._id.toString());
     }
     if (payload.organizationId) {
       // const organization = await Organization.findById(payload.organizationId).lean();

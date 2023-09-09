@@ -13,13 +13,15 @@ import {
   sendSingleSpaceBySlugToClient,
   sendHeadToTailToClient,
   sendSpacesToClient,
-  sendSpaceDataForHome
+  sendSpaceDataForHome,
+  updateSpaceAndSendToClient
 } from '../controllers/SpaceController';
 
 import { sendLinkedChildrenWithPaginationToClient } from '../controllers/DataTableController';
 import { createLinkedChild } from '../controllers/CrudCustomController';
 import httpStatus from 'http-status';
 import { isLoggedIn } from '../../middlewares/isLoggedIn';
+import { updateCrudObjectById } from '../controllers/CrudController';
 const router = express.Router();
 router.get('/home', isLoggedIn(), sendSpaceDataForHome);
 router.get('/', isLoggedIn(), sendSpacesToClient);
@@ -48,6 +50,8 @@ router.get('/cookie/:spaceId', isLoggedIn(), addSpaceToJWTAndSendToClient);
 router.post('/with-pagination/linkedChildren/:parentId', isLoggedIn([ADMIN, SUPER_ADMIN]), createLinkedChild);
 router.post('/with-pagination', isLoggedIn([ADMIN, LOGGED_USER, SUPER_ADMIN]), createHeadSpaceWithPagination);
 router.post('/', isLoggedIn([ADMIN, LOGGED_USER, SUPER_ADMIN]), (req: Request, res: Response) => res.status(httpStatus.FORBIDDEN).send('forbidden'));
+
+router.put('/:idMongoose', isLoggedIn([ADMIN, SUPER_ADMIN]), updateSpaceAndSendToClient);
 
 router.delete('/with-pagination/:spaceId', isLoggedIn([ADMIN, LOGGED_USER, SUPER_ADMIN]), deleteHeadSpaceWithPagination);
 

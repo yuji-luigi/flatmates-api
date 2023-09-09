@@ -66,10 +66,10 @@ export const spacesSchema = new Schema<ISpace, SpaceModel, ISpaceMethods>(
         // autopopulate: true
       }
     ],
-    user: {
-      type: Schema.Types.ObjectId,
-      ref: 'users'
-    },
+    // user: {
+    //   type: Schema.Types.ObjectId,
+    //   ref: 'users'
+    // },
     // maintainers: [
     //   {
     //     type: Schema.Types.ObjectId,

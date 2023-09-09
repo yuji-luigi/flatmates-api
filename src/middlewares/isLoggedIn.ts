@@ -13,7 +13,7 @@ export const isLoggedIn =
       if (user.role === SUPER_ADMIN) {
         return next();
       }
-      // const isAdminMainSpace = stringifyAdmins(req.user.spaceAdmins)?.includes(user._id.toString());
+      // const isAdminMainSpace = stringifyObjectIds(req.user.spaceAdmins)?.includes(user._id.toString());
       if (roles.includes(ADMIN) && req.user.isAdminOfSpace) {
         return next();
       }

@@ -81,7 +81,7 @@ export async function organizationSelected(req: RequestCustom, res: Response) {
     // res.cookie('organizationName', organization.name, { domain: vars.cookieDomain });
     const spaces = await Space.find({ organization: req.params.organizationId, isMain: true }).lean();
 
-    const jwtPayload = createJWTObjectFromJWTAndSpace({ user: req.user, space: { organization: organization._id.toString() } });
+    const jwtPayload = createJWTObjectFromJWTAndSpace({ user: req.user, organizationId: organization._id.toString() });
     setJwtCookie(res, jwtPayload);
     res.status(httpStatus.OK).json({
       success: true,

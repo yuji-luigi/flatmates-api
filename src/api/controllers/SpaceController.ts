@@ -18,6 +18,7 @@ import { ObjectId } from 'mongodb';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { LOOKUPS, UNWIND } from '../pipelines/lookups';
 import { createJWTObjectFromJWTAndSpace, setJwtCookie } from '../../utils/authTokenUtil';
+import { checkAdminOfSpace } from '../../middlewares/auth-middlewares';
 const entity = 'spaces';
 // import MSG from '../../utils/messages';
 // import { runInNewContext } from 'vm';
@@ -521,6 +522,34 @@ export async function sendMainSpacesSlug(req: RequestCustom, res: Response) {
     logger.error(error.message || error);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
       message: 'Error in sending main spaces slugs function.'
+    });
+  }
+}
+
+export async function updateSpaceAndSendToClient(req: RequestCustom, res: Response) {
+  try {
+    const space = await Space.findById(req.params.idMongoose);
+
+    if (!checkAdminOfSpace({ space, currentUser: req.user })) {
+      throw new Error(_MSG.NOT_AUTHORIZED);
+    }
+
+    delete req.body.isMain;
+
+    space.set(req.body);
+    await space.save();
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: 'spaces',
+      data: space,
+      totalDocuments: 1
+    });
+  } catch (error) {
+    logger.error(error.message || error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      collection: entity,
+      message: _MSG.ERRORS.GENERIC
     });
   }
 }

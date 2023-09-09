@@ -2,6 +2,7 @@ import { NextFunction, Response } from 'express';
 import httpStatus from 'http-status';
 import logger from '../config/logger';
 import { RequestCustom } from '../types/custom-express/express-custom';
+import { _MSG } from '../utils/messages';
 
 // called in handleQuery middleware.
 export function queryHandler(req: RequestCustom, res: Response, next: NextFunction) {
@@ -23,23 +24,13 @@ export function queryHandler(req: RequestCustom, res: Response, next: NextFuncti
       req.query.organization = req.user.organizationId;
       req.query.organizations = req.user.organizationId;
     }
-    // if (req.user.role === 'super_admin') {
-    //   delete req.query.organization;
-    //   delete req.query.space;
-    //   if (req.user.spaceId) {
-    //     req.query.space = req.user.spaceId;
-    //   }
-    //   if (req.user.organizationId) {
-    //     req.query.organization = req.user.organizationId;
-    //     req.query.organizations = req.user.organizationId;
-    //   }
-    // }
+
     return next();
   } catch (error) {
     logger.error(error.message || error);
     return res.status(httpStatus.UNAUTHORIZED).json({
       success: false,
-      message: error.message,
+      message: _MSG.NOT_AUTHORIZED,
       user: null
     });
   }

@@ -144,7 +144,7 @@ export const createCrudObject = async (req: RequestCustom, res: Response) => {
 export const updateCrudObjectById = async (req: Request, res: Response) => {
   try {
     const { idMongoose } = req.params;
-    const entity = req.params.entity || getEntity(req.url);
+    const entity = req.params.entity || getEntityFromOriginalUrl(req.originalUrl);
     const foundModel = await mongoose.model(entity).findById(idMongoose);
 
     foundModel.set(req.body);

@@ -19,10 +19,21 @@ export const signJwt = (payload: string | Record<string, any>) => jwt.sign(paylo
 type JsonObjPayload = {
   space?: Partial<ISpace> | null;
   user?: JwtReturnType | null;
+  organizationId?: string;
 };
+type SpaceDataType =
+  | {
+      spaceName: string;
+      spaceId: string;
+      spaceSlug: string;
+      spaceAddress: string;
+      organizationId: string;
+    }
+  | NonNullable<unknown>;
 
 export const createJWTObjectFromJWTAndSpace = (payload: JsonObjPayload): JwtSignPayload => {
-  const spaceData = payload.space
+  let spaceData: SpaceDataType = {};
+  spaceData = payload.space
     ? {
         spaceName: payload.space.name,
         spaceId: payload.space._id.toString(),
@@ -31,6 +42,8 @@ export const createJWTObjectFromJWTAndSpace = (payload: JsonObjPayload): JwtSign
         organizationId: payload.space?.organization.toString()
       }
     : {};
+
+  spaceData = payload.organizationId ? { ...spaceData, organizationId: payload.organizationId } : spaceData;
   const data = {
     email: payload.user?.email,
     ...spaceData

@@ -1,5 +1,5 @@
 import express, { NextFunction, Request, Response } from 'express';
-import { ADMIN, stringifyAdmins, SUPER_ADMIN } from '../../middlewares/auth-middlewares';
+import { ADMIN, stringifyObjectIds, SUPER_ADMIN } from '../../middlewares/auth-middlewares';
 
 import httpStatus from 'http-status';
 import {
@@ -45,7 +45,7 @@ export default router;
 async function compareTargetAndCurrentUser(req: RequestCustom, res: Response, next: NextFunction) {
   const { idMongoose } = req.params;
   const { user } = req;
-  const isAdmin = user.role === SUPER_ADMIN || stringifyAdmins(req.user.spaceAdmins)?.includes(user._id.toString());
+  const isAdmin = user.role === SUPER_ADMIN || stringifyObjectIds(req.user.spaceAdmins)?.includes(user._id.toString());
   if (isAdmin) {
     return next();
   }
