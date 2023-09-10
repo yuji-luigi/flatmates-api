@@ -15,7 +15,7 @@ import Organization from '../../models/Organization';
 import { IOrganization } from '../../types/mongoose-types/model-types/organization-interface';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { userHasSpace } from '../helpers/spaceHelper';
-import { createJWTObjectFromJWTAndSpace, setJwtCookie } from '../../utils/jwt/jwtUtils';
+import { createJWTObjectFromJWTAndSpace, resetSpaceCookies, setJwtCookie } from '../../utils/jwt/jwtUtils';
 // import { CurrentSpace } from '../../types/mongoose-types/model-types/space-interface';
 
 const { jwtExpirationInterval, cookieDomain } = vars;
@@ -135,26 +135,15 @@ async function createNewSpaceAtRegister({
  */
 const login = async (req: Request, res: Response) => {
   try {
-    // const { user, accessToken } = await User.findAndGenerateToken(req.body);
     const { user, accessToken } = await User.findAndGenerateToken(req.body);
-
+    //clear all spaceCookies
+    resetSpaceCookies(res);
     const token = generateTokenResponse(user, accessToken);
-    // const userTransformed = user.transform();
-    // Send Set-Cookie header
-    const domain = cookieDomain;
-    logger.info({ domain });
-    // res.clearCookie('jwt');
-    // res.clearCookie('space');
-
     res.cookie('jwt', token.accessToken, sensitiveCookieOptions);
-    // if (!user.isSuperAdmin()) {
-    //   // res.cookie('organization', user.organization._id.toString(), sensitiveCookieOptions);
-    // }
 
     return res.send({
       success: true,
-      data: { token /* , user: userTransformed */ }
-      // accessToken: token
+      data: { token }
     });
   } catch (error) {
     logger.error(error.message || error);
@@ -206,7 +195,12 @@ export const sendMainSpaceSelectionsToClient = async (req: RequestCustom, res: R
     if (req.user.role === 'admin') {
       mainSpaces = await Space.find({ isMain: true, organization: { $in: req.user.organizations } }).lean();
     }
-    res.status(httpStatus.OK).json({ success: true, data: mainSpaces });
+    res.status(httpStatus.OK).json({
+      collection: 'spaces',
+      totalDocuments: mainSpaces.length,
+      success: true,
+      data: mainSpaces
+    });
   } catch (error) {
     logger.error(error.message || error);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({

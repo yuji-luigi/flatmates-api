@@ -19,6 +19,7 @@ import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { LOOKUPS, UNWIND } from '../pipelines/lookups';
 import { createJWTObjectFromJWTAndSpace, setJwtCookie } from '../../utils/jwt/jwtUtils';
 import { checkAdminOfSpace } from '../../middlewares/auth-middlewares';
+import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 const entity = 'spaces';
 // import MSG from '../../utils/messages';
 // import { runInNewContext } from 'vm';
@@ -134,6 +135,56 @@ export const sendSingleSpaceToClientByCookie = async (req: RequestCustom, res: R
 };
 
 export const sendSpaceDataForHome = async (req: RequestCustom, res: Response) => {
+  try {
+    const entity = 'spaces';
+
+    // const limit = 10;
+
+    //  TODO: use req.query for querying in find method and paginating. maybe need to delete field to query in find method
+    let { query } = req;
+    let maintainerQuery = {};
+
+    let space: Partial<ISpace> = {};
+
+    if (req.user?.spaceId) {
+      space = await Space.findById(req.user.spaceId);
+      query = { space: req.user.spaceId };
+      maintainerQuery = { spaces: { $in: [req.user._id] } };
+    }
+    // case only for super_admin. selected only organization.
+    if (req.user?.organizationId && !req.user?.spaceId) {
+      const spaces = await Space.find({ organization: req.user.organizationId, isMain: true });
+      maintainerQuery = { spaces: { $in: spaces.map((s) => s._id) } };
+    }
+
+    const threads = await Thread.find(query).limit(10);
+    const maintenances = await Maintenance.find(query).limit(10);
+    const maintainers = await Maintainer.find(maintainerQuery);
+
+    // space?.avatar && (await space.cover.setUrl());
+    space.cover && (await space.cover.setUrl());
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: entity,
+      data: {
+        space,
+        threads,
+        maintenances,
+        maintainers
+      },
+      totalDocuments: 1
+    });
+  } catch (err) {
+    logger.error(err.message || err);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: _MSG.ERRORS.GENERIC
+    });
+  }
+};
+
+export const sendSpaceDataForSSG = async (req: RequestCustom, res: Response) => {
   try {
     const entity = 'spaces';
 

@@ -7,6 +7,7 @@ import {
   sendAllOrganizations,
   sendOrganizations,
   sendOrganizationsSelectionForSuperAdmin,
+  sendOrganizationsWithPagination,
   updateOrganizationById
 } from '../controllers/OrganizationController';
 import httpStatus from 'http-status';
@@ -19,6 +20,7 @@ const router = express.Router();
  */
 
 router.get('/', isLoggedIn(), sendOrganizations);
+router.get('/with-pagination', isLoggedIn(), sendOrganizationsWithPagination);
 // make sure that the super admin can see all the organizations
 router.get('/all', isLoggedIn([SUPER_ADMIN]), sendAllOrganizations);
 router.get('/selections/super-admin', isLoggedIn([SUPER_ADMIN]), sendOrganizationsSelectionForSuperAdmin);

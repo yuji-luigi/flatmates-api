@@ -51,3 +51,11 @@ export function setJwtCookie(res: Response, payload: JwtSignPayload) {
 function hasSpaceDetails(payload: JwtSignPayload): payload is SpaceDetails & { email: string; organizationId?: string } {
   return (payload as SpaceDetails).spaceId !== undefined;
 }
+
+export function resetSpaceCookies(res: Response) {
+  res.clearCookie('spaceId', { domain: vars.cookieDomain });
+  res.clearCookie('spaceName', { domain: vars.cookieDomain });
+  res.clearCookie('spaceSlug', { domain: vars.cookieDomain });
+  res.clearCookie('spaceAddress', { domain: vars.cookieDomain });
+  res.clearCookie('organizationId', { domain: vars.cookieDomain });
+}

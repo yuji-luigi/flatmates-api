@@ -30,10 +30,6 @@ router.get('/descendants/:spaceId', isLoggedIn(), sendDescendantIdsToClient);
 router.get('/head-to-tail/:spaceId', isLoggedIn(), sendHeadToTailToClient);
 router.get('/with-pagination', isLoggedIn(), sendMainSpacesWithPaginationToClient);
 
-// ! deprecated moved to auth route
-router.get('/selections', isLoggedIn(), sendSpaceSelectionToClient);
-router.get('/with-pagination/linkedChildren/:parentId', isLoggedIn(), sendLinkedChildrenWithPaginationToClient);
-
 // GET SINGLES
 router.get('/single-by-cookie', isLoggedIn(), sendSingleSpaceToClientByCookie);
 // todo: set ACL for this route
@@ -42,9 +38,6 @@ router.get('/slug/:slug', isLoggedIn(), sendSingleSpaceBySlugToClient);
 
 // CUSTOM crud ROUTES
 // !deprecated moved to auth route
-router.get('/cookie/:spaceId', isLoggedIn(), addSpaceToJWTAndSendToClient);
-
-// router.delete('/cookie', isLoggedIn(), deleteSpaceCookie);
 
 router.post('/with-pagination/linkedChildren/:parentId', isLoggedIn([ADMIN, SUPER_ADMIN]), createLinkedChild);
 router.post('/with-pagination', isLoggedIn([ADMIN, LOGGED_USER, SUPER_ADMIN]), createHeadSpaceWithPagination);

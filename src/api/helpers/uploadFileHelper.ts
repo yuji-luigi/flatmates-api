@@ -148,7 +148,7 @@ export const getPrivateUrlOfSpace = async function (obj: any) {
   return url;
 };
 
-export const separateFiles = function (files: any) {
+export function separateFiles(files: any) {
   if (files) {
     const regex = /\[\]/g;
     const filesToUpload = [];
@@ -177,9 +177,11 @@ export const separateFiles = function (files: any) {
     }
     return [filesToUpload, existingFilesId];
   }
-};
+  // return [[], []];
+  throw new Error('No files to upload');
+}
 
-export const deleteFileFromStorage = async function (key: string) {
+export async function deleteFileFromStorage(key: string) {
   try {
     const params = {
       Bucket: storageBucketName,
@@ -192,7 +194,7 @@ export const deleteFileFromStorage = async function (key: string) {
     logger.error(error.message || error);
     throw error;
   }
-};
+}
 
 export async function getFileDirName(req: RequestCustom) {
   const organization = await Organization.findById(req.user.organizationId);
@@ -201,7 +203,7 @@ export async function getFileDirName(req: RequestCustom) {
   return `${orgName}/${nestedDir}`;
 }
 
-export const handleImagesAndAttachments = async function (req: RequestCustom): Promise<{ images: IUpload[]; attachments: IUpload[] }> {
+export async function handleImagesAndAttachments(req: RequestCustom): Promise<{ images: IUpload[]; attachments: IUpload[] }> {
   try {
     const [filesToUpload] = separateFiles(req.files);
     const generalDirName = await getFileDirName(req);
@@ -222,7 +224,7 @@ export const handleImagesAndAttachments = async function (req: RequestCustom): P
     logger.error(error.message || error);
     throw error;
   }
-};
+}
 
 // test to make all uploads public
 export async function makeAllPublic(req: Request, res: Response) {

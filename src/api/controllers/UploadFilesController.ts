@@ -46,148 +46,173 @@ import { UploadResponseObject } from '../helpers/types-uploadFileHelper';
 import vars from '../../config/vars';
 // const { storageBucketName } = vars;
 
-const uploadFilesController = {
-  async getResourceFromStorage(req: Request, res: Response) {
-    try {
-      const url = await getPrivateUrlOfSpace(req);
-      res.send(url);
-    } catch (error) {
-      logger.error(error);
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-        success: false,
-        collection: 'storage',
-        message: `getResourceFromStorage function. Error:${error.message || error}`
-      });
-    }
-  },
-
-  async postResourceIntoStorage(req: RequestCustom, res: Response) {
-    try {
-      // const { forSingleField } = req.body;
-      const [filesToUpload /* existingFilesId */] = separateFiles(req.files);
-      const generalDirName = await getFileDirName(req);
-
-      const uploadModelsData = await saveInStorage(filesToUpload, generalDirName);
-      // ok, with reference of existing files
-      const responseObj: UploadResponseObject = {};
-      for (const key in uploadModelsData) {
-        const createdModel = await Upload.create({
-          ...uploadModelsData[key],
-          url: vars.storageUrl + '/' + uploadModelsData[key].fullPath,
-          uploadedBy: req.user._id
-        });
-
-        if (responseObj[createdModel.fieldInParent]) {
-          responseObj[createdModel.fieldInParent].push(createdModel._id.toString());
-        } else {
-          responseObj[createdModel.fieldInParent] = [createdModel._id.toString()];
-        }
-      }
-      res.status(httpStatus.OK).json({
-        success: true,
-        data: responseObj,
-        collection: 'storage'
-      });
-    } catch (error) {
-      logger.error(error.message || error);
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-        message: error.message,
-        success: false,
-        collection: 'storage'
-      });
-    }
-  },
-  async deleteFileFromStorageAndEntity(req: RequestCustom, res: Response) {
-    try {
-      const { modelEntity, modelId, uploadKey, uploadId } = req.params;
-
-      const uploadModel = await Upload.findById(uploadId);
-      deleteFileFromStorage(uploadModel.fullPath);
-      await uploadModel.removeThis();
-      const rootModel = await mongoose.model(modelEntity).findById(modelId);
-      const updatedFilesInModel = rootModel[uploadKey].filter(
-        (file: any) => file._id.toString() !== uploadId // file._id is an ObjectId
-      );
-      rootModel[uploadKey] = updatedFilesInModel;
-      await rootModel.save();
-
-      res.status(httpStatus.OK).json({
-        success: true,
-        data: /* forSingleField ? uploadModelIds[0] : */ '',
-        collection: 'storage'
-      });
-    } catch (error) {
-      logger.error(error.message || error);
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-        message: error.message,
-        success: false,
-        collection: 'storage'
-      });
-    }
-  },
-
-  async postMaintenanceFileToStorage(req: RequestCustom, res: Response) {
-    try {
-      const folderName = getFolderName(req.body);
-      const [filesToUpload /* existingFilesId */] = separateFiles(req.files);
-      if (!filesToUpload) {
-        throw new Error('No files to upload');
-      }
-      const uploadModelsData = await saveInStorage(filesToUpload, folderName, true);
-      // ok, with reference of existing files
-      const responseObj: UploadResponseObject = {};
-      for (const key in uploadModelsData) {
-        const createdModel = await Upload.create({
-          ...uploadModelsData[key],
-          url: vars.storageUrl + '/' + uploadModelsData[key].fullPath,
-          ACL: 'private'
-          // uploadedBy: req.user._id
-        });
-
-        if (responseObj[createdModel.fieldInParent]) {
-          responseObj[createdModel.fieldInParent].push(createdModel._id.toString());
-        } else {
-          responseObj[createdModel.fieldInParent] = [createdModel._id.toString()];
-        }
-      }
-      res.status(httpStatus.OK).json({
-        success: true,
-        data: responseObj,
-        collection: 'storage'
-      });
-    } catch (error) {
-      logger.error(error.message || error);
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-        message: error.message,
-        success: false,
-        collection: 'storage'
-      });
-    }
-  },
-
-  async deleteAll(req: RequestCustom, res: Response) {
-    try {
-      const deletedModels = await Upload.find();
-      for (const key in deletedModels) {
-        await deleteFileFromStorage(deletedModels[key].fullPath);
-      }
-      const deletedResult = await Upload.deleteMany();
-      logger.info('\n\nAll files deleted from storage\n\n');
-      logger.info(`\n\n${JSON.stringify(deletedResult, null, 4)}\n\n`);
-      res.status(httpStatus.OK).json({
-        success: true,
-        data: deletedModels,
-        collection: 'storage'
-      });
-    } catch (error) {
-      logger.error(error.message || error);
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-        message: error.message,
-        success: false,
-        collection: 'storage'
-      });
-    }
+export async function getResourceFromStorage(req: Request, res: Response) {
+  try {
+    const url = await getPrivateUrlOfSpace(req);
+    res.send(url);
+  } catch (error) {
+    logger.error(error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      collection: 'storage',
+      message: `getResourceFromStorage function. Error:${error.message || error}`
+    });
   }
-};
+}
 
-export default uploadFilesController;
+export async function postResourceIntoStorage(req: RequestCustom, res: Response) {
+  try {
+    // const { forSingleField } = req.body;
+    console.log('postResourceIntoStorage called', req.method, req.url, req.headers);
+
+    const [filesToUpload /* existingFilesId */] = separateFiles(req.files);
+    const generalDirName = await getFileDirName(req);
+
+    const uploadModelsData = await saveInStorage(filesToUpload, generalDirName);
+    // // ok, with reference of existing files
+    const responseObj: UploadResponseObject = {};
+    for (const key in uploadModelsData) {
+      console.log(uploadModelsData[key]);
+      const createdModel = await Upload.create({
+        ...uploadModelsData[key],
+        url: vars.storageUrl + '/' + uploadModelsData[key].fullPath,
+        uploadedBy: req.user._id
+      });
+
+      if (responseObj[createdModel.fieldInParent]) {
+        responseObj[createdModel.fieldInParent].push(createdModel._id.toString());
+      } else {
+        responseObj[createdModel.fieldInParent] = [createdModel._id.toString()];
+      }
+    }
+    res.status(httpStatus.OK).json({
+      success: true,
+      data: responseObj,
+      collection: 'storage'
+    });
+  } catch (error) {
+    logger.error(error.message || error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: error.message,
+      success: false,
+      collection: 'storage'
+    });
+  }
+}
+export async function deleteFileFromStorageAndEntity(req: RequestCustom, res: Response) {
+  try {
+    const { modelEntity, modelId, uploadKey, uploadId } = req.params;
+
+    const uploadModel = await Upload.findById(uploadId);
+    deleteFileFromStorage(uploadModel.fullPath);
+    await uploadModel.removeThis();
+    const rootModel = await mongoose.model(modelEntity).findById(modelId);
+    const updatedFilesInModel = rootModel[uploadKey].filter(
+      (file: any) => file._id.toString() !== uploadId // file._id is an ObjectId
+    );
+    rootModel[uploadKey] = updatedFilesInModel;
+    await rootModel.save();
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      data: /* forSingleField ? uploadModelIds[0] : */ '',
+      collection: 'storage'
+    });
+  } catch (error) {
+    logger.error(error.message || error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: error.message,
+      success: false,
+      collection: 'storage'
+    });
+  }
+}
+
+export async function postMaintenanceFileToStorage(req: RequestCustom, res: Response) {
+  try {
+    const folderName = getFolderName(req.body);
+    const [filesToUpload /* existingFilesId */] = separateFiles(req.files);
+    if (!filesToUpload) {
+      throw new Error('No files to upload');
+    }
+    const uploadModelsData = await saveInStorage(filesToUpload, folderName, true);
+    // ok, with reference of existing files
+    const responseObj: UploadResponseObject = {};
+    for (const key in uploadModelsData) {
+      const createdModel = await Upload.create({
+        ...uploadModelsData[key],
+        url: vars.storageUrl + '/' + uploadModelsData[key].fullPath,
+        ACL: 'private'
+        // uploadedBy: req.user._id
+      });
+
+      if (responseObj[createdModel.fieldInParent]) {
+        responseObj[createdModel.fieldInParent].push(createdModel._id.toString());
+      } else {
+        responseObj[createdModel.fieldInParent] = [createdModel._id.toString()];
+      }
+    }
+    res.status(httpStatus.OK).json({
+      success: true,
+      data: responseObj,
+      collection: 'storage'
+    });
+  } catch (error) {
+    logger.error(error.message || error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: error.message,
+      success: false,
+      collection: 'storage'
+    });
+  }
+}
+
+export async function deleteAll(req: RequestCustom, res: Response) {
+  try {
+    const deletedModels = await Upload.find();
+    for (const key in deletedModels) {
+      await deleteFileFromStorage(deletedModels[key].fullPath);
+    }
+    const deletedResult = await Upload.deleteMany();
+    logger.info('\n\nAll files deleted from storage\n\n');
+    logger.info(`\n\n${JSON.stringify(deletedResult, null, 4)}\n\n`);
+    res.status(httpStatus.OK).json({
+      success: true,
+      data: deletedModels,
+      collection: 'storage'
+    });
+  } catch (error) {
+    logger.error(error.message || error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: error.message,
+      success: false,
+      collection: 'storage'
+    });
+  }
+}
+
+export async function getAllUploads(req: RequestCustom, res: Response) {
+  try {
+    const uploads = await Upload.find();
+
+    const newU = uploads.map(async (upload) => {
+      const url = await getPrivateUrlOfSpace({ params: { key: upload.fullPath } });
+      return { ...upload.toObject(), url };
+    });
+    const newUploads = await Promise.all(newU);
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      data: newUploads,
+      collection: 'storage',
+      totalDocuments: uploads.length
+    });
+  } catch (error) {
+    logger.error(error.message || error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: error.message,
+      success: false,
+      collection: 'storage'
+    });
+  }
+}
