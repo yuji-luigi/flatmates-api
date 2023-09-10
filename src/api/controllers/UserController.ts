@@ -69,16 +69,6 @@ export const createUserAndSendDataWithPagination = async (req: RequestCustom, re
 
 export async function sendUsersToClient(req: RequestCustom, res: Response) {
   try {
-    const user = await User.findById(req.user._id);
-    //! todo: put array of root spaces instead of setting organization. because user can be admin/inhabitant of multiple organizations.
-    if (!user.isSuperAdmin()) {
-      // req.query.organization = user.organization;
-      req.query.rootSpaces = req.user.spaceId ? { $in: [req.user.spaceId] } : null;
-    }
-    delete req.query.space;
-    if (req.query.organization) {
-      req.query.organizations = { $in: [req.query.organization] };
-    }
     const users = await aggregateWithPagination(req.query, 'users', [lookupSpaces]);
 
     res.status(httpStatus.OK).json({
@@ -269,6 +259,7 @@ export async function importExcelFromClient(req: RequestCustom, res: Response) {
       foundUsers.map((user) => user._id),
       req.user.spaceId
     );
+
     const users = await aggregateWithPagination(req.query, 'users');
 
     res.status(httpStatus.OK).json({

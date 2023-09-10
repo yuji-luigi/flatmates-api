@@ -126,5 +126,5 @@ uploadSchema.set('toJSON', {
   virtuals: true
 });
 
-export default mongoose.model('uploads', uploadSchema);
+export default mongoose.model<IUpload, IUploadModel>('uploads', uploadSchema);
 // module.exports = mongoose.model<IUpload, IUploadModel>('uploads', uploadSchema);

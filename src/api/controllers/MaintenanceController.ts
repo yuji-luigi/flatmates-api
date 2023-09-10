@@ -30,6 +30,10 @@ const createMaintenance = async (req: RequestCustom, res: Response) => {
     reqBody.space = req.query.space;
 
     const maintenance = new Maintenance(reqBody);
+
+    const images = await Upload.find({ _id: { $in: maintenance.images } });
+    maintenance.images = images;
+
     //!todo send email to the maintainers of the space of type of maintenance
     //!todo log the email
     const mailOptions = await createOptionsForMaintenance({ maintenance });

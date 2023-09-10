@@ -1,4 +1,4 @@
-import mongoose, { CallbackWithoutResultAndOptionalError, Model } from 'mongoose';
+import mongoose, { CallbackWithoutResultAndOptionalError, Document, Model } from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
 import { getPrivateUrlOfSpace } from '../api/helpers/uploadFileHelper';
 import logger from '../config/logger';

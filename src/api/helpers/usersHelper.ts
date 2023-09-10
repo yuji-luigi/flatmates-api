@@ -2,9 +2,7 @@ import Mail from 'nodemailer/lib/mailer';
 import logger from '../../config/logger';
 import vars from '../../config/vars';
 import AuthToken from '../../models/AuthToken';
-import Space from '../../models/Space';
 import User from '../../models/User';
-import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
 import { generateTokenUrl } from '../../utils/jwt/jwtUtils';
@@ -163,11 +161,14 @@ export async function handleConstructUpdateUser({
 export async function createMailOptionsForUserToken({ userId }: { userId: string }): Promise<Mail.Options> {
   try {
     const user = await User.findById(userId);
+    if (!user.email) {
+      throw new Error('User does not have email');
+    }
     const authToken = await AuthToken.findOne({ 'docHolder.ref': User.collection.collectionName, 'docHolder.instanceId': user._id });
     const html = createTokenMailBodyByUser(user as IUser, authToken);
     const options: Mail.Options = {
       from: vars.displayMail,
-      to: 'u.ji.jp777@gmail.com',
+      to: user.email,
       // to: user.email,
       subject: 'Flatmates: Access to platform for register.',
       html

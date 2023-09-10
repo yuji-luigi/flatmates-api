@@ -2,39 +2,39 @@ import express, { Request, Response } from 'express';
 import { ADMIN, LOGGED_USER, SUPER_ADMIN } from '../../middlewares/auth-middlewares';
 import {
   // createHeadSpace,
-  addSpaceToJWTAndSendToClient,
-  sendSpaceSelectionToClient,
+
   createHeadSpaceWithPagination,
   deleteHeadSpaceWithPagination,
   sendSingleSpaceByIdToClient,
   sendDescendantIdsToClient,
   sendMainSpacesWithPaginationToClient,
   sendSingleSpaceToClientByCookie,
-  sendSingleSpaceBySlugToClient,
+  sendSpaceSettingPageDataToClient,
   sendHeadToTailToClient,
   sendSpacesToClient,
   sendSpaceDataForHome,
   updateSpaceAndSendToClient
 } from '../controllers/SpaceController';
 
-import { sendLinkedChildrenWithPaginationToClient } from '../controllers/DataTableController';
 import { createLinkedChild } from '../controllers/CrudCustomController';
 import httpStatus from 'http-status';
 import { isLoggedIn } from '../../middlewares/isLoggedIn';
 const router = express.Router();
-router.get('/home', isLoggedIn(), sendSpaceDataForHome);
+
 router.get('/', isLoggedIn(), sendSpacesToClient);
-// GET FOR DASHBOARD/HOME IN WEB APP
+router.get('/home', isLoggedIn(), sendSpaceDataForHome);
+router.get('/with-pagination', isLoggedIn(), sendMainSpacesWithPaginationToClient);
 
 router.get('/descendants/:spaceId', isLoggedIn(), sendDescendantIdsToClient);
 router.get('/head-to-tail/:spaceId', isLoggedIn(), sendHeadToTailToClient);
-router.get('/with-pagination', isLoggedIn(), sendMainSpacesWithPaginationToClient);
 
 // GET SINGLES
 router.get('/single-by-cookie', isLoggedIn(), sendSingleSpaceToClientByCookie);
+// router.get('/is-admin', isLoggedIn(), sendSingleSpaceToClientByCookie);
+
 // todo: set ACL for this route
 router.get('/:spaceId', isLoggedIn(), sendSingleSpaceByIdToClient);
-router.get('/slug/:slug', isLoggedIn(), sendSingleSpaceBySlugToClient);
+router.get('/settings/:slug', isLoggedIn(), sendSpaceSettingPageDataToClient);
 
 // CUSTOM crud ROUTES
 // !deprecated moved to auth route

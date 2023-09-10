@@ -29,7 +29,7 @@ export const createMaintainer = async (req: RequestCustom, res: Response) => {
       await organization.save();
     }
 
-    const space = await Space.findById(req.user.spaceId);
+    const space = await Space.findById(req.user.spaceId).lean();
     if (space) {
       newMaintainer.spaces.push(space);
       // space.maintainers.push(newMaintainer);

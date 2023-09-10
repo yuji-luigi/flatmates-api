@@ -14,7 +14,7 @@ import { UploadsThread } from './types-uploadFileHelper';
 import Upload from '../../models/Upload';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import Organization from '../../models/Organization';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { IUpload } from '../../types/mongoose-types/model-types/upload-interface';
 
 const { storageAccessKeyId, storageSecretAccessKey, storageBucketName, storageEndPoint, storageRegion } = vars;

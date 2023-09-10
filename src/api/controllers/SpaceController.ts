@@ -134,6 +134,24 @@ export const sendSingleSpaceToClientByCookie = async (req: RequestCustom, res: R
   }
 };
 
+// export const checkIsAdminOfSpaceForClient = async (req: RequestCustom, res: Response) => {
+//   try {
+
+//     res.status(httpStatus.OK).json({
+//       success: true,
+//       collection: entity,
+//       data: data,
+//       totalDocuments: 1
+//     });
+//   } catch (err) {
+//     res.status(err).json({
+//       success: false,
+//       collection: entity,
+//       message: err.message || err
+//     });
+//   }
+// };
+
 export const sendSpaceDataForHome = async (req: RequestCustom, res: Response) => {
   try {
     const entity = 'spaces';
@@ -264,11 +282,11 @@ export const sendSingleSpaceByIdToClient = async (req: RequestCustom, res: Respo
   }
 };
 
-export const sendSingleSpaceBySlugToClient = async (req: RequestCustom, res: Response) => {
+export const sendSpaceSettingPageDataToClient = async (req: RequestCustom, res: Response) => {
   try {
     const data = await Space.findOne({ slug: req.params.slug });
     const maintainers = await Maintainer.find({ spaces: { $in: [data._id] } });
-
+    const isSpaceAdmin = checkAdminOfSpace({ space: data, currentUser: req.user });
     await setUrlToSpaceImages(data);
     for (const maintainer of maintainers) {
       await maintainer.avatar?.setUrl();
@@ -279,7 +297,8 @@ export const sendSingleSpaceBySlugToClient = async (req: RequestCustom, res: Res
       collection: 'spaces',
       data: {
         space: data,
-        maintainers
+        maintainers,
+        isSpaceAdmin
       },
       totalDocuments: 1
     });
@@ -600,6 +619,23 @@ export async function updateSpaceAndSendToClient(req: RequestCustom, res: Respon
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
       success: false,
       collection: entity,
+      message: _MSG.ERRORS.GENERIC
+    });
+  }
+}
+
+export async function sendIsAdminToClient(req: RequestCustom, res: Response) {
+  try {
+    const space = await Space.findById(req.params.idMongoose);
+    const isAdmin = checkAdminOfSpace({ space, currentUser: req.user });
+    res.status(httpStatus.OK).json({
+      success: true,
+      data: isAdmin
+    });
+  } catch (error) {
+    logger.error(error.message || error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      success: false,
       message: _MSG.ERRORS.GENERIC
     });
   }

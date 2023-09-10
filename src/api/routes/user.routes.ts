@@ -17,6 +17,22 @@ import { isLoggedIn } from '../../middlewares/isLoggedIn';
 
 const router = express.Router();
 
+router.use((req: RequestCustom, response: Response, next: NextFunction) => {
+  if (req.user.role !== 'super_admin') {
+    if (!req.user.spaceId) {
+      return response.status(httpStatus.FORBIDDEN).send('something went wrong');
+    }
+    req.query.rootSpaces = { $in: [req.user.spaceId] };
+  }
+  // delete req.query.space;
+  if (req.query.organization) {
+    req.query.organizations = { $in: [req.query.organization] };
+  }
+  delete req.query.organization;
+  delete req.query.space;
+  next();
+});
+
 /**
  * ORGANIZATION
  */

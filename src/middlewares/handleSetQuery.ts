@@ -18,11 +18,13 @@ export function queryHandler(req: RequestCustom, res: Response, next: NextFuncti
 
     if (req.user.spaceId) {
       req.query.space = req.user.spaceId;
-      req.query.rootSpaces = req.user.spaceId;
+      // only for users
+      // req.query.rootSpaces = req.user.spaceId;
     }
     if (req.user.organizationId) {
       req.query.organization = req.user.organizationId;
-      req.query.organizations = req.user.organizationId;
+      // only for users and maintainers
+      // req.query.organizations = req.user.organizationId;
     }
 
     return next();
