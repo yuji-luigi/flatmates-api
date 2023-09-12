@@ -83,7 +83,7 @@ const uploadSchema = new Schema<IUpload, IUploadModel, IUploadMethods>(
         if (this.ACL !== ACL_STATUS.PUBLIC_READ) {
           const obj = { params: { key: this.fullPath } };
           url = await getPrivateUrlOfSpace(obj);
-          return;
+          // return;
         }
         if (compact) {
           this.fileName = undefined;

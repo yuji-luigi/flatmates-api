@@ -10,12 +10,14 @@ import logger from '../config/logger';
 type CheckModel = Model<CheckInterface, object, object>;
 export const checkSchema = new Schema<CheckInterface, CheckModel, unknown>(
   {
-    file: {
-      type: Schema.Types.ObjectId,
-      ref: 'uploads',
-      autopopulate: true,
-      required: true
-    },
+    files: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'uploads',
+        autopopulate: true,
+        required: true
+      }
+    ],
     type: {
       type: String,
       enum: checkTypes,
@@ -35,7 +37,7 @@ export const checkSchema = new Schema<CheckInterface, CheckModel, unknown>(
       ref: 'organizations',
       autopopulate: true
     },
-    mainSpace: {
+    space: {
       type: Schema.Types.ObjectId,
       ref: 'spaces',
       autopopulate: true

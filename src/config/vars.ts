@@ -47,11 +47,14 @@ const vars = {
   redirectUrl: frontendUrl + '/' + process.env.REDIRECT_URL
 };
 
-export const sensitiveCookieOptions = {
-  httpOnly: true,
+export const basicCookieOptions = {
   sameSite: true,
   maxAge: 1000 * 60 * 60 * 24 * 30,
   domain: vars.cookieDomain
+};
+export const sensitiveCookieOptions = {
+  httpOnly: true,
+  ...basicCookieOptions
 };
 
 export default vars;

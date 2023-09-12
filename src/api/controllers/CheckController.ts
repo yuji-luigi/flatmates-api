@@ -39,7 +39,10 @@ export async function sendCheckToClient(req: RequestCustom, res: Response) {
 
     const nonceIsCorrect = +req.cookies.maintenanceNonce === maintenance.nonce;
     if (!nonceIsCorrect) throw new Error('nonce is not correct');
-    await check.file.setUrl();
+    const promises = check.files.map(async (file) => {
+      await file.setUrl();
+    });
+    await Promise.all(promises);
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity,
@@ -54,10 +57,13 @@ export async function sendCheckToClient(req: RequestCustom, res: Response) {
   }
 }
 
-exports.showCheckToClient = async function (req: RequestCustom, res: Response) {
+export async function showCheckToClient(req: RequestCustom, res: Response) {
   try {
     const check = await Check.findById(req.params.idMongoose);
-    await check.file.setUrl();
+    const promises = check.files.map(async (file) => {
+      await file.setUrl();
+    });
+    await Promise.all(promises);
     res.status(httpStatus.OK).json({
       data: check,
       success: true,
@@ -66,4 +72,28 @@ exports.showCheckToClient = async function (req: RequestCustom, res: Response) {
   } catch (error) {
     logger.error();
   }
-};
+}
+
+export async function verifyNonceCookieSendChecksMaintenanceToClient(req: RequestCustom, res: Response) {
+  try {
+    const maintenance = await Maintenance.findOne({ linkId: req.params.linkId, nonce: req.cookies.maintenanceNonce });
+    if (!maintenance) throw new Error('nonce is not correct. Please check email and set the 6 digits code again.');
+
+    const check = await Check.findById(req.params.idMongoose);
+    const promises = check.files.map(async (file) => {
+      await file.setUrl();
+    });
+    await Promise.all(promises);
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: entity,
+      data: { check, maintenance },
+      count: 1
+    });
+  } catch (err) {
+    logger.error(err);
+    res.status(err).json({
+      message: err.message || err
+    });
+  }
+}

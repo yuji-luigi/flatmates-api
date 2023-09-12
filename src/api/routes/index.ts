@@ -24,6 +24,9 @@ import { queryHandler } from '../../middlewares/handleSetQuery';
 router.use('/auth', authRoutes);
 router.use('/space-auth', spaceAuthRoutes);
 router.use('/auth-tokens', authTokenRoutes);
+router.use('/upload-files', uploadFilesRoutes);
+router.use('/checks', checkRoutes);
+
 // call passport jwt strategy defined in passport.ts
 // set user in req.user
 router.use(handleUserFromRequest);
@@ -33,7 +36,6 @@ router.use(queryHandler);
 // set space in req.user.spaceId
 // and set queries in req.query
 // req.query.organizationId, req.query.rootSpaceId
-router.use('/upload-files', uploadFilesRoutes);
 //= ===============================================================================
 // CUSTOM ROUTES
 //= ===============================================================================
@@ -43,7 +45,6 @@ router.use('/spaces', spaceRoutes);
 router.use('/organizations', organizationRoutes);
 router.use('/maintainers', maintainerRoutes);
 router.use('/users', userRoutes);
-router.use('/checks', checkRoutes);
 // router.use('/with-pagination', dataTableRoutes);
 
 router.use('/', customRoutes);

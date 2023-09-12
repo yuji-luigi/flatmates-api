@@ -6,15 +6,13 @@ export type JsonObjPayload = {
   user?: JwtReturnType | null;
   organizationId?: string;
 };
-export type SpaceDataType =
-  | {
-      spaceName: string;
-      spaceId: string;
-      spaceSlug: string;
-      spaceAddress: string;
-      organizationId: string;
-    }
-  | NonNullable<unknown>;
+export type SpaceDataType = {
+  spaceName: string;
+  spaceId: string;
+  spaceSlug: string;
+  spaceAddress: string;
+  organizationId: string;
+};
 
 export type JwtSignPayload =
   | (SpaceDetails & {

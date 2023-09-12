@@ -1,6 +1,6 @@
 import { JwtReturnType } from '../../config/resolveJwt';
 import jwt from 'jsonwebtoken';
-import vars, { sensitiveCookieOptions } from '../../config/vars';
+import vars, { basicCookieOptions, sensitiveCookieOptions } from '../../config/vars';
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
 import { Response } from 'express';
 import { JsonObjPayload, JwtSignPayload, SpaceDataType, SpaceDetails } from './jwtUtils-types';
@@ -17,7 +17,7 @@ export const formatUserDataForJwt = (user: JwtReturnType) => ({
 export const signJwt = (payload: string | Record<string, any>) => jwt.sign(payload, vars.jwtSecret, { expiresIn: vars.jwtExpirationInterval });
 
 export const createJWTObjectFromJWTAndSpace = (payload: JsonObjPayload): JwtSignPayload => {
-  let spaceData: SpaceDataType = {};
+  let spaceData: SpaceDataType | null = null;
   spaceData = payload.space
     ? {
         spaceName: payload.space.name,
@@ -26,7 +26,7 @@ export const createJWTObjectFromJWTAndSpace = (payload: JsonObjPayload): JwtSign
         spaceAddress: payload.space.address,
         organizationId: payload.space?.organization.toString()
       }
-    : {};
+    : null;
 
   spaceData = payload.organizationId ? { ...spaceData, organizationId: payload.organizationId } : spaceData;
   const data = {
@@ -40,11 +40,11 @@ export const createJWTObjectFromJWTAndSpace = (payload: JsonObjPayload): JwtSign
 export function setJwtCookie(res: Response, payload: JwtSignPayload) {
   res.cookie('jwt', signJwt(payload), sensitiveCookieOptions);
   if (hasSpaceDetails(payload)) {
-    res.cookie('spaceId', payload.spaceId, { domain: vars.cookieDomain });
-    res.cookie('spaceName', payload.spaceName, { domain: vars.cookieDomain });
-    res.cookie('spaceSlug', payload.spaceSlug, { domain: vars.cookieDomain });
-    res.cookie('spaceAddress', payload.spaceAddress, { domain: vars.cookieDomain });
-    res.cookie('organizationId', payload.organizationId, { domain: vars.cookieDomain });
+    res.cookie('spaceId', payload.spaceId, basicCookieOptions);
+    res.cookie('spaceName', payload.spaceName, basicCookieOptions);
+    res.cookie('spaceSlug', payload.spaceSlug, basicCookieOptions);
+    res.cookie('spaceAddress', payload.spaceAddress, basicCookieOptions);
+    res.cookie('organizationId', payload.organizationId, basicCookieOptions);
   }
 }
 

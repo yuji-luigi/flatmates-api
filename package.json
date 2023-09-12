@@ -52,7 +52,7 @@
 		"passport": "^0.6.0",
 		"passport-jwt": "^4.0.1",
 		"rimraf": "^4.4.0",
-		"typescript": "5.0.2",
+		"typescript": "^5.2.2",
 		"uuidv4": "^6.2.13",
 		"winston": "^3.8.2",
 		"winston-mail": "^2.0.0",

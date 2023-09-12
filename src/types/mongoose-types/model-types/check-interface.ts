@@ -13,9 +13,10 @@ export interface CheckInterface extends MongooseBaseModel {
   maintainer: MaintainerInterface;
   maintenance: IMaintenance;
   total: number;
-  file: IUpload;
+  files: IUpload[];
   organization: IOrganization;
-  mainSpace: ISpace;
+  // mainSpace: ISpace;
   type: CheckType;
-  space?: string | ISpace;
+  /** @description mainSpace. if necessary tailSpace will be tailSpace */
+  space: ISpace;
 }

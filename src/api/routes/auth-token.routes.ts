@@ -13,6 +13,7 @@ import { handleUserFromRequest } from '../../middlewares/handleUserFromRequest';
 import { queryHandler } from '../../middlewares/handleSetQuery';
 import { ADMIN } from '../../middlewares/auth-middlewares';
 import { isLoggedIn } from '../../middlewares/isLoggedIn';
+import { authUserMaintenanceFiles } from '../controllers/MaintenanceController';
 
 router.get('/', (req: Request, res: Response) => {
   res.send('API is working');
@@ -21,8 +22,11 @@ router.get('/', (req: Request, res: Response) => {
 // not authenticated route
 router.post('/verify-pin/:linkId/:idMongoose/users', verifyPinAndSendUserToClient);
 
+router.post('/maintenances/file-upload/:linkId/:idMongoose', authUserMaintenanceFiles);
+
 router.use(handleUserFromRequest);
 router.use(queryHandler);
+
 // GENERIC crud routes
 router.get('/:idMongoose', sendLinkIdToClient);
 router.get('/:entity/with-pagination', sendNotImplemented);

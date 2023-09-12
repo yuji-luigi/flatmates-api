@@ -137,24 +137,32 @@ export async function postMaintenanceFileToStorage(req: RequestCustom, res: Resp
     }
     const uploadModelsData = await saveInStorage(filesToUpload, folderName, true);
     // ok, with reference of existing files
-    const responseObj: UploadResponseObject = {};
-    for (const key in uploadModelsData) {
-      const createdModel = await Upload.create({
-        ...uploadModelsData[key],
-        url: vars.storageUrl + '/' + uploadModelsData[key].fullPath,
+    const bulkUploads = uploadModelsData.map((uploadModelData) => {
+      return {
+        ...uploadModelData,
+        url: vars.storageUrl + '/' + uploadModelData.fullPath,
         ACL: 'private'
-        // uploadedBy: req.user._id
-      });
+      };
+    });
+    const createdUploads = await Upload.insertMany(bulkUploads);
+    // for (const key in uploadModelsData) {
+    //   const createdModel = await Upload.create({
+    //     ...uploadModelsData[key],
+    //     url: vars.storageUrl + '/' + uploadModelsData[key].fullPath,
+    //     ACL: 'private'
+    //     // uploadedBy: req.user._id
+    //   });
 
-      if (responseObj[createdModel.fieldInParent]) {
-        responseObj[createdModel.fieldInParent].push(createdModel._id.toString());
-      } else {
-        responseObj[createdModel.fieldInParent] = [createdModel._id.toString()];
-      }
-    }
+    // if (responseObj[createdModel.fieldInParent]) {
+    //   responseObj[createdModel.fieldInParent].push(createdModel._id.toString());
+    // } else {
+    //   responseObj[createdModel.fieldInParent] = [createdModel._id.toString()];
+    // }
+    // }
+    const ids = createdUploads.map((createdModel) => createdModel._id);
     res.status(httpStatus.OK).json({
       success: true,
-      data: responseObj,
+      data: ids,
       collection: 'storage'
     });
   } catch (error) {
