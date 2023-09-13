@@ -41,7 +41,7 @@ export const threadSchema = new Schema<IThread, ThreadModel, IThreadMethods>(
       }
     ],
     rating: Number,
-    user: {
+    createdBy: {
       type: Schema.Types.ObjectId,
       ref: 'users',
       autopopulate: true

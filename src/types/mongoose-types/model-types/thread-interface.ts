@@ -10,9 +10,10 @@ export interface IThread extends PostBaseInterface {
   description: string;
   attachments: IUpload[] | [];
   rating?: number | undefined;
-  user: IUser;
+  createdBy: IUser;
   organization?: IOrganization | string;
   space: ISpace | string;
+  createdAt: string;
 }
 
 export interface IThreadMethods {
