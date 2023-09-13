@@ -7,7 +7,7 @@ import { IUser } from './user-interface';
 export interface IThread extends PostBaseInterface {
   // listViewType: 'default' | 'bigImage';
   // articleType: 'default' | 'blog' | 'news' | 'event' | 'announcement' | 'poll' | 'survey' | 'question' | 'discussion';
-  body: string;
+  description: string;
   attachments: IUpload[] | [];
   rating?: number | undefined;
   user: IUser;
