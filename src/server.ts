@@ -16,6 +16,7 @@ mongoose.connect();
 
 app.listen(port, async () => {
   logger.info(`server started on port ${port} (${env})`);
+
   // const documents = await Mongoose.model('maintenances').find();
   // for (const document of documents) {
   //   document.space = document.mainSpace;

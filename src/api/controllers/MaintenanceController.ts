@@ -185,7 +185,15 @@ export async function authUserMaintenanceFiles(req: Request, res: Response) {
     const { linkId, idMongoose } = req.params;
     const maintenance = await Maintenance.findOne({ linkId, _id: idMongoose, nonce: req.body.pin })
       .populate({ path: 'organization', select: 'name' })
-      .populate({ path: 'space', select: 'name' });
+      .populate({
+        path: 'space',
+        select: 'name address admins',
+        populate: {
+          path: 'admins', // this will populate 'admins' in 'space'
+          select: 'name surname email avatar',
+          populate: 'avatar' // assuming you want to populate name and email of admins, adjust accordingly
+        }
+      });
     if (!maintenance) throw new Error('pin is not correct');
     res.cookie('maintenanceNonce', req.body.pin, sensitiveCookieOptions);
 

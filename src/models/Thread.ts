@@ -46,6 +46,7 @@ export const threadSchema = new Schema<IThread, ThreadModel, IThreadMethods>(
       ref: 'users',
       autopopulate: true
     },
+
     isPublic: {
       type: Boolean,
       default: false
