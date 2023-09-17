@@ -195,6 +195,9 @@ export const sendMainSpaceSelectionsToClient = async (req: RequestCustom, res: R
     if (req.user.role === 'admin') {
       mainSpaces = await Space.find({ isMain: true, organization: { $in: req.user.organizations } }).lean();
     }
+    if (req.user.role === 'super_admin') {
+      mainSpaces = await Space.find({ isMain: true, organization: req.user.organizationId }).lean();
+    }
     res.status(httpStatus.OK).json({
       collection: 'spaces',
       totalDocuments: mainSpaces.length,
