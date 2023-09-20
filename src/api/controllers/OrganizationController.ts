@@ -112,8 +112,7 @@ export async function organizationSelected(req: RequestCustom, res: Response) {
     // res.cookie('jwt', jwt, sensitiveCookieOptions);
     // res.cookie('organization', req.params.organizationId, sensitiveCookieOptions);
     // res.cookie('organizationName', organization.name, { domain: vars.cookieDomain });
-    const spaces = await Space.find({ organization: req.params.organizationId, isMain: true }).lean();
-
+    const spaces = await Space.find({ organization: req.params.organizationId, isMain: true }).populate({ path: 'cover', select: 'url' }).lean();
     const jwtPayload = createJWTObjectFromJWTAndSpace({ user: req.user, organizationId: organization._id.toString() });
     setJwtCookie(res, jwtPayload);
     res.status(httpStatus.OK).json({

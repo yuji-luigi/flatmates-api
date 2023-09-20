@@ -190,14 +190,20 @@ const me = async (req: RequestCustom, res: Response) => {
 export const sendMainSpaceSelectionsToClient = async (req: RequestCustom, res: Response) => {
   try {
     // case user show user.rootSpaces
-    let mainSpaces = await Space.find({ isMain: true, _id: { $in: req.user.rootSpaces } }).lean();
+
+    let query: Record<string, string | any> = { isMain: true, _id: { $in: req.user.rootSpaces } };
+    // let mainSpaces = await Space.find({ isMain: true, _id: { $in: req.user.rootSpaces } });
     // case admin show all main spaces of his organizations
     if (req.user.role === 'admin') {
-      mainSpaces = await Space.find({ isMain: true, organization: { $in: req.user.organizations } }).lean();
+      query = { isMain: true, organization: { $in: req.user.organizations } };
+      // mainSpaces = await Space.find({ isMain: true, organization: { $in: req.user.organizations } });
     }
     if (req.user.role === 'super_admin') {
-      mainSpaces = await Space.find({ isMain: true, organization: req.user.organizationId }).lean();
+      query = { isMain: true, organization: req.user.organizationId };
+      // mainSpaces = await Space.find({ isMain: true, organization: req.user.organizationId });
     }
+    const mainSpaces = await Space.find(query).populate({ path: 'cover', select: 'url' }).lean();
+
     res.status(httpStatus.OK).json({
       collection: 'spaces',
       totalDocuments: mainSpaces.length,
