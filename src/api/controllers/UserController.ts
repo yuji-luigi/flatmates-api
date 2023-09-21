@@ -28,6 +28,9 @@ export const createUserAndSendDataWithPagination = async (req: RequestCustom, re
     if (!req.user.spaceId) {
       throw new Error('space is not set.');
     }
+    if (!req.user.organizationId) {
+      throw new Error('organization is not set.');
+    }
     // get req.params.entity
     const entity = 'users';
     req.body = deleteEmptyFields(req.body);
@@ -44,6 +47,7 @@ export const createUserAndSendDataWithPagination = async (req: RequestCustom, re
       throw new Error('Email is already in use. Please check the email.');
     }
 
+    req.body.organizations = [req.user.organizationId];
     const newModel = new User(req.body);
 
     await newModel.save();

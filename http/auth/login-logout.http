@@ -1,3 +1,4 @@
+#SUPER ADMIN 
 POST {{host}}/api/v1/auth/login HTTP/1.1
 content-type: application/json
 
@@ -22,3 +23,5 @@ content-type: application/json
   "email": "contardo@admin.com",
   "password": "{{password}}"
 }
+###
+GET {{host}}/api/v1/auth/me HTTP/1.1
