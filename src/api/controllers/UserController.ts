@@ -328,6 +328,7 @@ export const updateUserById = async (req: RequestCustom, res: Response) => {
   try {
     const modifiedModel = await findAndModifyUserFields(req);
     await modifiedModel.save();
+    await modifiedModel.populate({ path: 'rootSpaces', select: 'name' });
     res.status(httpStatus.OK).json({
       success: true,
       message: _MSG.OBJ_UPDATED,
@@ -396,7 +397,9 @@ async function findAndModifyUserFields(req: RequestCustom) {
     throw new Error('Email is already in use. Please check the email.');
   }
   const { email, password, name, surname, phone } = reqBody;
-  foundUser.set({ email, password, name, surname, phone, role: 'user' });
+  foundUser.set({ email, name, surname, phone, role: 'user' });
+  password && foundUser.set({ password });
+
   // const updatedModel = await foundUser.save();
   return foundUser;
 }

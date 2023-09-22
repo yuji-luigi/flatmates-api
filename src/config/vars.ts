@@ -23,7 +23,8 @@ const vars = {
   mongo: {
     uri: nodeEnv === 'prod' ? <string>process.env.MONGO_URI_PROD : <string>process.env.MONGO_URI_DEV
   },
-  logs: nodeEnv === 'prod' ? 'combined' : 'dev',
+  logs: nodeEnv === 'prod' ? 'dev' : 'dev',
+  // logs: nodeEnv === 'prod' ? 'combined' : 'dev',
   cookieDomain: nodeEnv === 'dev' ? process.env.DEV_COOKIE_DOMAIN : process.env.PROD_COOKIE_DOMAIN,
   frontendUrl,
   cron_schedule: nodeEnv === 'prod' ? process.env.CRON_SCHEDULE_PROD : process.env.CRON_SCHEDULE_DEV,

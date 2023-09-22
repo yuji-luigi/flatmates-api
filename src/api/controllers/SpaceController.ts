@@ -7,7 +7,7 @@ import Space from '../../models/Space';
 import { deleteEmptyFields } from '../../utils/functions';
 import { aggregateWithPagination } from '../helpers/mongoose.helper';
 import { RequestCustom } from '../../types/custom-express/express-custom';
-import vars from '../../config/vars';
+import vars, { sensitiveCookieOptions } from '../../config/vars';
 import User from '../../models/User';
 import { aggregateDescendantIds, setUrlToSpaceImages, userHasSpace } from '../helpers/spaceHelper';
 import { _MSG } from '../../utils/messages';
@@ -17,7 +17,7 @@ import Maintainer from '../../models/Maintainer';
 import { ObjectId } from 'mongodb';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { LOOKUPS, UNWIND } from '../pipelines/lookups';
-import { createJWTObjectFromJWTAndSpace, setJwtCookie } from '../../utils/jwt/jwtUtils';
+import { createJWTObjectFromJWTAndSpace, setJwtCookie, signJwt } from '../../utils/jwt/jwtUtils';
 import { checkAdminOfSpace } from '../../middlewares/auth-middlewares';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 const entity = 'spaces';
@@ -524,12 +524,12 @@ export const addSpaceToJWTAndSendToClient = async (req: RequestCustom, res: Resp
 
 export const deleteSpaceCookie = async (req: RequestCustom, res: Response) => {
   try {
-    res.clearCookie('space', {
-      domain: vars.cookieDomain
-    });
-    res.clearCookie('spaceName', {
-      domain: vars.cookieDomain
-    });
+    deleteSpaceCookies(res);
+    res.clearCookie('jwt', { domain: vars.cookieDomain });
+    const payload = createJWTObjectFromJWTAndSpace({ user: req.user, organizationId: req.user.organizationId.toString(), space: null });
+    const jwt = signJwt(payload);
+
+    res.cookie('jwt', jwt, sensitiveCookieOptions);
 
     res.status(httpStatus.OK).json({
       success: true,
@@ -543,6 +543,21 @@ export const deleteSpaceCookie = async (req: RequestCustom, res: Response) => {
     });
   }
 };
+
+export function deleteSpaceCookies(res: Response) {
+  res.clearCookie('spaceId', {
+    domain: vars.cookieDomain
+  });
+  res.clearCookie('spaceSlug', {
+    domain: vars.cookieDomain
+  });
+  res.clearCookie('spaceAddress', {
+    domain: vars.cookieDomain
+  });
+  res.clearCookie('spaceName', {
+    domain: vars.cookieDomain
+  });
+}
 
 export async function sendDescendantIdsToClient(req: RequestCustom, res: Response) {
   try {
