@@ -199,8 +199,10 @@ export async function deleteFileFromStorage(key: string) {
 export async function getFileDirName(req: RequestCustom) {
   const organization = await Organization.findById(req.user.organizationId);
   const orgName = replaceSpecialChars(organization.name || 'super_admin');
-  const nestedDir = `${replaceSpecialChars(req.user.spaceName)}/${req.params.entity}`;
-  return `${orgName}/${nestedDir}`;
+  let nestedDir = req.user.spaceName ? `/${replaceSpecialChars(req.user.spaceName)}` : '';
+  nestedDir += `/${req.params.entity}`;
+  // throw new Error('not implemented');
+  return `${orgName}${nestedDir}`;
 }
 
 export async function handleImagesAndAttachments(req: RequestCustom): Promise<{ images: IUpload[]; attachments: IUpload[] }> {
