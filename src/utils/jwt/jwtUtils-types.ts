@@ -12,6 +12,7 @@ export type SpaceDataType = {
   spaceSlug: string;
   spaceAddress: string;
   organizationId: string;
+  spaceImage?: string;
 };
 
 export type JwtSignPayload =
@@ -29,4 +30,5 @@ export type SpaceDetails = {
   spaceName: string;
   spaceSlug: string;
   spaceAddress: string;
+  spaceImage?: string;
 };

@@ -24,7 +24,8 @@ export const createJWTObjectFromJWTAndSpace = (payload: JsonObjPayload): JwtSign
         spaceId: payload.space._id.toString(),
         spaceSlug: payload.space.slug,
         spaceAddress: payload.space.address,
-        organizationId: payload.space?.organization.toString()
+        organizationId: payload.space?.organization.toString(),
+        spaceImage: payload.space.cover?.url
       }
     : null;
 
@@ -36,8 +37,8 @@ export const createJWTObjectFromJWTAndSpace = (payload: JsonObjPayload): JwtSign
   // return  signJwt(data);
   return data;
 };
-/** @description sign payload as jwt then res.cookie with type checking */
-export function setJwtCookie(res: Response, payload: JwtSignPayload) {
+/** @description sign payload as jwt then res.cookie with type checking. set jwt and space + organization cookie*/
+export function handleSetCookies(res: Response, payload: JwtSignPayload) {
   res.cookie('jwt', signJwt(payload), sensitiveCookieOptions);
   if (hasSpaceDetails(payload)) {
     res.cookie('spaceId', payload.spaceId, basicCookieOptions);
@@ -45,6 +46,7 @@ export function setJwtCookie(res: Response, payload: JwtSignPayload) {
     res.cookie('spaceSlug', payload.spaceSlug, basicCookieOptions);
     res.cookie('spaceAddress', payload.spaceAddress, basicCookieOptions);
     res.cookie('organizationId', payload.organizationId, basicCookieOptions);
+    res.cookie('spaceImage', payload.spaceImage);
   }
 }
 
