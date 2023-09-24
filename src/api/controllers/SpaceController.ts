@@ -17,7 +17,7 @@ import Maintainer from '../../models/Maintainer';
 import { ObjectId } from 'mongodb';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { LOOKUPS, UNWIND } from '../pipelines/lookups';
-import { createJWTObjectFromJWTAndSpace, setJwtCookie, signJwt } from '../../utils/jwt/jwtUtils';
+import { createJWTObjectFromJWTAndSpace, handleSetCookies, signJwt } from '../../utils/jwt/jwtUtils';
 import { checkAdminOfSpace } from '../../middlewares/auth-middlewares';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 const entity = 'spaces';
@@ -495,7 +495,7 @@ export const addSpaceToJWTAndSendToClient = async (req: RequestCustom, res: Resp
     //   httpOnly: false
     // };
     res.clearCookie('jwt', { domain: vars.cookieDomain });
-    setJwtCookie(res, jwt);
+    handleSetCookies(res, jwt);
     // res.cookie('jwt', jwt, sensitiveCookieOptions);
     // res.cookie('space', jwt, httpOnlyFalseCookieOptions);
     // res.cookie('spaceName', space.name, { domain: vars.cookieDomain });

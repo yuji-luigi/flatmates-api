@@ -2,7 +2,6 @@ import { ObjectId } from 'bson';
 import { MongooseBaseModel } from './base-types/base-model-interface';
 import { IOrganization } from './organization-interface';
 import { IUpload } from './upload-interface';
-import { IUser } from './user-interface';
 
 export const spaceTypes = ['country', 'street', 'building', 'area', 'house', 'room', 'floor'] as const;
 export type SpaceTypes = (typeof spaceTypes)[number];

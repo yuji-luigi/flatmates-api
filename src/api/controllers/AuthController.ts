@@ -15,7 +15,7 @@ import Organization from '../../models/Organization';
 import { IOrganization } from '../../types/mongoose-types/model-types/organization-interface';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { userHasSpace } from '../helpers/spaceHelper';
-import { createJWTObjectFromJWTAndSpace, resetSpaceCookies, setJwtCookie } from '../../utils/jwt/jwtUtils';
+import { createJWTObjectFromJWTAndSpace, resetSpaceCookies, handleSetCookies } from '../../utils/jwt/jwtUtils';
 // import { CurrentSpace } from '../../types/mongoose-types/model-types/space-interface';
 
 const { jwtExpirationInterval, cookieDomain } = vars;
@@ -79,7 +79,7 @@ const register = async (req: Request, res: Response) => {
     newUser.organizations.push(newOrganization);
     const createdUser = await newUser.save();
     const jwt = createJWTObjectFromJWTAndSpace({ user: createdUser, space: newRootSpace });
-    setJwtCookie(res, jwt);
+    handleSetCookies(res, jwt);
     // res.cookie('organization', organizationToken, sensitiveCookieOptions);
     // res.cookie('space', spaceCookie, sensitiveCookieOptions);
     // res.cookie('jwt', token.accessToken, sensitiveCookieOptions);
@@ -247,14 +247,7 @@ export const setSpaceAndOrgInJwt = async (req: RequestCustom, res: Response) => 
     // const jwt = signJwt(updatedJwt);
 
     res.clearCookie('jwt', { domain: vars.cookieDomain });
-    setJwtCookie(res, jwt);
-    // res.cookie('jwt', jwt, sensitiveCookieOptions);
-
-    // const spaceCookie = formatCurrentSpaceToJSON(space);
-    // const expires = getJwtExpirationDate();
-    // res.cookie('space', spaceCookie, { domain: vars.cookieDomain, expires });
-    // res.cookie('spaceName', space.name, { domain: vars.cookieDomain, expires });
-    // res.cookie('organization', space.organization, { domain: vars.cookieDomain, expires });
+    handleSetCookies(res, jwt);
 
     res.status(httpStatus.OK).json({
       success: true,
@@ -264,7 +257,8 @@ export const setSpaceAndOrgInJwt = async (req: RequestCustom, res: Response) => 
           _id: space._id,
           name: space.name,
           address: space.address,
-          slug: space.slug
+          slug: space.slug,
+          image: space.cover?.url
           // organization: space.organization
         }
       },

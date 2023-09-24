@@ -29,6 +29,7 @@ router.get('/logout', authCtrl.logout);
 router.use(handleUserFromRequest);
 router.get('/space-selections', isLoggedIn(), sendMainSpaceSelectionsToClient);
 router.get('/organization-selections', isLoggedIn(), sendMainOrganizationSelectionsToClient);
+// set jwt and send space
 router.get('/space-selected/:idMongoose', isLoggedIn(), setSpaceAndOrgInJwt);
 router.delete('/space-selected', isLoggedIn(), deleteSpaceCookie);
 
