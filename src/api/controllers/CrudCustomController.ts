@@ -45,7 +45,8 @@ export const createHeadSpace = async (req: RequestCustom, res: Response) => {
 export const getLinkedChildren = async (req: RequestCustom, res: Response) => {
   try {
     //! set pagination logic here and next > parentId page set the pagination logic
-    const { parentId, entity } = req.params;
+    const { parentId } = req.params;
+    const entity = req.params.entity || getEntityFromOriginalUrl(req.originalUrl);
     // const children = await mongoose.model(entity).find({parentId: parentId});x
     req.query.parentId = parentId;
     const data = await aggregateWithPagination(req.query, entity);

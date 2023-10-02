@@ -2,7 +2,7 @@ import express from 'express';
 import { ADMIN, SUPER_ADMIN } from '../../middlewares/auth-middlewares';
 import { checkEntity } from '../../middlewares/checkEntity';
 import { getPublicCrudObjects } from '../controllers/CrudController';
-import { createLinkedChild, getLinkedChildren } from '../controllers/CrudCustomController';
+import { createLinkedChild, deleteLinkedChild, getLinkedChildren } from '../controllers/CrudCustomController';
 import DataTableController from '../controllers/DataTableController';
 import { isLoggedIn } from '../../middlewares/isLoggedIn';
 const router = express.Router();
@@ -23,12 +23,12 @@ const router = express.Router();
  * LINKED CHILDREN
  */
 // DATA TABLE
-router.get('/linkedChildren/:entity/:parentId', checkEntity, isLoggedIn(), getLinkedChildren);
+router.get('/:entity/with-pagination/linkedChildren/:parentId', checkEntity, isLoggedIn(), getLinkedChildren);
 // DATA TABLE
-router.post('/linkedChildren/:entity/:parentId', checkEntity, isLoggedIn([ADMIN, SUPER_ADMIN]), createLinkedChild);
+router.post('/:entity/with-pagination/linkedChildren/:parentId', checkEntity, isLoggedIn([ADMIN, SUPER_ADMIN]), createLinkedChild);
 
 //DATA TABLE
-router.delete('/linkedChildren/:entity/:linkedChildrenId/:parentId', checkEntity, isLoggedIn(), getLinkedChildren);
+router.delete('/:entity/with-pagination/linkedChildren/:id', checkEntity, isLoggedIn(), deleteLinkedChild);
 
 router.get('/uploads', isLoggedIn([SUPER_ADMIN]), DataTableController.sendCrudObjectsWithPaginationToClient);
 

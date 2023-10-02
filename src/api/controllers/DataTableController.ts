@@ -131,8 +131,8 @@ export const deleteLinkedChildByIdWithPagination = async (req: Request, res: Res
      * save
      * send the data array to handle in redux
      */
-    const { entity } = req.params;
     const { idMongoose } = req.params;
+    const entity = req.params.entity || getEntityFromOriginalUrl(req.originalUrl);
     const deletedDocument = await mongoose.model(entity).findOneAndDelete({ _id: idMongoose });
     const query = {
       ...req.query,

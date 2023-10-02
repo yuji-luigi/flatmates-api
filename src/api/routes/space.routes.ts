@@ -15,8 +15,9 @@ import {
   sendSpaceDataForHome,
   updateSpaceAndSendToClient
 } from '../controllers/SpaceController';
+import dataTableCtrl from '../controllers/DataTableController';
 
-import { createLinkedChild } from '../controllers/CrudCustomController';
+import { createLinkedChild, getLinkedChildren } from '../controllers/CrudCustomController';
 import httpStatus from 'http-status';
 import { isLoggedIn } from '../../middlewares/isLoggedIn';
 const router = express.Router();
@@ -24,6 +25,8 @@ const router = express.Router();
 router.get('/', isLoggedIn(), sendSpacesToClient);
 router.get('/home', isLoggedIn(), sendSpaceDataForHome);
 router.get('/with-pagination', isLoggedIn(), sendMainSpacesWithPaginationToClient);
+router.get('/with-pagination', isLoggedIn(), sendMainSpacesWithPaginationToClient);
+router.get('/with-pagination/linkedChildren/:parentId', isLoggedIn(), getLinkedChildren);
 
 router.get('/descendants/:spaceId', isLoggedIn(), sendDescendantIdsToClient);
 router.get('/head-to-tail/:spaceId', isLoggedIn(), sendHeadToTailToClient);
@@ -48,6 +51,11 @@ router.put('/:idMongoose', isLoggedIn([ADMIN, SUPER_ADMIN]), updateSpaceAndSendT
 router.delete('/with-pagination/:spaceId', isLoggedIn([ADMIN, LOGGED_USER, SUPER_ADMIN]), deleteHeadSpaceWithPagination);
 
 router.delete('/:spaceId', isLoggedIn([ADMIN, LOGGED_USER, SUPER_ADMIN]), deleteHeadSpaceWithPagination);
+router.delete(
+  '/with-pagination/linkedChildren/:idMongoose',
+  isLoggedIn([ADMIN, LOGGED_USER, SUPER_ADMIN]),
+  dataTableCtrl.deleteLinkedChildByIdWithPagination
+);
 
 // for static site generation
 
