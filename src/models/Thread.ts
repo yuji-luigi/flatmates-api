@@ -51,6 +51,7 @@ export const threadSchema = new Schema<IThread, ThreadModel, IThreadMethods>(
       type: Boolean,
       default: false
     },
+    isImportant: Boolean,
     organization: {
       type: Schema.Types.ObjectId,
       ref: 'organizations',

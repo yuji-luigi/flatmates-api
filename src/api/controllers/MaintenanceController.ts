@@ -48,6 +48,7 @@ const createMaintenance = async (req: RequestCustom, res: Response) => {
         await image.setUrl();
       }
     }
+
     res.status(httpStatus.CREATED).json({
       success: true,
       collection: 'maintenances',

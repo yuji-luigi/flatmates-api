@@ -13,6 +13,7 @@ export interface IThread extends PostBaseInterface {
   createdBy: IUser;
   organization?: IOrganization | string;
   space: ISpace | string;
+  isImportant?: boolean;
   createdAt: string;
 }
 

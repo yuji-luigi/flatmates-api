@@ -14,7 +14,8 @@ export const notificationSchema = new Schema<INotification>(
       type: Schema.Types.ObjectId,
       ref: 'organizations',
       autopopulate: true
-    }
+    },
+    seen: []
   },
   {
     versionKey: false,
