@@ -10,7 +10,8 @@ router.get('/:linkId/:idMongoose', verifyNonceCookieSendChecksMaintenanceToClien
 router.use(handleUserFromRequest);
 router.use(queryHandler);
 
-router.get('/:idMongoose', sendCheckToClient);
-router.get('/show-file/:idMongoose', sendCheckToClient);
+// router.get('/:idMongoose', sendCheckToClient);
+router.get('/:idMongoose/with-nonce', sendCheckToClient);
+// router.get('/show-file/:idMongoose', sendCheckToClient);
 
 export default router;

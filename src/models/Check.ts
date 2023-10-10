@@ -10,6 +10,9 @@ import logger from '../config/logger';
 type CheckModel = Model<CheckInterface, object, object>;
 export const checkSchema = new Schema<CheckInterface, CheckModel, unknown>(
   {
+    name: {
+      type: String
+    },
     files: [
       {
         type: Schema.Types.ObjectId,

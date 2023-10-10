@@ -27,7 +27,7 @@ router.use('/space-auth', spaceAuthRoutes);
 router.use('/auth-tokens', authTokenRoutes);
 router.use('/upload-files', uploadFilesRoutes);
 router.use('/notifications', notificationRoutes);
-router.use('/notifications', checkRoutes);
+router.use('/checks', checkRoutes);
 
 // call passport jwt strategy defined in passport.ts
 // set user in req.user

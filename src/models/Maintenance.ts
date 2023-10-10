@@ -2,7 +2,7 @@ import mongoose, { CallbackWithoutResultAndOptionalError, Document, Model } from
 import autoPopulate from 'mongoose-autopopulate';
 import { getPrivateUrlOfSpace } from '../api/helpers/uploadFileHelper';
 import logger from '../config/logger';
-import { generateNonceCode, generateRandomStringByLength, replaceSpecialChars } from '../utils/functions';
+import { formatDateAndTimev3, generateNonceCode, generateRandomStringByLength, replaceSpecialChars } from '../utils/functions';
 import { MAINTAINER_TYPES } from '../types/enum/enum';
 import { IMaintenance, IMaintenanceMethods, MAINTENANCE_STATUS } from '../types/mongoose-types/model-types/maintenance-interface';
 import { ICollectionAware, createSlug } from '../api/helpers/mongoose.helper';
@@ -200,7 +200,9 @@ maintenanceSchema.pre('save', async function (this: IMaintenance & ICollectionAw
 // maintenanceSchema.virtual('_createdAt').get(function () {
 //   return formatDateAndTimev3(this.createdAt);
 // });
-
+maintenanceSchema.virtual('_createdAt').get(function () {
+  return formatDateAndTimev3(this.createdAt);
+});
 maintenanceSchema.set('toJSON', {
   virtuals: true
 });
