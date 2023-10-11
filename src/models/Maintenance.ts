@@ -108,6 +108,9 @@ export const maintenanceSchema = new Schema<IMaintenanceDoc, MaintenanceModel, I
       type: String,
       immutable: true
     },
+    cost: {
+      type: Number
+    },
     nonce: {
       type: Number,
       default: generateNonceCode()
@@ -202,6 +205,9 @@ maintenanceSchema.pre('save', async function (this: IMaintenance & ICollectionAw
 // });
 maintenanceSchema.virtual('_createdAt').get(function () {
   return formatDateAndTimev3(this.createdAt);
+});
+maintenanceSchema.virtual('entity').get(function () {
+  return 'maintenances';
 });
 maintenanceSchema.set('toJSON', {
   virtuals: true

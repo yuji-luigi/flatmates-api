@@ -130,6 +130,9 @@ threadSchema.pre('find', async function (next) {
 threadSchema.virtual('_createdAt').get(function () {
   return formatDateAndTimev3(this.createdAt);
 });
+threadSchema.virtual('entity').get(function () {
+  return 'threads';
+});
 threadSchema.set('toJSON', {
   virtuals: true
 });

@@ -36,6 +36,7 @@ export interface IMaintenance extends MongooseBaseModel {
   slug: string;
   invoices?: CheckInterface[];
   receipts?: CheckInterface[];
+  cost: number;
   /** nonce to authorize maintainer from email link */
   /** link to href maintainer from email */
   nonce: number;
