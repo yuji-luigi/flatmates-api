@@ -9,6 +9,8 @@ const router = express.Router();
 router.post('/', isLoggedIn(), maintenanceCtrl.createMaintenance);
 
 router.get('/with-pagination', isLoggedIn(), sendCrudObjectsWithPaginationToClient);
+router.get('/home', maintenanceCtrl.sendMaintenancesForHomeDashboard);
+
 router.get('/:maintenanceId', isLoggedIn(), maintenanceCtrl.sendSingleMaintenanceToFrondEnd);
 router.get('/', isLoggedIn(), maintenanceCtrl.sendMaintenancesToFrondEnd);
 // router.post('/auth/file-upload/:linkId/:idMongoose', authUserMaintenanceFiles);

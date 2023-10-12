@@ -12,6 +12,7 @@ import { IMaintenance } from '../../types/mongoose-types/model-types/maintenance
 import { createOptionsForMaintenance } from '../helpers/maintenanceHelper';
 import { IUpload } from '../../types/mongoose-types/model-types/upload-interface';
 import { sensitiveCookieOptions } from '../../config/vars';
+import { _MSG } from '../../utils/messages';
 /**
  * POST CONTROLLERS
  */
@@ -127,6 +128,26 @@ const sendMaintenancesToFrondEnd = async (req: Request, res: Response) => {
     });
   }
 };
+
+const sendMaintenancesForHomeDashboard = async (req: RequestCustom, res: Response) => {
+  try {
+    const threads = await Maintenance.find(req.query).limit(10);
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: 'threads',
+      data: threads,
+      totalDocuments: 1
+    });
+  } catch (err) {
+    logger.error(err.message || err);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: _MSG.ERRORS.GENERIC
+    });
+  }
+};
+
 const sendSingleMaintenanceToFrondEnd = async (req: Request, res: Response) => {
   try {
     const maintenance = await Maintenance.findById(req.params.maintenanceId);
@@ -219,6 +240,7 @@ const postController = {
   updateMaintenance,
   sendMaintenancesToFrondEnd,
   sendSingleMaintenanceToFrondEnd,
-  deleteThread
+  deleteThread,
+  sendMaintenancesForHomeDashboard
 };
 export default postController;

@@ -9,6 +9,7 @@ router.post('/', isLoggedIn(), postController.createThread);
 router.put('/:threadId', isLoggedIn(), postController.updateThread);
 
 router.get('/', isLoggedIn(), postController.sendThreadsToFrondEnd);
+router.get('/home', postController.sendPostsForHomeDashboard);
 router.get('/with-pagination', isLoggedIn(), postController.sendThreadsToFrondEnd);
 router.get('/:threadId', isLoggedIn(), postController.sendSingleThreadToFrondEnd);
 router.delete('/:threadId', isLoggedIn(), postController.deleteThread);

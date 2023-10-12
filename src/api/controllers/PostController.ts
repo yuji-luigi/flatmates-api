@@ -10,6 +10,7 @@ import { RequestCustom } from '../../types/custom-express/express-custom';
 import { getThreadsForPlatForm } from '../helpers/mongoose.helper';
 import mongoose from 'mongoose';
 import { UploadsThread } from '../helpers/types-uploadFileHelper';
+import { _MSG } from '../../utils/messages';
 
 const createThread = async (req: RequestCustom, res: Response) => {
   try {
@@ -190,6 +191,25 @@ const sendPostsToFrondEnd = async (req: Request, res: Response) => {
   }
 };
 
+const sendPostsForHomeDashboard = async (req: RequestCustom, res: Response) => {
+  try {
+    const threads = await Thread.find(req.query).limit(10);
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: 'threads',
+      data: threads,
+      totalDocuments: 1
+    });
+  } catch (err) {
+    logger.error(err.message || err);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: _MSG.ERRORS.GENERIC
+    });
+  }
+};
+
 const sendSinglePostToFrondEnd = async (req: Request, res: Response) => {
   try {
     const entity = req.params.entity || getEntity(req.url);
@@ -220,6 +240,7 @@ const postController = {
   sendSingleThreadToFrondEnd,
   deleteThread,
   sendSinglePostToFrondEnd,
-  sendPostsToFrondEnd
+  sendPostsToFrondEnd,
+  sendPostsForHomeDashboard
 };
 export default postController;
