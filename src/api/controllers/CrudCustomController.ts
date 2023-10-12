@@ -7,6 +7,11 @@ import Space from '../../models/Space';
 import { cutQuery, deleteEmptyFields, getEntity, getEntityFromOriginalUrl } from '../../utils/functions';
 import { aggregateWithPagination } from '../helpers/mongoose.helper';
 import { RequestCustom } from '../../types/custom-express/express-custom';
+import Maintainer from '../../models/Maintainer';
+import Maintenance from '../../models/Maintenance';
+import Thread from '../../models/Thread';
+import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
+import { _MSG } from '../../utils/messages';
 
 // import MSG from '../../utils/messages';
 // import { runInNewContext } from 'vm';
@@ -234,3 +239,55 @@ export const deleteHeadSpace = async (req: Request, res: Response) => {
 //     });
 //   }
 // };
+
+// router.get('/home', isLoggedIn(), sendDataForHomeDashboard);
+
+export const sendDataForHomeDashboard = async (req: RequestCustom, res: Response) => {
+  try {
+    const entity = 'spaces';
+
+    // const limit = 10;
+
+    //  TODO: use req.query for querying in find method and paginating. maybe need to delete field to query in find method
+    let { query } = req;
+    let maintainerQuery = {};
+
+    let space: Partial<ISpace> = {};
+
+    if (req.user?.spaceId) {
+      space = await Space.findById(req.user.spaceId);
+      query = { space: req.user.spaceId };
+      maintainerQuery = { spaces: { $in: [req.user._id] } };
+    }
+    // case only for super_admin. selected only organization.
+    if (req.user?.organizationId && !req.user?.spaceId) {
+      const spaces = await Space.find({ organization: req.user.organizationId, isMain: true });
+      maintainerQuery = { spaces: { $in: spaces.map((s) => s._id) } };
+    }
+
+    const threads = await Thread.find(query).limit(10);
+    const maintenances = await Maintenance.find(query).limit(10);
+    const maintainers = await Maintainer.find(maintainerQuery);
+
+    // space?.avatar && (await space.cover.setUrl());
+    space.cover && (await space.cover.setUrl());
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: entity,
+      data: {
+        space,
+        threads,
+        maintenances,
+        maintainers
+      },
+      totalDocuments: 1
+    });
+  } catch (err) {
+    logger.error(err.message || err);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: _MSG.ERRORS.GENERIC
+    });
+  }
+};

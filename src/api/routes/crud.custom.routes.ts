@@ -2,7 +2,7 @@ import express from 'express';
 import { ADMIN, SUPER_ADMIN } from '../../middlewares/auth-middlewares';
 import { checkEntity } from '../../middlewares/checkEntity';
 import { getPublicCrudObjects } from '../controllers/CrudController';
-import { createLinkedChild, deleteLinkedChild, getLinkedChildren } from '../controllers/CrudCustomController';
+import { createLinkedChild, deleteLinkedChild, getLinkedChildren, sendDataForHomeDashboard } from '../controllers/CrudCustomController';
 import DataTableController from '../controllers/DataTableController';
 import { isLoggedIn } from '../../middlewares/isLoggedIn';
 const router = express.Router();
@@ -18,6 +18,7 @@ const router = express.Router();
 // router.post('/customers/:idMongoose', checkEntity, isLoggedIn([SUPER_ADMIN]), CrudController.updateCrudObjectById);
 
 // router.delete('/linkedChildren/:entity/:id', checkEntity, isLoggedIn([ADMIN, LOGGED_USER, SUPER_ADMIN]), deleteLinkedChild);
+router.get('/home', isLoggedIn(), sendDataForHomeDashboard);
 
 /**
  * LINKED CHILDREN

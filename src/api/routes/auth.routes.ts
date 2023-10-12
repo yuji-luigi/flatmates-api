@@ -23,7 +23,7 @@ router.post('/register', authCtrl.register);
 
 router.get('/logout', authCtrl.logout);
 
-// router.get('/static-props/:slug', checkSSGSecret, sendSpaceDataForHome);
+// router.get('/static-props/:slug', checkSSGSecret, sendDataForHomeDashboard);
 // router.get('/ssg-paths', checkSSGSecret, sendMainSpacesSlug);
 
 router.use(handleUserFromRequest);

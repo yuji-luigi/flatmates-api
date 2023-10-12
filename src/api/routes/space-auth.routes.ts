@@ -1,18 +1,18 @@
 import express from 'express';
-import { checkSSGSecret } from '../../middlewares/auth-middlewares';
-import {
-  // createHeadSpace,
+// import { checkSSGSecret } from '../../middlewares/auth-middlewares';
+// import {
+//   // createHeadSpace,
 
-  sendMainSpacesSlug,
-  sendSpaceDataForHome
-} from '../controllers/SpaceController';
+//   sendMainSpacesSlug,
+//   sendDataForHomeDashboard
+// } from '../controllers/SpaceController';
 import { sendMainSpaceSelectionsToClient, setSpaceAndOrgInJwt } from '../controllers/AuthController';
 import { handleUserFromRequest } from '../../middlewares/handleUserFromRequest';
 import { isLoggedIn } from '../../middlewares/isLoggedIn';
 
 const router = express.Router();
-router.get('/static-props/:slug', checkSSGSecret, sendSpaceDataForHome);
-router.get('/ssg-paths', checkSSGSecret, sendMainSpacesSlug);
+// router.get('/static-props/:slug', checkSSGSecret, sendDataForHomeDashboard);
+// router.get('/ssg-paths', checkSSGSecret, sendMainSpacesSlug);
 
 router.use(handleUserFromRequest);
 router.get('/space-selections', isLoggedIn(), sendMainSpaceSelectionsToClient);

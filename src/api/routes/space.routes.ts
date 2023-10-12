@@ -12,7 +12,7 @@ import {
   sendSpaceSettingPageDataToClient,
   sendHeadToTailToClient,
   sendSpacesToClient,
-  sendSpaceDataForHome,
+  // sendDataForHomeDashboard,
   updateSpaceAndSendToClient
 } from '../controllers/SpaceController';
 import dataTableCtrl from '../controllers/DataTableController';
@@ -23,7 +23,7 @@ import { isLoggedIn } from '../../middlewares/isLoggedIn';
 const router = express.Router();
 
 router.get('/', isLoggedIn(), sendSpacesToClient);
-router.get('/home', isLoggedIn(), sendSpaceDataForHome);
+// router.get('/home', isLoggedIn(), sendDataForHomeDashboard);
 router.get('/with-pagination', isLoggedIn(), sendMainSpacesWithPaginationToClient);
 router.get('/with-pagination', isLoggedIn(), sendMainSpacesWithPaginationToClient);
 router.get('/with-pagination/linkedChildren/:parentId', isLoggedIn(), getLinkedChildren);
