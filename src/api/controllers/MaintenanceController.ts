@@ -13,6 +13,7 @@ import { createOptionsForMaintenance } from '../helpers/maintenanceHelper';
 import { IUpload } from '../../types/mongoose-types/model-types/upload-interface';
 import { sensitiveCookieOptions } from '../../config/vars';
 import { _MSG } from '../../utils/messages';
+import { aggregateWithPagination } from '../helpers/mongoose.helper';
 /**
  * POST CONTROLLERS
  */
@@ -22,6 +23,30 @@ interface UploadFields {
   images: IUpload[];
   attachments: IUpload[];
 }
+
+const entity = 'maintenances';
+
+export const sendMaintenancesWithPaginationToClient = async (req: RequestCustom, res: Response) => {
+  try {
+    // const limit = 10;
+
+    //  TODO: use req.query for querying in find method and paginating. maybe need to delete field to query in find method
+    const { query } = req;
+
+    const data = await aggregateWithPagination(query, entity);
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: entity,
+      data: data[0].paginatedResult || [],
+      totalDocuments: data[0].counts[0]?.total || 0
+    });
+  } catch (err) {
+    res.status(err).json({
+      message: err.message || err
+    });
+  }
+};
 
 const createMaintenance = async (req: RequestCustom, res: Response) => {
   try {

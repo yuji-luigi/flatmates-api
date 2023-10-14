@@ -5,6 +5,9 @@ export const LOOKUPS = {
   USERS: {
     $lookup: { from: 'users', localField: 'users', foreignField: '_id', as: 'users' }
   },
+  MAINTAINERS: {
+    $lookup: { from: 'maintainers', localField: 'maintainer', foreignField: '_id', as: 'maintainer' }
+  },
   ROOT_SPACES: {
     $lookup: { from: 'spaces', localField: 'rootSpaces', foreignField: '_id', as: 'rootSpaces' }
   },
@@ -56,7 +59,7 @@ export const LOOKUP_PIPELINE_STAGES: Record<Entities, PipelineStage.FacetPipelin
   userSettings: [],
   wallets: [],
   notifications: [],
-  maintenances: [],
+  maintenances: [LOOKUPS.MAINTAINERS, { $unwind: '$maintainer' }],
   maintainers: [],
   checks: [],
   'auth-tokens': []

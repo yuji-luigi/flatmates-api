@@ -16,14 +16,15 @@ import { Entities } from '../../types/mongoose-types/model-types/Entities';
 
 export const sendCrudObjectsWithPaginationToClient = async (req: RequestCustom, res: Response) => {
   try {
-    const entity = req.params.entity || getEntityFromOriginalUrl(req.originalUrl);
+    const entity: Entities = req.params.entity || getEntityFromOriginalUrl(req.originalUrl);
     req.params.entity = entity;
 
     // const limit = 10;
 
     //  TODO: use req.query for querying in find method and paginating. maybe need to delete field to query in find method
     const { query } = req;
-    const data = await aggregateWithPagination(query, entity);
+    const lookupPipeline = LOOKUP_PIPELINE_STAGES[entity] || [];
+    const data = await aggregateWithPagination(query, entity, lookupPipeline);
 
     res.status(httpStatus.OK).json({
       success: true,
