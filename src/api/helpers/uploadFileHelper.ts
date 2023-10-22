@@ -1,6 +1,6 @@
 // Imports your configured client and any necessary S3 commands.
 
-import { S3, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { S3, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, ObjectCannedACL, PutObjectCommandInput } from '@aws-sdk/client-s3';
 
 // import { uuid } from 'uuidv4';
 import logger from '../../config/logger';
@@ -79,7 +79,7 @@ export const saveInStorage = async function (
   }
 };
 
-export const getBucketParams = (data: any, fullPath: string, isPrivate: boolean) => {
+export const getBucketParams = (data: any, fullPath: string, isPrivate: boolean): PutObjectCommandInput => {
   // const { folderName, fileName } = data;
 
   // const key = folderName ? `${folderName}/${fileName}` : fileName; // include folder name in the key if it's provided
@@ -89,7 +89,7 @@ export const getBucketParams = (data: any, fullPath: string, isPrivate: boolean)
     Key: fullPath,
     Body: data.data,
     ContentType: data.mimetype,
-    ACL: isPrivate ? 'private' : 'public-read',
+    ACL: isPrivate ? ('private' as ObjectCannedACL) : ('public-read' as ObjectCannedACL),
     ContentLength: `${data.size}` as unknown as number,
     Metadata: {
       mimetype: data.mimetype,
