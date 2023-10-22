@@ -19,7 +19,7 @@ const vars = {
   env: process.env.NODE_ENV,
   port: nodeEnv === 'prod' ? process.env.PORT_PROD : process.env.PORT_DEV,
   jwtSecret: process.env.JWT_SECRET,
-  jwtExpirationInterval: process.env.JWT_EXPIRATION_SECONDS,
+  jwtExpirationInterval: 1000 * 60 * 60 * 24 * 30,
   mongo: {
     uri: nodeEnv === 'prod' ? <string>process.env.MONGO_URI_PROD : <string>process.env.MONGO_URI_DEV
   },
@@ -50,7 +50,7 @@ const vars = {
 
 export const basicCookieOptions = {
   sameSite: true,
-  maxAge: 1000 * 60 * 60 * 24 * 30,
+  maxAge: vars.jwtExpirationInterval,
   domain: vars.cookieDomain
 };
 export const sensitiveCookieOptions = {
