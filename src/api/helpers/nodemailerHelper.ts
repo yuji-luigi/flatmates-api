@@ -12,7 +12,8 @@ const auth = {
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
-  auth
+  auth,
+  port: 587
 });
 /**
  * @param {Mail.Options} mailOptions - accepts Mail.Options object already configured.
