@@ -26,7 +26,6 @@ router.use('/auth', authRoutes);
 router.use('/space-auth', spaceAuthRoutes);
 router.use('/auth-tokens', authTokenRoutes);
 router.use('/upload-files', uploadFilesRoutes);
-router.use('/notifications', notificationRoutes);
 router.use('/checks', checkRoutes);
 
 // call passport jwt strategy defined in passport.ts
@@ -41,6 +40,7 @@ router.use(queryHandler);
 //= ===============================================================================
 // CUSTOM ROUTES
 //= ===============================================================================
+router.use('/notifications', notificationRoutes);
 router.use('/maintenances', maintenanceRoutes);
 router.use('/threads', threadRoutes);
 router.use('/spaces', spaceRoutes);
