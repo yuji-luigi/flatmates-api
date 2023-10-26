@@ -72,6 +72,7 @@ export const userSchema = new Schema<IUser, UserModel>(
       type: Boolean,
       default: false
     },
+    // rootSpaces refer to mainSpaces.
     rootSpaces: [
       {
         type: Schema.Types.ObjectId,

@@ -74,6 +74,12 @@ checkSchema.pre('save', async function (next) {
     // save in maintenance.invoice or receipt at the creation of the check
     const maintenance = await Maintenance.findById(this.maintenance);
     maintenance[this.type].push(this);
+    if (this.type === 'invoices') {
+      maintenance.invoicesTotal += this.total;
+    }
+    if (this.type === 'receipts') {
+      maintenance.receiptsTotal += this.total;
+    }
     await maintenance.save();
     next();
   } catch (error) {

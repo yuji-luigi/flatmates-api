@@ -104,6 +104,14 @@ export const maintenanceSchema = new Schema<IMaintenanceDoc, MaintenanceModel, I
         // autopopulate: true
       }
     ],
+    invoicesTotal: {
+      type: Number,
+      default: 0
+    },
+    receiptsTotal: {
+      type: Number,
+      default: 0
+    },
     slug: {
       type: String,
       immutable: true

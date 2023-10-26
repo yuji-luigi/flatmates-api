@@ -41,6 +41,8 @@ export interface IMaintenance extends MongooseBaseModel {
   /** link to href maintainer from email */
   nonce: number;
   linkId: string;
+  receiptsTotal: number;
+  invoicesTotal: number;
   createdAt: string;
 }
 
