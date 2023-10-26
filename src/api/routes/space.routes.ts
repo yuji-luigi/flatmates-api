@@ -13,11 +13,12 @@ import {
   sendHeadToTailToClient,
   sendSpacesToClient,
   // sendDataForHomeDashboard,
-  updateSpaceAndSendToClient
+  updateSpaceAndSendToClient,
+  getLinkedChildrenSpaces
 } from '../controllers/SpaceController';
 import dataTableCtrl from '../controllers/DataTableController';
 
-import { createLinkedChild, getLinkedChildren } from '../controllers/CrudCustomController';
+import { createLinkedChild } from '../controllers/CrudCustomController';
 import httpStatus from 'http-status';
 import { isLoggedIn } from '../../middlewares/isLoggedIn';
 const router = express.Router();
@@ -25,8 +26,8 @@ const router = express.Router();
 router.get('/', isLoggedIn(), sendSpacesToClient);
 // router.get('/home', isLoggedIn(), sendDataForHomeDashboard);
 router.get('/with-pagination', isLoggedIn(), sendMainSpacesWithPaginationToClient);
-router.get('/with-pagination', isLoggedIn(), sendMainSpacesWithPaginationToClient);
-router.get('/with-pagination/linkedChildren/:parentId', isLoggedIn(), getLinkedChildren);
+
+router.get('/with-pagination/linkedChildren/:parentId', isLoggedIn(), getLinkedChildrenSpaces);
 
 router.get('/descendants/:spaceId', isLoggedIn(), sendDescendantIdsToClient);
 router.get('/head-to-tail/:spaceId', isLoggedIn(), sendHeadToTailToClient);

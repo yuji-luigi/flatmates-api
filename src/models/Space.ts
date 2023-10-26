@@ -120,11 +120,20 @@ export const spacesSchema = new Schema<ISpace, SpaceModel, ISpaceMethods>(
       },
       async getHeadSpace() {
         try {
-          const parent = await this.getParent();
-          if (parent.isHead) {
-            return parent;
+          if (this.isHead) {
+            return this;
           }
-          return parent.getHeadSpace();
+          return this.getHeadSpace();
+        } catch (error) {
+          logger.error(error.message || error);
+        }
+      },
+      async getMainSpace() {
+        try {
+          if (this.isMain) {
+            return this;
+          }
+          return this.getHeadSpace();
         } catch (error) {
           logger.error(error.message || error);
         }

@@ -31,11 +31,12 @@ export const ADMIN = 'admin';
 export const LOGGED_USER = 'user';
 export const SUPER_ADMIN = 'super_admin';
 
-export function checkAdminOfSpace({ space, currentUser }: { space: ISpace; currentUser: JwtReturnType }) {
+export async function checkAdminOfSpace({ space, currentUser }: { space: ISpace; currentUser: JwtReturnType }) {
   if (currentUser.role === SUPER_ADMIN) {
     return true;
   }
-  if (stringifyObjectIds(space.admins).includes(currentUser._id.toString())) {
+  const mainSpace = await space.getMainSpace();
+  if (stringifyObjectIds(mainSpace.admins).includes(currentUser._id.toString())) {
     return true;
   }
   return false;

@@ -16,10 +16,9 @@ import Maintenance from '../../models/Maintenance';
 import Maintainer from '../../models/Maintainer';
 import { ObjectId } from 'mongodb';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
-import { LOOKUPS, UNWIND } from '../pipelines/lookups';
+import { LOOKUPS, LOOKUP_PIPELINE_STAGES, UNWIND, getUnwind } from '../pipelines/lookups';
 import { createJWTObjectFromJWTAndSpace, handleSetCookies, signJwt } from '../../utils/jwt/jwtUtils';
 import { checkAdminOfSpace } from '../../middlewares/auth-middlewares';
-import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 const entity = 'spaces';
 // import MSG from '../../utils/messages';
 // import { runInNewContext } from 'vm';
@@ -60,11 +59,15 @@ export const sendSpacesToClient = async (req: RequestCustom, res: Response) => {
 
 export const createHeadSpaceWithPagination = async (req: RequestCustom, res: Response) => {
   try {
+    let isMain = false;
+    if (req.user.role === 'super_admin') {
+      isMain = true;
+    }
     const newSpace = new Space({
       ...req.body,
       organization: req.user.organizationId,
       isHead: true,
-      isMain: true
+      isMain
     });
     await newSpace.save();
     const query = { ...req.query, isHead: true };
@@ -75,12 +78,6 @@ export const createHeadSpaceWithPagination = async (req: RequestCustom, res: Res
       data: data[0].paginatedResult || [],
       totalDocuments: data[0].counts[0]?.total || 0
     });
-    // res.status(httpStatus.CREATED).json({
-    //   success: true,
-    //   collection: 'spaces',
-    //   data: newSpace,
-    //   count: 1
-    // });
   } catch (err) {
     logger.error(err.message || err);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: err.message || err });
@@ -96,7 +93,7 @@ export const sendMainSpacesWithPaginationToClient = async (req: RequestCustom, r
     //  TODO: use req.query for querying in find method and paginating. maybe need to delete field to query in find method
     // const { query } = req;
     req.query.isMain = true;
-    const lookups = [LOOKUPS.ADMINS, UNWIND, LOOKUPS.ORGANIZATION, UNWIND];
+    const lookups = LOOKUP_PIPELINE_STAGES.spaces;
     const data = await aggregateWithPagination(req.query, entity, lookups);
 
     res.status(httpStatus.OK).json({
@@ -253,10 +250,12 @@ export const sendSpaceDataForSSG = async (req: RequestCustom, res: Response) => 
 export const getLinkedChildrenSpaces = async (req: RequestCustom, res: Response) => {
   try {
     //! set pagination logic here and next > parentId page set the pagination logic
-    const { parentId, entity } = req.params;
+    const { parentId } = req.params;
     // const children = await mongoose.model(entity).find({parentId: parentId});x
     req.query.parentId = parentId;
-    const data = await aggregateWithPagination(req.query, entity);
+    const lookups = LOOKUP_PIPELINE_STAGES.spaces;
+
+    const data = await aggregateWithPagination(req.query, entity, lookups);
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity,
@@ -271,6 +270,7 @@ export const getLinkedChildrenSpaces = async (req: RequestCustom, res: Response)
 
 export const sendSingleSpaceByIdToClient = async (req: RequestCustom, res: Response) => {
   try {
+    // return res.send('ok');
     const data = await Space.findOne(new ObjectId(req.params.spaceId));
 
     res.status(httpStatus.OK).json({
@@ -289,7 +289,7 @@ export const sendSpaceSettingPageDataToClient = async (req: RequestCustom, res: 
   try {
     const data = await Space.findOne({ slug: req.params.slug });
     const maintainers = await Maintainer.find({ spaces: { $in: [data._id] } });
-    const isSpaceAdmin = checkAdminOfSpace({ space: data, currentUser: req.user });
+    const isSpaceAdmin = await checkAdminOfSpace({ space: data, currentUser: req.user });
     await setUrlToSpaceImages(data);
     for (const maintainer of maintainers) {
       await maintainer.avatar?.setUrl();
@@ -618,7 +618,7 @@ export async function updateSpaceAndSendToClient(req: RequestCustom, res: Respon
   try {
     const space = await Space.findById(req.params.idMongoose);
 
-    if (!checkAdminOfSpace({ space, currentUser: req.user })) {
+    if (!(await checkAdminOfSpace({ space, currentUser: req.user }))) {
       throw new Error(_MSG.NOT_AUTHORIZED);
     }
 
@@ -645,7 +645,7 @@ export async function updateSpaceAndSendToClient(req: RequestCustom, res: Respon
 export async function sendIsAdminToClient(req: RequestCustom, res: Response) {
   try {
     const space = await Space.findById(req.params.idMongoose);
-    const isAdmin = checkAdminOfSpace({ space, currentUser: req.user });
+    const isAdmin = await checkAdminOfSpace({ space, currentUser: req.user });
     res.status(httpStatus.OK).json({
       success: true,
       data: isAdmin

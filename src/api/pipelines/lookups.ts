@@ -43,10 +43,16 @@ export const UNWIND: PipelineStage.FacetPipelineStage = {
     preserveNullAndEmptyArrays: true
   }
 };
+export const getUnwind = (path: string): PipelineStage.FacetPipelineStage => ({
+  $unwind: {
+    path,
+    preserveNullAndEmptyArrays: true
+  }
+});
 
 export const LOOKUP_PIPELINE_STAGES: Record<Entities, PipelineStage.FacetPipelineStage[]> = {
   users: [LOOKUPS.ROOT_SPACES],
-  spaces: [],
+  spaces: [LOOKUPS.ADMINS, getUnwind('$admins'), LOOKUPS.ORGANIZATION, getUnwind('$organization')],
   organizations: [],
   funds: [],
   fundRules: [],

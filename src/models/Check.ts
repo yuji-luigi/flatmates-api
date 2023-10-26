@@ -13,6 +13,13 @@ export const checkSchema = new Schema<CheckInterface, CheckModel, unknown>(
     name: {
       type: String
     },
+    total: {
+      type: Number,
+      required: true
+    },
+    subtotal: {
+      type: Number
+    },
     files: [
       {
         type: Schema.Types.ObjectId,
