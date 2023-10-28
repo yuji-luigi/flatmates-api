@@ -7,7 +7,7 @@ import MSG from '../../utils/messages';
 import { deleteEmptyFields, getEntity, getEntityFromOriginalUrl } from '../../utils/functions';
 import { LoggedInRequest, RequestCustom } from '../../types/custom-express/express-custom';
 import { aggregateWithPagination, convert_idToMongooseId } from '../helpers/mongoose.helper';
-import { LOOKUP_PIPELINE_STAGES } from '../pipelines/lookups';
+import { LOOKUP_PIPELINE_STAGES } from '../aggregation-helpers/lookups';
 import { Entities } from '../../types/mongoose-types/model-types/Entities';
 
 //================================================================================

@@ -5,7 +5,8 @@ import { createCheck, sendCheckToClient, verifyNonceCookieSendChecksMaintenanceT
 import { handleUserFromRequest } from '../../middlewares/handleUserFromRequest';
 import { queryHandler } from '../../middlewares/handleSetQuery';
 
-router.post('/:checkType', createCheck);
+router.post('/', createCheck);
+router.put('/:idMongoose', (req, res) => res.status(500).json({ message: 'not implemented' }));
 router.get('/:linkId/:idMongoose', verifyNonceCookieSendChecksMaintenanceToClient);
 router.use(handleUserFromRequest);
 router.use(queryHandler);

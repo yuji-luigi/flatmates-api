@@ -16,8 +16,6 @@ export const createCheck = async (req: RequestCustom, res: Response) => {
     const newCheck = new Check(req.body);
     await newCheck.save();
 
-    await newCheck.deleteOne();
-
     //! Todo: handle this in frontend.
     // return sendCrudObjectsWithPaginationToClient(req, res);
 

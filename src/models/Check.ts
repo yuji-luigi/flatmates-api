@@ -33,10 +33,14 @@ export const checkSchema = new Schema<CheckInterface, CheckModel, unknown>(
       enum: checkTypes,
       required: true
     },
+    entity: {
+      type: String,
+      required: true
+    },
     maintainer: {
       type: Schema.Types.ObjectId,
-      ref: 'maintainers',
-      autopopulate: true
+      ref: 'maintainers'
+      // autopopulate: true
     },
     maintenance: {
       type: Schema.Types.ObjectId,
@@ -45,12 +49,14 @@ export const checkSchema = new Schema<CheckInterface, CheckModel, unknown>(
     organization: {
       type: Schema.Types.ObjectId,
       ref: 'organizations',
-      autopopulate: true
+      // autopopulate: true,
+      required: true
     },
     space: {
       type: Schema.Types.ObjectId,
       ref: 'spaces',
-      autopopulate: true
+      // autopopulate: true,
+      required: true
     }
   },
   {
@@ -69,22 +75,41 @@ checkSchema.pre('find', async function (next) {
   next();
 });
 
-checkSchema.pre('save', async function (next) {
+checkSchema.pre('validate', async function (next) {
   try {
     // save in maintenance.invoice or receipt at the creation of the check
     const maintenance = await Maintenance.findById(this.maintenance);
-    maintenance[this.type].push(this);
-    if (this.type === 'invoices') {
-      maintenance.invoicesTotal += this.total;
+    if (maintenance) {
+      this.space = maintenance.space;
+      this.organization = maintenance.organization;
+      maintenance[this.type].push(this);
+      if (this.type === 'invoices') {
+        maintenance.invoicesTotal += this.total;
+      }
+      if (this.type === 'receipts') {
+        maintenance.receiptsTotal += this.total;
+      }
+      this.name = maintenance.title;
+      this._modifiedMaintenance = maintenance;
     }
-    if (this.type === 'receipts') {
-      maintenance.receiptsTotal += this.total;
-    }
-    await maintenance.save();
     next();
   } catch (error) {
     logger.error(error.message || error);
     throw new Error('error in checkSchema.pre(save)');
+  }
+});
+
+// Post-validate hook
+checkSchema.post('validate', async function (doc, next) {
+  try {
+    // Check if _modifiedMaintenance exists and then save it
+    if (doc._modifiedMaintenance) {
+      await doc._modifiedMaintenance.save();
+    }
+    next();
+  } catch (error) {
+    logger.error(error.message || error);
+    throw new Error('error in checkSchema.post(validate)');
   }
 });
 

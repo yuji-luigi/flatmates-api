@@ -1,3 +1,4 @@
+import { Document } from 'mongoose';
 import { MongooseBaseModel } from './base-types/base-model-interface';
 import { MaintainerInterface } from './maintainer-interface';
 import { IMaintenance } from './maintenance-interface';
@@ -15,9 +16,11 @@ export interface CheckInterface extends MongooseBaseModel {
   total: number;
   subtotal: number;
   files: IUpload[];
-  organization: IOrganization;
+  organization: string | IOrganization;
   // mainSpace: ISpace;
   type: CheckType;
+  entity: string;
   /** @description mainSpace. if necessary tailSpace will be tailSpace */
   space: ISpace;
+  _modifiedMaintenance?: IMaintenance & Document;
 }

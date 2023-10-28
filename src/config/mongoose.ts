@@ -63,10 +63,11 @@ export default {
       .connect(vars.mongo.uri)
       .then(() => {
         logger.info('Connected to DB! Uri:' + vars.mongo.uri);
+        console.log('Connected to DB! Uri:' + vars.mongo.uri);
       })
       .catch((err: object | string) => logger.error(`ERROR CONNECTING TO MONGO\n${err}. mongoURI: ${vars.mongo.uri}`));
   },
   close: () => mongoose.connection.close()
 };
-
+logger.debug('goawirhgaph');
 export {};
