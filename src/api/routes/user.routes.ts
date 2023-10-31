@@ -24,9 +24,11 @@ router.use((req: RequestCustom, response: Response, next: NextFunction) => {
     }
     req.query.rootSpaces = { $in: [req.user.spaceId] };
   }
-  // delete req.query.space;
   if (req.query.organization) {
     req.query.organizations = { $in: [req.query.organization] };
+  }
+  if (req.query.space) {
+    req.query.rootSpaces = { $in: [req.user.spaceId] };
   }
   delete req.query.organization;
   delete req.query.space;

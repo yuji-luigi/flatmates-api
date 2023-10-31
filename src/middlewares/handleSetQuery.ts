@@ -18,6 +18,7 @@ export function queryHandler(req: RequestCustom, res: Response, next: NextFuncti
 
     if (req.user.spaceId) {
       req.query.space = req.user.spaceId;
+
       // only for users
       // req.query.rootSpaces = req.user.spaceId;
     }

@@ -16,7 +16,6 @@ const { port, env } = vars;
 mongoose.connect();
 
 app.listen(port, async () => {
-  logger.info(`server started on port ${port} (${env})`);
   console.log(`server started on port ${port} (${env})`);
   // const checks = await Check.find().populate('maintenance');
   // await Promise.all(

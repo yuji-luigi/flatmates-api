@@ -15,8 +15,8 @@ export async function sumUpChecksByDate(query: Record<string, any>) {
         totalForDay: { $sum: '$total' },
         data: {
           $push: {
-            x: '$createdAt',
-            y: '$total',
+            date: '$createdAt',
+            total: '$total',
             entity: '$entity',
             name: '$name'
           }
@@ -25,8 +25,9 @@ export async function sumUpChecksByDate(query: Record<string, any>) {
     },
     {
       $project: {
-        x: '$totalForDay',
-        y: {
+        _id: 0,
+        total: '$totalForDay',
+        date: {
           $dateFromParts: {
             year: '$_id.year',
             month: '$_id.month',

@@ -19,3 +19,32 @@ export async function getOrganizationOfHead(parentId: string | ISpace, entity: E
     logger.error(error.message || error);
   }
 }
+
+interface Statistics {
+  checksByMonth: {
+    nChecks: number;
+    month: Date;
+    total: number;
+  }[];
+  checksByDate:
+    | {
+        date: Date;
+        total: number;
+        data: {
+          date: Date;
+          total: number;
+          entity: string;
+          name: string;
+        }[];
+      }[]
+    | [];
+}
+[];
+
+export function handleCreateStatistics({ checksByMonth, checksByDate }: Partial<Statistics>): Statistics {
+  const statistics: Statistics = {
+    checksByMonth: checksByMonth || [],
+    checksByDate: checksByDate || []
+  };
+  return statistics;
+}

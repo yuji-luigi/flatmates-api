@@ -94,7 +94,11 @@ export const sendMainSpacesWithPaginationToClient = async (req: RequestCustom, r
     // const { query } = req;
     req.query.isMain = true;
     const lookups = LOOKUP_PIPELINE_STAGES.spaces;
-    req.query._id = req.query.space;
+
+    if (req.user.role !== 'super_admin' || req.query.space) {
+      req.query._id = req.query.space;
+    }
+
     delete req.query.space;
     const data = await aggregateWithPagination(req.query, entity, lookups);
 
