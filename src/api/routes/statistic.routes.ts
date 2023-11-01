@@ -1,7 +1,6 @@
 import express from 'express';
 
 const router = express.Router();
-import { createCheck, sendCheckToClient, verifyNonceCookieSendChecksMaintenanceToClient } from '../controllers/CheckController';
 import { handleUserFromRequest } from '../../middlewares/handleUserFromRequest';
 import { queryHandler } from '../../middlewares/handleSetQuery';
 import { sendStatisticsByMonthToClient } from '../controllers/StatisticController';

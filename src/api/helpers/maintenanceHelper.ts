@@ -6,15 +6,22 @@ import { IMaintenance } from '../../types/mongoose-types/model-types/maintenance
 import Maintainer from '../../models/Maintainer';
 import { MaintainerInterface } from '../../types/mongoose-types/model-types/maintainer-interface';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
+import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
 
-export async function createOptionsForMaintenance({ maintenance }: { maintenance: IMaintenance }): Promise<Mail.Options | false> {
+export async function createOptionsForMaintenance({
+  maintenance,
+  authToken
+}: {
+  maintenance: IMaintenance;
+  authToken: AuthTokenInterface;
+}): Promise<Mail.Options | false> {
   try {
     const maintainer = await Maintainer.findById(maintenance.maintainer);
     if (!maintainer) {
       return false;
     }
     const space = await Space.findById(maintenance.space);
-    const html = createBodyForMaintenance({ maintenance, maintainer, space });
+    const html = createBodyForMaintenance({ maintenance, maintainer, space, authToken });
     const options: Mail.Options = {
       from: vars.displayMail,
       to: maintainer.email,
@@ -29,7 +36,17 @@ export async function createOptionsForMaintenance({ maintenance }: { maintenance
   }
 }
 
-function createBodyForMaintenance({ maintenance, maintainer, space }: { maintenance: IMaintenance; maintainer: MaintainerInterface; space: ISpace }) {
+function createBodyForMaintenance({
+  maintenance,
+  maintainer,
+  space,
+  authToken
+}: {
+  maintenance: IMaintenance;
+  maintainer: MaintainerInterface;
+  space: ISpace;
+  authToken: AuthTokenInterface;
+}) {
   const imagesHtml = maintenance.images.map((image) => `<img src="${image.url}" alt="${image.fileName}" />`);
 
   const html = `
@@ -38,9 +55,9 @@ function createBodyForMaintenance({ maintenance, maintainer, space }: { maintena
 </br>
 <h3> --- descrizioni ---</h3>
 <h4>${maintenance.description}</h4>
-<h1>Inserisci codice alla link: ${maintenance.nonce}</h1>
+<h1>Inserisci codice alla link: ${authToken.nonce}</h1>
 <h4>
-<a href="${generateUploadUrl(maintenance)}">
+<a href="${generateUploadUrl(authToken)}">
 Clicca qui per inserire fattura/ricevuta
 </a>
 </h4>
@@ -51,7 +68,7 @@ ${imagesHtml && imagesHtml.length > 0 ? imagesHtml.join('') : ''}
   return html;
 }
 
-function generateUploadUrl(maintenance: IMaintenance) {
-  const url = `${vars.frontendUrl}/auth-tokens/maintainer-upload-files/${maintenance.linkId}/${maintenance._id.toString()}`;
+function generateUploadUrl(authToken: AuthTokenInterface) {
+  const url = `${vars.frontendUrl}/auth-tokens/maintainer-upload-files/${authToken.linkId}/${authToken._id.toString()}`;
   return url;
 }

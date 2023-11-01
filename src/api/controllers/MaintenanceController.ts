@@ -14,6 +14,7 @@ import { IUpload } from '../../types/mongoose-types/model-types/upload-interface
 import { sensitiveCookieOptions } from '../../config/vars';
 import { _MSG } from '../../utils/messages';
 import { aggregateWithPagination } from '../helpers/mongoose.helper';
+import AuthToken from '../../models/AuthToken';
 /**
  * POST CONTROLLERS
  */
@@ -56,18 +57,24 @@ const createMaintenance = async (req: RequestCustom, res: Response) => {
     reqBody.space = req.query.space;
 
     const maintenance = new Maintenance(reqBody);
-
+    const authToken = new AuthToken({
+      space: maintenance.space,
+      docHolder: {
+        ref: 'maintenances',
+        instanceId: maintenance._id
+      }
+    });
     const images = await Upload.find({ _id: { $in: maintenance.images } });
     maintenance.images = images;
 
     //!todo send email to the maintainers of the space of type of maintenance
     //!todo log the email
-    const mailOptions = await createOptionsForMaintenance({ maintenance });
+    await maintenance.save();
+    await authToken.save();
+    const mailOptions = await createOptionsForMaintenance({ maintenance, authToken });
     if (mailOptions) {
       await sendEmail(mailOptions);
     }
-    await maintenance.save();
-
     const maintenances = await Maintenance.find(req.query).sort({ createdAt: -1 });
     for (const maintenance of maintenances) {
       for (const image of maintenance.images) {
@@ -230,7 +237,11 @@ const deleteThread = async (req: RequestCustom, res: Response) => {
 export async function authUserMaintenanceFiles(req: Request, res: Response) {
   try {
     const { linkId, idMongoose } = req.params;
-    const maintenance = await Maintenance.findOne({ linkId, _id: idMongoose, nonce: req.body.pin })
+    const authToken = await AuthToken.findOne({ linkId, _id: idMongoose, nonce: req.body.pin });
+
+    if (!authToken) throw new Error('pin is not correct');
+    res.cookie('maintenanceNonce', req.body.pin, sensitiveCookieOptions);
+    const maintenance = await Maintenance.findById(authToken.docHolder.instanceId)
       .populate({ path: 'organization', select: 'name' })
       .populate({
         path: 'space',
@@ -241,8 +252,6 @@ export async function authUserMaintenanceFiles(req: Request, res: Response) {
           populate: 'avatar' // assuming you want to populate name and email of admins, adjust accordingly
         }
       });
-    if (!maintenance) throw new Error('pin is not correct');
-    res.cookie('maintenanceNonce', req.body.pin, sensitiveCookieOptions);
 
     res.status(httpStatus.OK).json({
       success: true,

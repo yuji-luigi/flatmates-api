@@ -1,4 +1,4 @@
-export const loginInstanceEntities = ['users', 'maintainers'] as const;
+export const loginInstanceEntities = ['users', 'maintainers', 'maintenances'] as const;
 export const entities = [
   'bookmarks',
   'comments',

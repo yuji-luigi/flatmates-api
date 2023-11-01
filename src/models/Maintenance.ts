@@ -2,7 +2,7 @@ import mongoose, { CallbackWithoutResultAndOptionalError, Document, Model } from
 import autoPopulate from 'mongoose-autopopulate';
 import { getPrivateUrlOfSpace } from '../api/helpers/uploadFileHelper';
 import logger from '../config/logger';
-import { formatDateAndTimev3, generateNonceCode, generateRandomStringByLength, replaceSpecialChars } from '../utils/functions';
+import { formatDateAndTimev3 } from '../utils/functions';
 import { MAINTAINER_TYPES } from '../types/enum/enum';
 import { IMaintenance, IMaintenanceMethods, MAINTENANCE_STATUS } from '../types/mongoose-types/model-types/maintenance-interface';
 import { ICollectionAware, createSlug } from '../api/helpers/mongoose.helper';
@@ -118,15 +118,15 @@ export const maintenanceSchema = new Schema<IMaintenanceDoc, MaintenanceModel, I
     },
     cost: {
       type: Number
-    },
-    nonce: {
-      type: Number,
-      default: generateNonceCode()
-    },
-    linkId: {
-      type: String,
-      default: replaceSpecialChars(generateRandomStringByLength(80))
     }
+    // nonce: {
+    //   type: Number,
+    //   default: generateNonceCode()
+    // },
+    // linkId: {
+    //   type: String,
+    //   default: replaceSpecialChars(generateRandomStringByLength(80))
+    // }
   },
   {
     versionKey: false,

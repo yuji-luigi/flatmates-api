@@ -1,6 +1,6 @@
 // import mongoose from 'mongoose';
 // import Check from '../models/Check';
-
+export const variable = '';
 // export async function createRandomChecks({
 //   numberOfChecks = 10,
 //   spaceId,

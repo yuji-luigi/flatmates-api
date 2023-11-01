@@ -6,6 +6,7 @@ import { deleteEmptyFields } from '../../utils/functions';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import Check from '../../models/Check';
 import Maintenance from '../../models/Maintenance';
+import AuthToken from '../../models/AuthToken';
 const entity = 'checks';
 
 export const createCheck = async (req: RequestCustom, res: Response) => {
@@ -36,9 +37,10 @@ export async function sendCheckToClient(req: RequestCustom, res: Response) {
     const check = await Check.findById(req.params.idMongoose);
 
     const maintenance = await Maintenance.findOne({ [check.type]: { $in: [req.params.idMongoose] } });
+    const foundAuthToken = await AuthToken.findOne({ 'docHolder.instanceId': maintenance._id, nonce: req.cookies.maintenanceNonce });
+    // const nonceIsCorrect = +req.cookies.maintenanceNonce === authToken.nonce;
 
-    const nonceIsCorrect = +req.cookies.maintenanceNonce === maintenance.nonce;
-    if (!nonceIsCorrect) throw new Error('nonce is not correct');
+    if (!foundAuthToken) throw new Error('nonce is not correct');
     const promises = check.files.map(async (file) => {
       await file.setUrl();
     });
@@ -76,13 +78,14 @@ export async function showCheckToClient(req: RequestCustom, res: Response) {
 
 export async function verifyNonceCookieSendChecksMaintenanceToClient(req: RequestCustom, res: Response) {
   try {
-    const maintenance = await Maintenance.findOne({ linkId: req.params.linkId, nonce: req.cookies.maintenanceNonce });
-    if (!maintenance) throw new Error('nonce is not correct. Please check email and set the 6 digits code again.');
+    const authToken = await AuthToken.findOne({ linkId: req.params.linkId, nonce: req.cookies.maintenanceNonce });
+    if (!authToken) throw new Error('nonce is not correct. Please check email and set the 6 digits code again.');
 
     const check = await Check.findById(req.params.idMongoose);
     const promises = check.files.map(async (file) => {
       await file.setUrl();
     });
+    const maintenance = await Maintenance.findById(authToken.docHolder.instanceId);
     await Promise.all(promises);
     res.status(httpStatus.OK).json({
       success: true,

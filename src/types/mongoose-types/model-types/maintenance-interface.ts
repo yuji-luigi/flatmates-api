@@ -39,8 +39,8 @@ export interface IMaintenance extends MongooseBaseModel {
   cost: number;
   /** nonce to authorize maintainer from email link */
   /** link to href maintainer from email */
-  nonce: number;
-  linkId: string;
+  // nonce: number;
+  // linkId: string;
   receiptsTotal: number;
   invoicesTotal: number;
   createdAt: string;

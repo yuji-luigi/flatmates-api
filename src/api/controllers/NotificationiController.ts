@@ -58,48 +58,48 @@ export async function sendNotificationsToClient(req: RequestCustom, res: Respons
  * POST CONTROLLERS
  */
 
-const createNotification = async (req: RequestCustom, res: Response) => {
-  try {
-    const reqBody = deleteEmptyFields(req.body);
-    reqBody.createdBy = req.user;
-    reqBody.organization = req.query.organization;
-    reqBody.space = req.query.space;
+// const createNotification = async (req: RequestCustom, res: Response) => {
+//   try {
+//     const reqBody = deleteEmptyFields(req.body);
+//     reqBody.createdBy = req.user;
+//     reqBody.organization = req.query.organization;
+//     reqBody.space = req.query.space;
 
-    const maintenance = new Maintenance(reqBody);
+//     const maintenance = new Maintenance(reqBody);
 
-    const images = await Upload.find({ _id: { $in: maintenance.images } });
-    maintenance.images = images;
+//     const images = await Upload.find({ _id: { $in: maintenance.images } });
+//     maintenance.images = images;
 
-    //!todo send email to the maintainers of the space of type of maintenance
-    //!todo log the email
-    const mailOptions = await createOptionsForMaintenance({ maintenance });
-    if (mailOptions) {
-      await sendEmail(mailOptions);
-    }
-    await maintenance.save();
+//     //!todo send email to the maintainers of the space of type of maintenance
+//     //!todo log the email
+//     const mailOptions = await createOptionsForMaintenance({ maintenance });
+//     if (mailOptions) {
+//       await sendEmail(mailOptions);
+//     }
+//     await maintenance.save();
 
-    const maintenances = await Maintenance.find(req.query).sort({ createdAt: -1 });
-    for (const maintenance of maintenances) {
-      for (const image of maintenance.images) {
-        await image.setUrl();
-      }
-    }
+//     const maintenances = await Maintenance.find(req.query).sort({ createdAt: -1 });
+//     for (const maintenance of maintenances) {
+//       for (const image of maintenance.images) {
+//         await image.setUrl();
+//       }
+//     }
 
-    res.status(httpStatus.CREATED).json({
-      success: true,
-      collection: 'maintenances',
-      data: maintenances,
-      count: 1
-    });
-  } catch (error) {
-    logger.error(error.message || error);
-    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-      message: error.message || error,
-      success: false
-    });
-  }
-};
-export const notificationController = {
-  createNotification
-};
-export default notificationController;
+//     res.status(httpStatus.CREATED).json({
+//       success: true,
+//       collection: 'maintenances',
+//       data: maintenances,
+//       count: 1
+//     });
+//   } catch (error) {
+//     logger.error(error.message || error);
+//     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+//       message: error.message || error,
+//       success: false
+//     });
+//   }
+// };
+// export const notificationController = {
+//   createNotification
+// };
+// export default notificationController;

@@ -2,51 +2,32 @@ import { describe } from 'node:test';
 import mongoose from '../../../config/mongoose';
 import { createOptionsForMaintenance } from '../../../api/helpers/maintenanceHelper';
 import { IMaintenance } from '../../../types/mongoose-types/model-types/maintenance-interface';
-import Space from '../../../models/Space';
-import Maintainer from '../../../models/Maintainer';
 import 'jest';
-import { ISpace } from '../../../types/mongoose-types/model-types/space-interface';
-import { MaintainerInterface } from '../../../types/mongoose-types/model-types/maintainer-interface';
 import Maintenance from '../../../models/Maintenance';
+import { AuthTokenInterface } from '../../../types/mongoose-types/model-types/auth-token-interface';
+import AuthToken from '../../../models/AuthToken';
 
 describe('test for createMailOptionsForMaintenance', () => {
   let options;
-  let mainSpace = {} as ISpace;
-  let maintainer = {} as MaintainerInterface;
+  // let mainSpace = {} as ISpace;
+  // let maintainer = {} as MaintainerInterface;
+  let authToken = {} as AuthTokenInterface;
+
   let maintenance = {} as IMaintenance;
   beforeAll(async () => {
     mongoose.connect();
-    mainSpace = await Space.findOne({ isMain: true });
-    maintainer = await Maintainer.findOne();
+    // mainSpace = await Space.findOne({ isMain: true });
+    // maintainer = await Maintainer.findOne();
     maintenance = await Maintenance.findOne();
-    // maintenance = {
-    //   title: 'JEST MAINTENANCE TITLE',
-    //   createdAt: new Date().toDateString(),
-    //   images: [],
-    //   // listViewType: 'default',
-    //   // articleType: 'default',
-    //   attachments: [],
-    //   isImportant: true,
-    //   status: 'published',
-    //   createdBy: {
-    //     name: 'JEST',
-    //     surname: 'JEST',
-    //     email: 'ojoj@kk.com'
-    //   } as IUser,
-    //   type: 'Electrician',
-    //   mainSpace,
-    //   slug: 'JEST-MAINTENANCE-TITLE',
-    //   maintainer,
-    //   isPublic: false,
-    //   _id: '',
-    //   updatedAt: '',
-    //   linkId: replaceSpecialChars(generateRandomStringByLength(20)),
-    //   nonce: 939399,
-
-    // };
+    authToken = await AuthToken.findOne({
+      'docHolder.instanceId': maintenance._id
+    });
   });
   it('create mainl options for maintenance', async () => {
-    options = await createOptionsForMaintenance({ maintenance });
+    options = await createOptionsForMaintenance({
+      maintenance,
+      authToken
+    });
     expect(options).toHaveProperty('from');
     expect(options).toHaveProperty('to');
     expect(options).toHaveProperty('subject');
