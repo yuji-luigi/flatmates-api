@@ -44,11 +44,11 @@ export async function sumUpChecksByMonth(query: Record<string, any>) {
   // const from = new Date(query.from);
   // const to = new Date(query.to);
   // set from 2022 and to 2024
-  const from = new Date(2022, 0, 1);
-  const to = new Date(2023, 0, 1);
-  query.createdAt = { $gte: from, $lte: to };
+  // const from = new Date(2022, 0, 1);
+  // const to = new Date(2023, 0, 1);
+  // query.createdAt = { $gte: from, $lte: to };
 
-  return await Check.aggregate([
+  const result = await Check.aggregate([
     {
       $match: query
     },
@@ -84,6 +84,7 @@ export async function sumUpChecksByMonth(query: Record<string, any>) {
       }
     }
   ]);
+  return result;
 }
 
 // createRandomChecks({

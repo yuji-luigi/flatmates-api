@@ -19,6 +19,7 @@ import spaceAuthRoutes from './space-auth.routes';
 import userRoutes from './user.routes';
 import { handleUserFromRequest } from '../../middlewares/handleUserFromRequest';
 import { queryHandler } from '../../middlewares/handleSetQuery';
+import statisticRoutes from './statistic.routes';
 //= ===============================================================================
 // AUTH ROUTES
 //= ===============================================================================
@@ -27,6 +28,7 @@ router.use('/space-auth', spaceAuthRoutes);
 router.use('/auth-tokens', authTokenRoutes);
 router.use('/upload-files', uploadFilesRoutes);
 router.use('/checks', checkRoutes);
+router.use('/statistics', statisticRoutes);
 
 // call passport jwt strategy defined in passport.ts
 // set user in req.user

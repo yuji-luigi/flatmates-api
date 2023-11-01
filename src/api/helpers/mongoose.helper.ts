@@ -6,6 +6,7 @@ import { generateWord, replaceSpecialCharsWith } from '../../utils/functions';
 import { MongooseBaseModel } from '../../types/mongoose-types/model-types/base-types/base-model-interface';
 import { Entities } from '../../types/mongoose-types/model-types/Entities';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
+import _ from 'lodash';
 // todo: aggregation method
 interface LookUpQueryInterface {
   [key: string]: mongoose.PipelineStage.FacetPipelineStage[];
@@ -190,4 +191,20 @@ export function getValidFields({ entity, query }: { entity: Entities; query: Rec
       query[key] === 'false' ? (query[key] = false) : query[key];
     }
   }
+}
+
+// pure function...
+export function getValidFieldsAndConvertToBoolean({ entity, query }: { entity: Entities; query: Record<string, string | boolean | number> }) {
+  const validFields = Object.keys(mongoose.model(entity).schema.paths);
+
+  const clonedQuery = _.cloneDeep(query);
+  for (const key in clonedQuery) {
+    if (!validFields.includes(key)) {
+      delete clonedQuery[key];
+    } else {
+      clonedQuery[key] === 'true' ? (clonedQuery[key] = true) : clonedQuery[key];
+      clonedQuery[key] === 'false' ? (clonedQuery[key] = false) : clonedQuery[key];
+    }
+  }
+  return clonedQuery;
 }
