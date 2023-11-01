@@ -270,7 +270,7 @@ export const sendDataForHomeDashboard = async (req: RequestCustom, res: Response
     }
 
     const threads = await Thread.find(query).limit(10);
-    const maintenances = await Maintenance.find(query).limit(10);
+    const maintenances = await Maintenance.find(query);
     const checksByDate = await sumUpChecksByDate(query);
     const checksByMonth = await sumUpChecksByMonth(query);
     const maintainers = await Maintainer.find(maintainerQuery);

@@ -73,6 +73,7 @@ export const maintenanceSchema = new Schema<IMaintenanceDoc, MaintenanceModel, I
       type: String,
       enum: MAINTAINER_TYPES
     },
+    completedAt: Date,
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: 'users',

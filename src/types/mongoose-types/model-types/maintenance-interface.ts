@@ -43,6 +43,7 @@ export interface IMaintenance extends MongooseBaseModel {
   // linkId: string;
   receiptsTotal: number;
   invoicesTotal: number;
+  completedAt?: string;
   createdAt: string;
 }
 
