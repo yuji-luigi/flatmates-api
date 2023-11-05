@@ -16,6 +16,7 @@ export const entities = [
   'maintenances',
   'checks',
   'auth-tokens',
+  'spaceTags',
   ...loginInstanceEntities
   // 'users',
   // 'maintainers'

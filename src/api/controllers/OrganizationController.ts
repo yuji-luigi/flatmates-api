@@ -229,12 +229,14 @@ export async function deleteOrganizationCookie(req: RequestCustom, res: Response
   }
   const payloadUser = formatUserDataForJwt(req.user);
   const upDatedJwt = signJwt(payloadUser);
-  res.cookie('jwt', upDatedJwt, sensitiveCookieOptions);
-  res.clearCookie('organization', { domain: vars.cookieDomain });
-  res.clearCookie('space', { domain: vars.cookieDomain });
-  res.clearCookie('spaceName', { domain: vars.cookieDomain });
-  res.clearCookie('organizationName', { domain: vars.cookieDomain });
 
+  // res.clearCookie('organization', { domain: vars.cookieDomain });
+  // res.clearCookie('space', { domain: vars.cookieDomain });
+  // res.clearCookie('spaceName', { domain: vars.cookieDomain });
+  // res.clearCookie('organizationName', { domain: vars.cookieDomain });
+
+  res.cookie('jwt', upDatedJwt, sensitiveCookieOptions);
+  console.log(sensitiveCookieOptions);
   res.status(httpStatus.OK).json({
     success: true,
     collection: 'organizations',

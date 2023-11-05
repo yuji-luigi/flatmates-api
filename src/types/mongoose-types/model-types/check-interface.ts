@@ -11,8 +11,19 @@ export type CheckType = (typeof checkTypes)[number];
 export interface CheckInterface extends MongooseBaseModel {
   //virtual field name get from maintenance.name
   name: string;
+  // deprecate this
   maintainer: MaintainerInterface;
+  // deprecate this
   maintenance: IMaintenance;
+  // new fields
+  of: {
+    entity: string;
+    ofId: string;
+  };
+  uploadedBy: {
+    entity: string;
+    uploaderId: string;
+  };
   total: number;
   subtotal: number;
   files: IUpload[];

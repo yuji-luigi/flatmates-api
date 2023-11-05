@@ -531,10 +531,10 @@ export const addSpaceToJWTAndSendToClient = async (req: RequestCustom, res: Resp
 export const deleteSpaceCookie = async (req: RequestCustom, res: Response) => {
   try {
     deleteSpaceCookies(res);
-    res.clearCookie('jwt', { domain: vars.cookieDomain });
-    const payload = createJWTObjectFromJWTAndSpace({ user: req.user, organizationId: req.user.organizationId.toString(), space: null });
+    const payload = createJWTObjectFromJWTAndSpace({ user: req.user, organizationId: req.user.organizationId?.toString(), space: null });
     const jwt = signJwt(payload);
 
+    res.clearCookie('jwt', { domain: vars.cookieDomain });
     res.cookie('jwt', jwt, sensitiveCookieOptions);
 
     res.status(httpStatus.OK).json({

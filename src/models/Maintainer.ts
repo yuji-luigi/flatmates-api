@@ -60,18 +60,10 @@ export const maintainerSchema = new Schema<MaintainerInterface>(
       type: String,
       unique: true
     },
-    // organizations: [
-    //   {
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'organizations'
-    //   }
-    // ],
-    // spaces: [
-    //   {
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'spaces'
-    //   }
-    // ],
+    active: {
+      type: Boolean,
+      default: false
+    },
     isIndividual: {
       type: Boolean,
       default: true

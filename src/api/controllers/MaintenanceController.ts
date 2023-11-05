@@ -15,6 +15,8 @@ import { sensitiveCookieOptions } from '../../config/vars';
 import { _MSG } from '../../utils/messages';
 import { aggregateWithPagination } from '../helpers/mongoose.helper';
 import AuthToken from '../../models/AuthToken';
+import Check from '../../models/Check';
+import Maintainer from '../../models/Maintainer';
 /**
  * POST CONTROLLERS
  */
@@ -252,7 +254,10 @@ export async function authUserMaintenanceFiles(req: Request, res: Response) {
           populate: 'avatar' // assuming you want to populate name and email of admins, adjust accordingly
         }
       });
+    // todo!!
+    const maintainer = await Maintainer.findById(maintenance.maintainer);
 
+    const checks = await Check.find({ ma: maintenance.space._id }).populate('organization');
     res.status(httpStatus.OK).json({
       success: true,
       collection: 'maintenances',

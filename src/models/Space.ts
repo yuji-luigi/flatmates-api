@@ -41,7 +41,7 @@ export const spacesSchema = new Schema<ISpace, SpaceModel, ISpaceMethods>(
     },
     isTail: {
       type: Boolean,
-      default: true
+      default: false
     },
     parentId: {
       type: Schema.Types.ObjectId,
@@ -118,26 +118,26 @@ export const spacesSchema = new Schema<ISpace, SpaceModel, ISpaceMethods>(
         /** At the end return the array */
         return clonedAncestor;
       },
-      async getHeadSpace() {
-        try {
-          if (this.isHead) {
-            return this;
-          }
-          return this.getHeadSpace();
-        } catch (error) {
-          logger.error(error.message || error);
-        }
-      },
-      async getMainSpace() {
-        try {
-          if (this.isMain) {
-            return this;
-          }
-          return this.getHeadSpace();
-        } catch (error) {
-          logger.error(error.message || error);
-        }
-      },
+      // async getHeadSpace() {
+      //   try {
+      //     if (this.isHead) {
+      //       return this;
+      //     }
+      //     return this.getHeadSpace();
+      //   } catch (error) {
+      //     logger.error(error.message || error);
+      //   }
+      // },
+      // async getMainSpace() {
+      //   try {
+      //     if (this.isMain) {
+      //       return this;
+      //     }
+      //     return this.getHeadSpace();
+      //   } catch (error) {
+      //     logger.error(error.message || error);
+      //   }
+      // },
       token() {
         const payload = {
           _id: this._id,
@@ -181,6 +181,12 @@ spacesSchema.pre('save', async function (next) {
       this.slug = slugToCheck;
     }
     // If the slug is not unique, append a unique suffix
+    if (this.parentId) {
+      const parent = await Space.findById(this.parentId);
+      if (parent.isTail) {
+        throw new Error('parent is tail');
+      }
+    }
 
     next();
   } catch (error) {

@@ -51,16 +51,20 @@ export type JwtReturnType = LeanUser & {
   spaceName?: string;
   spaceId?: ObjectId;
   organizationId?: ObjectId;
+  /** check from selected space.admins and requesting user id */
   isAdminOfSpace: boolean;
   spaceAdmins: ObjectId[] | [];
 };
-
+// now payload must have entity string
 const jwt = async (payload: any, done: any) => {
   try {
     // const user = await User.findOne({ email: payload.email }).lean();
     // if (user) return done(null, user);
     // return done(null, false);
     const user: LeanUser = await User.findOne({ email: payload.email }).lean();
+    if (payload.entity === 'maintainer') {
+      // const maintainer = await Maintainer.findOne({ email: payload.email }).lean();
+    }
     const result: JwtReturnType = { ...user, spaceAdmins: [], isAdminOfSpace: false };
     if (!user) {
       return done(null, false);
@@ -68,10 +72,13 @@ const jwt = async (payload: any, done: any) => {
     // Fetch space and organization if they're in the payload
 
     if (payload.spaceId) {
+      // get selected space(space organization input)
       const space = await Space.findById(payload.spaceId).lean();
       result.spaceName = space.name;
       result.spaceId = space._id;
       result.spaceAdmins = space.admins;
+      // from selectedSpace extract admins Array then check the requiesting user is in the array.
+      // if yes then set the user is admin of the space
       result.isAdminOfSpace = stringifyObjectIds(space.admins).includes(user._id.toString());
     }
     if (payload.organizationId) {

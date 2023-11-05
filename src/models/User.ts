@@ -145,6 +145,7 @@ userSchema.method({
   token() {
     const payload = {
       email: this.email,
+      entity: 'users',
       organizationId: this.organizations[0]?._id.toString()
     };
     return jwt.sign(payload, jwtSecret, {
@@ -198,6 +199,52 @@ userSchema.statics = {
         });
 
       const user = await this.findOne({ email }).exec();
+      if (!user.active || !user.password) {
+        throw new APIError({
+          message: _MSG.REGISTER_FIRST
+        });
+      }
+      const err: UserError = {
+        status: httpStatus.UNAUTHORIZED,
+        isPublic: true
+      };
+      if (password) {
+        if (user && (await user.passwordMatches(password))) {
+          return {
+            user,
+            accessToken: user.token()
+          };
+        }
+        err.message = 'Incorrect email or password';
+      } else if (refreshObject && refreshObject.userEmail === email) {
+        if (moment(refreshObject.expires).isBefore()) {
+          err.message = 'Invalid refresh token.';
+        } else {
+          return {
+            user,
+            accessToken: user.token()
+          };
+        }
+      } else {
+        err.message = 'Incorrect email or refreshToken';
+      }
+      throw new APIError(err);
+    } catch (error) {
+      logger.error(error.message, error);
+      throw new Error(_MSG.INVALID_CREDENTIALS);
+    }
+  },
+  async findAndGenerateTokenWithoutError(options) {
+    try {
+      const { email, password, refreshObject } = options;
+      if (!email)
+        throw new APIError({
+          message: 'An email is required to generate a token'
+        });
+      const user = await this.findOne({ email }).exec();
+      if (!user) {
+        return { user: null, accessToken: null };
+      }
       if (!user.active || !user.password) {
         throw new APIError({
           message: _MSG.REGISTER_FIRST

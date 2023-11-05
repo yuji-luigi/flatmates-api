@@ -16,6 +16,9 @@ import { IOrganization } from '../../types/mongoose-types/model-types/organizati
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { userHasSpace } from '../helpers/spaceHelper';
 import { createJWTObjectFromJWTAndSpace, resetSpaceCookies, handleSetCookies } from '../../utils/jwt/jwtUtils';
+import Maintainer from '../../models/Maintainer';
+import { authLoginInstances } from '../../utils/login-instance-utils/authLoginInstances';
+import { handleGenerateToken } from '../../utils/login-instance-utils/generateTokens';
 // import { CurrentSpace } from '../../types/mongoose-types/model-types/space-interface';
 
 const { jwtExpirationInterval, cookieDomain } = vars;
@@ -135,11 +138,25 @@ async function createNewSpaceAtRegister({
  */
 const login = async (req: Request, res: Response) => {
   try {
-    const { user, accessToken } = await User.findAndGenerateToken(req.body);
+    const { email, password } = req.body;
+    // const { user, accessToken: token } = await User.findAndGenerateToken(req.body);
+    const { user, maintainer } = await authLoginInstances({ email, password });
+    if (user && maintainer) {
+      return res.status(httpStatus.OK).json({
+        success: false,
+        data: {
+          user,
+          maintainer
+        },
+        message: 'Decide in which entity you want to login'
+      });
+    }
+
+    const token = handleGenerateToken({ user, maintainer });
     //clear all spaceCookies
     resetSpaceCookies(res);
-    const token = generateTokenResponse(user, accessToken);
-    res.cookie('jwt', token.accessToken, sensitiveCookieOptions);
+
+    res.cookie('jwt', token, sensitiveCookieOptions);
 
     return res.send({
       success: true,
