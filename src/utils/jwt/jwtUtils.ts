@@ -60,7 +60,9 @@ export function handleSetCookiesFromSpace(res: Response, space: ISpace) {
   res.cookie('spaceImage', space.cover?.url);
 }
 
-function hasSpaceDetails(payload: JwtSignPayload): payload is SpaceDetails & { email: string; organizationId?: string } {
+function hasSpaceDetails(
+  payload: JwtSignPayload
+): payload is SpaceDetails & { email: string; organizationId?: string; entity: 'users' | 'maintainers' } {
   return (payload as SpaceDetails).spaceId !== undefined;
 }
 

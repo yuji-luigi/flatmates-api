@@ -15,9 +15,20 @@ export type UserError = {
 };
 
 type userRoles = 'user' | 'admin' | 'super_admin';
-export interface IUser extends LoginInstance<IUser>, MongooseBaseModel {
+export interface IUser extends Omit<LeanUser, 'entity'>, LoginInstance<IUser>, MongooseBaseModel {
+  // tailSpace: ISpace | string;
+  passwordMatches: (password: string) => boolean;
+  // hasOrganization: (organizationId: string) => Promise<boolean>;
+  token: () => string;
+  save: () => void;
+  getOrganizations: () => Promise<IOrganization[]>;
+  isSuperAdmin: () => boolean;
+  isAdminOrganization: (organizationId: ObjectId) => Promise<boolean>;
+}
+export interface LeanUser {
+  _id: ObjectId;
   name: string | undefined;
-  surname: string | undefined;
+  surname?: string | undefined;
   email?: string | undefined;
   password: string;
   avatar?: IUpload;
@@ -38,14 +49,7 @@ export interface IUser extends LoginInstance<IUser>, MongooseBaseModel {
     password?: Buffer | string;
   };
   last_login?: Date;
-  // tailSpace: ISpace | string;
-  passwordMatches: (password: string) => boolean;
-  // hasOrganization: (organizationId: string) => Promise<boolean>;
-  token: () => string;
-  save: () => void;
-  getOrganizations: () => Promise<IOrganization[]>;
-  isSuperAdmin: () => boolean;
-  isAdminOrganization: (organizationId: ObjectId) => Promise<boolean>;
+  entity: 'users';
 }
 
 export interface IUserStatics {
@@ -58,5 +62,3 @@ export interface IUserStatics {
 }
 
 export interface UserModel extends Model<IUser, object, IUserStatics>, LoginInstanceMethods<IUser> {}
-
-export type LeanUser = Omit<IUser, 'passwordMatches' | 'token' | 'save' | 'getOrganizations' | 'isSuperAdmin' | 'isAdminOrganization'>;

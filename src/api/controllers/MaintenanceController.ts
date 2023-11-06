@@ -288,6 +288,55 @@ export async function authUserMaintenanceFiles(req: Request, res: Response) {
   }
 }
 
+export async function authUserMaintenanceByJWT(req: Request, res: Response) {
+  try {
+    const { linkId, idMongoose } = req.params;
+    const authToken = await AuthToken.findOne({ linkId, _id: idMongoose, nonce: req.body.pin });
+
+    if (!authToken) throw new Error('pin is not correct');
+    res.cookie('maintenanceNonce', req.body.pin, sensitiveCookieOptions);
+    const maintenance = await Maintenance.findById(authToken.docHolder.instanceId)
+      .populate({ path: 'organization', select: 'name' })
+      .populate({
+        path: 'space',
+        select: 'name address admins cover',
+        populate: [
+          {
+            path: 'cover',
+            select: 'url'
+          },
+          {
+            path: 'admins', // this will populate 'admins' in 'space'
+            select: 'name surname email avatar',
+            populate: 'avatar' // assuming you want to populate name and email of admins, adjust accordingly
+          }
+        ]
+      });
+    // todo!!
+    const organizationId = getIdString(maintenance.organization);
+    const spaceId = getIdString(maintenance.space);
+    const maintainer = await Maintainer.findById(maintenance.maintainer);
+    const token = generateTokenMaintainer({ maintainer, organizationId, spaceId, space: maintenance.space });
+    console.log(sensitiveCookieOptions);
+    handleSetCookiesFromSpace(res, maintenance.space);
+    res.cookie('jwt', token, sensitiveCookieOptions);
+
+    const checks = await Check.find({ maintenance: maintenance.space._id }).populate('organization');
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: 'maintenances',
+      data: { message: 'pin is correct', maintenance, checks },
+      count: 1
+    });
+  } catch (error) {
+    logger.error(error.message || error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: error.message || error,
+      success: false
+    });
+  }
+}
+
 // export const { createMaintenance } = postController;
 const postController = {
   createMaintenance,
