@@ -4,6 +4,7 @@ import vars, { basicCookieOptions, sensitiveCookieOptions } from '../../config/v
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
 import { Response } from 'express';
 import { JsonObjPayload, JwtSignPayload, SpaceDataType, SpaceDetails } from './jwtUtils-types';
+import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 const baseUrl = vars.frontendUrl + '/auth-tokens';
 
 export const generateTokenUrl = {
@@ -38,7 +39,7 @@ export const createJWTObjectFromJWTAndSpace = (payload: JsonObjPayload): JwtSign
   return data;
 };
 /** @description sign payload as jwt then res.cookie with type checking. set jwt and space + organization cookie*/
-export function handleSetCookies(res: Response, payload: JwtSignPayload) {
+export function handleSetCookiesFromPayload(res: Response, payload: JwtSignPayload) {
   res.cookie('jwt', signJwt(payload), sensitiveCookieOptions);
   if (hasSpaceDetails(payload)) {
     res.cookie('spaceId', payload.spaceId, basicCookieOptions);
@@ -48,6 +49,15 @@ export function handleSetCookies(res: Response, payload: JwtSignPayload) {
     res.cookie('organizationId', payload.organizationId, basicCookieOptions);
     res.cookie('spaceImage', payload.spaceImage);
   }
+}
+/** @description sign payload as jwt then res.cookie with type checking. set jwt and space + organization cookie*/
+export function handleSetCookiesFromSpace(res: Response, space: ISpace) {
+  res.cookie('spaceId', space._id, basicCookieOptions);
+  res.cookie('spaceName', space.name, basicCookieOptions);
+  res.cookie('spaceSlug', space.slug, basicCookieOptions);
+  res.cookie('spaceAddress', space.address, basicCookieOptions);
+  res.cookie('organizationId', space.organization, basicCookieOptions);
+  res.cookie('spaceImage', space.cover?.url);
 }
 
 function hasSpaceDetails(payload: JwtSignPayload): payload is SpaceDetails & { email: string; organizationId?: string } {
@@ -61,3 +71,27 @@ export function resetSpaceCookies(res: Response) {
   res.clearCookie('spaceAddress', { domain: vars.cookieDomain });
   res.clearCookie('organizationId', { domain: vars.cookieDomain });
 }
+
+// export class JwtUtils {
+//   static generateTokenUrl = generateTokenUrl;
+//   static formatUserDataForJwt = formatUserDataForJwt;
+//   static signJwt = signJwt;
+//   static createJWTObjectFromJWTAndSpace = createJWTObjectFromJWTAndSpace;
+//   static handleSetCookiesFromPayload = handleSetCookiesFromPayload;
+//   static resetSpaceCookies = resetSpaceCookies;
+// }
+
+// export class JwtConstructor {
+//   public spaceId: string;
+//   public spaceName: string;
+//   public spaceSlug: string;
+//   public spaceAddress: string;
+//   public organizationId: string;
+//   public spaceImage: string;
+
+//   private payload: JsonObjPayload;
+//   constructor(payload: JsonObjPayload) {
+//     this.payload = payload;
+//   }
+
+// }

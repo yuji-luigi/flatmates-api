@@ -53,6 +53,13 @@ export const maintainerSchema = new Schema<MaintainerInterface>(
         autopopulate: true
       }
     ],
+    organizations: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'organizations'
+        // autopopulate: true
+      }
+    ],
     description: String,
     address: String,
     isInSpace: Boolean,

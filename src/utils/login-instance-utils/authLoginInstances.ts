@@ -8,43 +8,6 @@ import User from '../../models/User';
 import Maintainer from '../../models/Maintainer';
 import { passwordMatches } from './passwordMatches';
 
-export async function generateTokenByCredentialsEntity({ email, password, entity }: { entity?: string; email?: string; password: string }) {
-  try {
-    if (!email)
-      throw new APIError({
-        message: 'An email is required'
-      });
-    if (!password)
-      throw new APIError({
-        message: 'Password is required'
-      });
-    const MongooseModel = mongoose.model(entity);
-    // can
-    const loggingInstance = await MongooseModel.findOne({ email }).exec();
-
-    if (!loggingInstance.active || !loggingInstance.password) {
-      throw new APIError({
-        message: _MSG.REGISTER_FIRST
-      });
-    }
-    const err: UserError = {
-      status: httpStatus.UNAUTHORIZED,
-      isPublic: true
-    };
-    if (loggingInstance && (await loggingInstance.passwordMatches(password))) {
-      return {
-        loggingInstance,
-        accessToken: loggingInstance.token()
-      };
-    }
-    err.message = 'Incorrect email or password';
-
-    throw new APIError(err);
-  } catch (error) {
-    logger.error(error.message, error);
-    throw new Error(_MSG.INVALID_CREDENTIALS);
-  }
-}
 // authenticate user and maintainer at once
 export async function authLoginInstances({ email, password }: { email?: string; password?: string }) {
   try {

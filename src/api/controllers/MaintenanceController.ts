@@ -17,6 +17,9 @@ import { aggregateWithPagination } from '../helpers/mongoose.helper';
 import AuthToken from '../../models/AuthToken';
 import Check from '../../models/Check';
 import Maintainer from '../../models/Maintainer';
+import { generateTokenMaintainer } from '../../utils/login-instance-utils/generateTokens';
+import { getIdString } from '../../utils/type-guard/mongoose/stringOrMongooseObject';
+import { handleSetCookiesFromPayload, handleSetCookiesFromSpace } from '../../utils/jwt/jwtUtils';
 /**
  * POST CONTROLLERS
  */
@@ -247,21 +250,33 @@ export async function authUserMaintenanceFiles(req: Request, res: Response) {
       .populate({ path: 'organization', select: 'name' })
       .populate({
         path: 'space',
-        select: 'name address admins',
-        populate: {
-          path: 'admins', // this will populate 'admins' in 'space'
-          select: 'name surname email avatar',
-          populate: 'avatar' // assuming you want to populate name and email of admins, adjust accordingly
-        }
+        select: 'name address admins cover',
+        populate: [
+          {
+            path: 'cover',
+            select: 'url'
+          },
+          {
+            path: 'admins', // this will populate 'admins' in 'space'
+            select: 'name surname email avatar',
+            populate: 'avatar' // assuming you want to populate name and email of admins, adjust accordingly
+          }
+        ]
       });
     // todo!!
+    const organizationId = getIdString(maintenance.organization);
+    const spaceId = getIdString(maintenance.space);
     const maintainer = await Maintainer.findById(maintenance.maintainer);
+    const token = generateTokenMaintainer({ maintainer, organizationId, spaceId, space: maintenance.space });
+    console.log(sensitiveCookieOptions);
+    handleSetCookiesFromSpace(res, maintenance.space);
+    res.cookie('jwt', token, sensitiveCookieOptions);
 
-    const checks = await Check.find({ ma: maintenance.space._id }).populate('organization');
+    const checks = await Check.find({ maintenance: maintenance.space._id }).populate('organization');
     res.status(httpStatus.OK).json({
       success: true,
       collection: 'maintenances',
-      data: { message: 'pin is correct', maintenance },
+      data: { message: 'pin is correct', maintenance, checks },
       count: 1
     });
   } catch (error) {

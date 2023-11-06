@@ -51,21 +51,30 @@ export type JwtReturnType = LeanUser & {
   spaceName?: string;
   spaceId?: ObjectId;
   organizationId?: ObjectId;
+  entity?: 'users' | 'maintainers';
   /** check from selected space.admins and requesting user id */
   isAdminOfSpace: boolean;
   spaceAdmins: ObjectId[] | [];
 };
 // now payload must have entity string
-const jwt = async (payload: any, done: any) => {
+type JwtPayload = {
+  email: string;
+  organizationId: string;
+  spaceId?: string;
+  entity: 'users' | 'maintainers';
+};
+const jwt = async (payload: JwtPayload, done: any) => {
   try {
     // const user = await User.findOne({ email: payload.email }).lean();
     // if (user) return done(null, user);
     // return done(null, false);
     const user: LeanUser = await User.findOne({ email: payload.email }).lean();
-    if (payload.entity === 'maintainer') {
+    let entity: 'users' | 'maintainers' = user ? 'users' : undefined;
+    if (payload.entity === 'maintainers') {
       // const maintainer = await Maintainer.findOne({ email: payload.email }).lean();
+      entity = 'maintainers';
     }
-    const result: JwtReturnType = { ...user, spaceAdmins: [], isAdminOfSpace: false };
+    const result: JwtReturnType = { ...user, spaceAdmins: [], isAdminOfSpace: false, entity };
     if (!user) {
       return done(null, false);
     }

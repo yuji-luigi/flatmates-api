@@ -15,7 +15,7 @@ import Organization from '../../models/Organization';
 import { IOrganization } from '../../types/mongoose-types/model-types/organization-interface';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { userHasSpace } from '../helpers/spaceHelper';
-import { createJWTObjectFromJWTAndSpace, resetSpaceCookies, handleSetCookies } from '../../utils/jwt/jwtUtils';
+import { createJWTObjectFromJWTAndSpace, resetSpaceCookies, handleSetCookiesFromPayload } from '../../utils/jwt/jwtUtils';
 import Maintainer from '../../models/Maintainer';
 import { authLoginInstances } from '../../utils/login-instance-utils/authLoginInstances';
 import { handleGenerateToken } from '../../utils/login-instance-utils/generateTokens';
@@ -82,7 +82,7 @@ const register = async (req: Request, res: Response) => {
     newUser.organizations.push(newOrganization);
     const createdUser = await newUser.save();
     const jwt = createJWTObjectFromJWTAndSpace({ user: createdUser, space: newRootSpace });
-    handleSetCookies(res, jwt);
+    handleSetCookiesFromPayload(res, jwt);
     // res.cookie('organization', organizationToken, sensitiveCookieOptions);
     // res.cookie('space', spaceCookie, sensitiveCookieOptions);
     // res.cookie('jwt', token.accessToken, sensitiveCookieOptions);
@@ -264,7 +264,7 @@ export const setSpaceAndOrgInJwt = async (req: RequestCustom, res: Response) => 
     // const jwt = signJwt(updatedJwt);
 
     res.clearCookie('jwt', { domain: vars.cookieDomain });
-    handleSetCookies(res, jwt);
+    handleSetCookiesFromPayload(res, jwt);
 
     res.status(httpStatus.OK).json({
       success: true,

@@ -1,5 +1,6 @@
 import { LoginInstance } from '../../universal-mongoose-model/user-base-interface';
 import { MongooseBaseModel } from './base-types/base-model-interface';
+import { IOrganization } from './organization-interface';
 import { ISpace } from './space-interface';
 import { IUpload } from './upload-interface';
 import { IUser } from './user-interface';
@@ -21,7 +22,7 @@ export interface MaintainerInterface extends MongooseBaseModel, LoginInstance<Ma
   password: string;
   isInSpace: boolean;
   slug: string;
-  // organizations: IOrganization[];
+  organizations: IOrganization[];
   // spaces: ISpaces[];
   createdBy: string | IUser;
 }

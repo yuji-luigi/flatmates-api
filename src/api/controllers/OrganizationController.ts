@@ -10,7 +10,7 @@ import User from '../../models/User';
 import { _MSG } from '../../utils/messages';
 import { deleteEmptyFields } from '../../utils/functions';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
-import { createJWTObjectFromJWTAndSpace, formatUserDataForJwt, handleSetCookies, signJwt } from '../../utils/jwt/jwtUtils';
+import { createJWTObjectFromJWTAndSpace, formatUserDataForJwt, handleSetCookiesFromPayload, signJwt } from '../../utils/jwt/jwtUtils';
 
 export async function sendOrganizations(req: RequestCustom, res: Response) {
   try {
@@ -114,7 +114,7 @@ export async function organizationSelected(req: RequestCustom, res: Response) {
     // res.cookie('organizationName', organization.name, { domain: vars.cookieDomain });
     const spaces = await Space.find({ organization: req.params.organizationId, isMain: true }).populate({ path: 'cover', select: 'url' }).lean();
     const jwtPayload = createJWTObjectFromJWTAndSpace({ user: req.user, organizationId: organization._id.toString() });
-    handleSetCookies(res, jwtPayload);
+    handleSetCookiesFromPayload(res, jwtPayload);
     res.status(httpStatus.OK).json({
       success: true,
       collection: 'organizations spaces',
