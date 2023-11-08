@@ -239,6 +239,37 @@ const deleteThread = async (req: RequestCustom, res: Response) => {
   }
 };
 
+export async function checkIsActiveMaintainerFromClient(req: RequestCustom, res: Response) {
+  try {
+    const { linkId, idMongoose } = req.params;
+    const authToken = await AuthToken.findOne({ linkId, _id: idMongoose, nonce: req.body.pin });
+    if (!authToken) throw new Error('pin is not correct');
+    const maintenance = await Maintenance.findById(authToken.docHolder.instanceId);
+    const maintainer = await Maintainer.findById(maintenance.maintainer);
+    if (maintainer.active && maintainer.password) {
+      res.send(httpStatus.OK).json({
+        success: true,
+        collection: 'authTokens',
+        message: 'maintainer is active and password is set',
+        data: null
+      });
+    }
+    // not throw error but success false
+    res.status(httpStatus.OK).json({
+      success: false,
+      collection: 'authTokens',
+      message: 'maintainer is not active or password is not set',
+      data: null
+    });
+  } catch (error) {
+    logger.error(error.message || error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: error.message || error,
+      success: false
+    });
+  }
+}
+
 export async function authUserMaintenanceFiles(req: Request, res: Response) {
   try {
     const { linkId, idMongoose } = req.params;
