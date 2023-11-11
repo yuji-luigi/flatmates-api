@@ -80,8 +80,11 @@ const register = async (req: Request, res: Response) => {
 
     newUser.rootSpaces.push(newRootSpace);
     newUser.organizations.push(newOrganization);
-    const createdUser = await newUser.save();
-    const jwt = createJWTObjectFromJWTAndSpace({ user: createdUser, space: newRootSpace });
+    await newUser.save();
+
+    const _leanedUser = newUser.toObject();
+    _leanedUser.entity = 'users';
+    const jwt = createJWTObjectFromJWTAndSpace({ user: _leanedUser, space: newRootSpace });
     handleSetCookiesFromPayload(res, jwt);
     // res.cookie('organization', organizationToken, sensitiveCookieOptions);
     // res.cookie('space', spaceCookie, sensitiveCookieOptions);
@@ -90,7 +93,7 @@ const register = async (req: Request, res: Response) => {
     res.status(httpStatus.CREATED).send({
       success: true,
       message: _MSG.OBJ_CREATED,
-      user: createdUser,
+      user: newUser,
       accessToken,
       count: 1
     });
@@ -207,7 +210,7 @@ const me = async (req: RequestCustom, res: Response) => {
 export const sendMainSpaceSelectionsToClient = async (req: RequestCustom, res: Response) => {
   try {
     // case user show user.rootSpaces
-
+    //!todo think about structure of the maintainers. do they have to have root spaces? role must be maintainers
     let query: Record<string, string | any> = { isMain: true, _id: { $in: req.user.rootSpaces } };
     // let mainSpaces = await Space.find({ isMain: true, _id: { $in: req.user.rootSpaces } });
     // case admin show all main spaces of his organizations

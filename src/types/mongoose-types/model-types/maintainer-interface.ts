@@ -6,7 +6,7 @@ import { ISpace } from './space-interface';
 import { IUpload } from './upload-interface';
 import { IUser } from './user-interface';
 
-export interface MaintainerInterface extends Omit<LeanMaintainer, 'entity'>, MongooseBaseModel, LoginInstance<MaintainerInterface> {}
+export interface MaintainerInterface extends Omit<LeanMaintainer, 'entity' | 'role'>, MongooseBaseModel, LoginInstance<MaintainerInterface> {}
 
 export interface LeanMaintainer {
   _id: ObjectId;
@@ -23,12 +23,13 @@ export interface LeanMaintainer {
   description: string;
   address: string;
   isIndividual: boolean;
-  spaces: ISpace[];
+  rootSpaces: ISpace[];
   password: string;
-  isInSpace: boolean;
+  // isInSpace: boolean; // todo: Why I added this?
   slug: string;
+  active: boolean;
   organizations: IOrganization[];
-  // spaces: ISpaces[];
   createdBy: string | IUser;
-  entity: 'maintainers';
+  entity: 'maintainers'; // excluded in Schema.
+  role: 'maintainer'; // excluded in Schema.
 }

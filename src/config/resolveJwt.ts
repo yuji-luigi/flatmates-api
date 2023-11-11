@@ -49,7 +49,7 @@ const jwtOptions = {
   // jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('Bearer'),
 };
 
-export type JwtReturnType = (LeanUser | LeanMaintainer) & JwtReturnSpaceType;
+export type JwtReturnType = (LeanUser | (LeanMaintainer & { role: 'maintainer' })) & JwtReturnSpaceType;
 
 export type JwtReturnSpaceType = {
   spaceName?: string;
@@ -77,6 +77,7 @@ const jwt = async (payload: JwtPayload, done: any) => {
     if (!leanLoginInstance) {
       return done(null, false);
     }
+
     // Fetch space and organization if they're in the payload
     const jwtSpaceReturnObject: JwtReturnSpaceType = {
       isAdminOfSpace: false,
@@ -105,6 +106,10 @@ const jwt = async (payload: JwtPayload, done: any) => {
   }
 };
 
+/**
+ * @description if incoming jwt payload is maintainer then set role as maintainer.
+ * always set entity as users or maintainers
+ */
 async function geLeanLoginInstance(payload: JwtPayload): Promise<LeanUser | LeanMaintainer> {
   let result: LeanUser | LeanMaintainer;
   if (payload.entity === 'users') {
@@ -113,7 +118,7 @@ async function geLeanLoginInstance(payload: JwtPayload): Promise<LeanUser | Lean
   }
   if (payload.entity === 'maintainers') {
     const maintainer = await Maintainer.findOne({ email: payload.email }).lean();
-    result = { ...maintainer, entity: 'maintainers' };
+    result = { ...maintainer, entity: 'maintainers', role: 'maintainer' };
   }
 
   return result;

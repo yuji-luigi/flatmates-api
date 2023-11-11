@@ -244,6 +244,8 @@ export async function checkIsActiveMaintainerFromClient(req: RequestCustom, res:
     const { linkId, idMongoose } = req.params;
     const authToken = await AuthToken.findOne({ linkId, _id: idMongoose, nonce: req.body.pin });
     if (!authToken) throw new Error('pin is not correct');
+    res.cookie('maintenanceNonce', req.body.pin, sensitiveCookieOptions);
+
     const maintenance = await Maintenance.findById(authToken.docHolder.instanceId);
     const maintainer = await Maintainer.findById(maintenance.maintainer);
     if (maintainer.active && maintainer.password) {
@@ -251,7 +253,7 @@ export async function checkIsActiveMaintainerFromClient(req: RequestCustom, res:
         success: true,
         collection: 'authTokens',
         message: 'maintainer is active and password is set',
-        data: null
+        data: maintainer
       });
     }
     // not throw error but success false
@@ -259,7 +261,7 @@ export async function checkIsActiveMaintainerFromClient(req: RequestCustom, res:
       success: false,
       collection: 'authTokens',
       message: 'maintainer is not active or password is not set',
-      data: null
+      data: maintainer
     });
   } catch (error) {
     logger.error(error.message || error);

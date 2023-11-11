@@ -1,8 +1,5 @@
-import mongoose from 'mongoose';
 import APIError from '../../errors/api.error';
 import { _MSG } from '../messages';
-import { UserError } from '../../types/mongoose-types/model-types/user-interface';
-import httpStatus from 'http-status';
 import logger from '../../config/logger';
 import User from '../../models/User';
 import Maintainer from '../../models/Maintainer';
@@ -24,6 +21,7 @@ export async function authLoginInstances({ email, password }: { email?: string; 
     const foundUser = await User.findOne({ email }).exec();
     const foundMaintainer = await Maintainer.findOne({ email }).exec();
 
+    // check active and password for both instances
     const registeredUser = foundUser && foundUser.active && foundUser.password;
     const registeredMaintainer = foundMaintainer && foundMaintainer.active && foundMaintainer.password;
 
@@ -32,6 +30,7 @@ export async function authLoginInstances({ email, password }: { email?: string; 
         message: _MSG.REGISTER_FIRST
       });
     }
+
     let result: { user?: typeof foundUser; maintainer?: typeof foundMaintainer } = {};
     result = foundUser && passwordMatches({ password, loginInstance: foundUser }) ? { user: foundUser } : result;
     result = foundMaintainer && passwordMatches({ password, loginInstance: foundMaintainer }) ? { ...result, maintainer: foundMaintainer } : result;

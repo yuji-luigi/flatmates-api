@@ -1,11 +1,10 @@
-import jwt from 'jsonwebtoken';
-import vars from '../../config/vars';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { MaintainerInterface } from '../../types/mongoose-types/model-types/maintainer-interface';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 import { JwtSignPayload } from '../jwt/jwtUtils-types';
+import { signLoginInstanceJwt } from '../jwt/jwtUtils';
 
-const { jwtSecret /* , jwtExpirationInterval  */ } = vars;
+// const { jwtSecret /* , jwtExpirationInterval  */ } = vars;
 
 export function handleGenerateToken({ maintainer, user }: { maintainer?: MaintainerInterface; user: IUser }) {
   if (maintainer) {
@@ -19,13 +18,15 @@ export function handleGenerateToken({ maintainer, user }: { maintainer?: Maintai
 
 //users
 export function generateTokenUser(user: IUser) {
-  const payload = {
+  const payload: JwtSignPayload = {
+    entity: 'users',
     email: user.email,
     organizationId: user.organizations[0]?._id.toString()
   };
-  return jwt.sign(payload, jwtSecret, {
-    expiresIn: vars.jwtExpirationInterval // expires in 24 hours
-  });
+  return signLoginInstanceJwt(payload);
+  // return jwt.sign(payload, jwtSecret, {
+  //   expiresIn: vars.jwtExpirationInterval // expires in 24 hours
+  // });
 }
 
 // maintainers
@@ -55,7 +56,5 @@ export function generateTokenMaintainer({
       spaceAddress: space.address
     };
   }
-  return jwt.sign(payload, jwtSecret, {
-    expiresIn: vars.jwtExpirationInterval // expires in 24 hours
-  });
+  return signLoginInstanceJwt(payload);
 }

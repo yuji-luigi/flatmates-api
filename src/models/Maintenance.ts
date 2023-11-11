@@ -6,8 +6,6 @@ import { formatDateAndTimev3 } from '../utils/functions';
 import { MAINTAINER_TYPES } from '../types/enum/enum';
 import { IMaintenance, IMaintenanceMethods, MAINTENANCE_STATUS } from '../types/mongoose-types/model-types/maintenance-interface';
 import { ICollectionAware, createSlug } from '../api/helpers/mongoose.helper';
-import jwt from 'jsonwebtoken';
-import vars from '../config/vars';
 
 const { Schema } = mongoose;
 
@@ -180,12 +178,13 @@ export const maintenanceSchema = new Schema<IMaintenanceDoc, MaintenanceModel, I
         }
       },
       token() {
-        const payload = {
-          _id: this._id
-        };
-        return jwt.sign(payload, vars.jwtSecret, {
-          expiresIn: '24h' // expires in 24 hours
-        });
+        throw new Error('token() method is not implemented');
+        // const payload = {
+        //   _id: this._id
+        // };
+        // return jwt.sign(payload, vars.jwtSecret, {
+        //   expiresIn: '24h' // expires in 24 hours
+        // });
       }
     }
   }

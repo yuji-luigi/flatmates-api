@@ -31,8 +31,9 @@ export const createJWTObjectFromJWTAndSpace = (payload: JsonObjPayload): JwtSign
     : null;
 
   spaceData = payload.organizationId ? { ...spaceData, organizationId: payload.organizationId } : spaceData;
-  const data = {
+  const data: JwtSignPayload = {
     email: payload.user?.email,
+    entity: payload.user?.entity,
     ...spaceData
   };
   // return  signJwt(data);
@@ -97,3 +98,9 @@ export function resetSpaceCookies(res: Response) {
 //   }
 
 // }
+
+export const signLoginInstanceJwt = (payload: JwtSignPayload) => {
+  return jwt.sign(payload, vars.jwtSecret, {
+    expiresIn: vars.jwtExpirationInterval // expires in 24 hours
+  });
+};

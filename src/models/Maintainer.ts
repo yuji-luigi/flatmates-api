@@ -18,6 +18,7 @@ export const maintainerSchema = new Schema<MaintainerInterface>(
       type: String,
       required: true
     },
+
     avatar: {
       type: Schema.Types.ObjectId,
       ref: 'uploads',
@@ -46,7 +47,7 @@ export const maintainerSchema = new Schema<MaintainerInterface>(
     password: {
       type: String
     },
-    spaces: [
+    rootSpaces: [
       {
         type: Schema.Types.ObjectId,
         ref: 'spaces',
@@ -57,12 +58,11 @@ export const maintainerSchema = new Schema<MaintainerInterface>(
       {
         type: Schema.Types.ObjectId,
         ref: 'organizations'
-        // autopopulate: true
       }
     ],
     description: String,
     address: String,
-    isInSpace: Boolean,
+    // isInSpace: Boolean,
     slug: {
       type: String,
       unique: true
