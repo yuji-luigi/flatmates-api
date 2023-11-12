@@ -18,24 +18,26 @@ import { userHasSpace } from '../helpers/spaceHelper';
 import { createJWTObjectFromJWTAndSpace, resetSpaceCookies, handleSetCookiesFromPayload } from '../../utils/jwt/jwtUtils';
 import Maintainer from '../../models/Maintainer';
 import { authLoginInstances } from '../../utils/login-instance-utils/authLoginInstances';
-import { handleGenerateToken } from '../../utils/login-instance-utils/generateTokens';
+import { generateTokenMaintainer, handleGenerateToken } from '../../utils/login-instance-utils/generateTokens';
+import { LeanMaintainer } from '../../types/mongoose-types/model-types/maintainer-interface';
+import AuthToken from '../../models/AuthToken';
 // import { CurrentSpace } from '../../types/mongoose-types/model-types/space-interface';
 
-const { jwtExpirationInterval, cookieDomain } = vars;
+const { cookieDomain } = vars;
 
 /**
  * Returns a formatted object with tokens
  * @private
  */
-function generateTokenResponse(user: any, accessToken: string) {
-  const tokenType = 'Bearer';
-  const expiresIn = moment().add(jwtExpirationInterval, 'seconds');
-  return {
-    tokenType,
-    accessToken,
-    expiresIn
-  };
-}
+// function generateTokenResponse(user: any, accessToken: string) {
+//   const tokenType = 'Bearer';
+//   const expiresIn = moment().add(jwtExpirationInterval, 'seconds');
+//   return {
+//     tokenType,
+//     accessToken,
+//     expiresIn
+//   };
+// }
 
 // const TypeofSpaceFromPurpose = {
 //   condoAdmin: 'condominium',
@@ -95,6 +97,78 @@ const register = async (req: Request, res: Response) => {
       message: _MSG.OBJ_CREATED,
       user: newUser,
       accessToken,
+      count: 1
+    });
+    // return res.status(httpStatus.OK).redirect('/');
+  } catch (error) {
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message || error });
+  }
+};
+const completeRegisterMaintainer = async (req: RequestCustom, res: Response) => {
+  try {
+    const {
+      email,
+      password,
+      password2,
+      name,
+      surname,
+      rootSpace,
+      organization,
+      _id,
+      maintenanceId,
+      description,
+      tel,
+      address,
+      homepage,
+      company,
+      type
+    } = req.body;
+
+    if (password !== password2) {
+      throw new Error('Password non corrispondenti');
+    }
+
+    const authToken = await AuthToken.findOne({
+      'docHolder.ref': 'maintenances',
+      'docHolder.instanceId': maintenanceId,
+      nonce: req.cookies.maintenanceNonce
+    });
+
+    if (!authToken) throw new Error('invalid access');
+    // find a space for jwt generation
+    const space = await Space.findById(rootSpace);
+    const maintainer = await Maintainer.findById(_id);
+    // set all the values passed from the client
+    maintainer.name = name;
+    maintainer.surname = surname;
+    maintainer.email = email;
+    maintainer.password = password;
+    maintainer.active = true;
+    maintainer.description = description;
+    maintainer.tel = tel;
+    maintainer.address = address;
+    maintainer.homepage = homepage;
+    maintainer.company = company;
+    maintainer.type = type;
+
+    const rootSpaceIds = maintainer.rootSpaces.map((space) => space.toString());
+    maintainer.rootSpaces = [...new Set([...rootSpaceIds, rootSpace])];
+    const organizationIds = maintainer.organizations.map((org) => org.toString());
+    maintainer.organizations = [...new Set([...organizationIds, organization])];
+
+    await maintainer.save();
+
+    const _leanedMaintainer = maintainer.toObject() as LeanMaintainer;
+    _leanedMaintainer.entity = 'maintainers';
+    _leanedMaintainer.role = 'maintainer';
+    const jwt = generateTokenMaintainer({ maintainer, space });
+    handleSetCookiesFromPayload(res, jwt);
+
+    res.status(httpStatus.CREATED).send({
+      success: true,
+      message: _MSG.OBJ_CREATED,
+      user: maintainer,
+      accessToken: jwt,
       count: 1
     });
     // return res.status(httpStatus.OK).redirect('/');
@@ -297,5 +371,6 @@ export default {
   login,
   logout,
   me,
-  register
+  register,
+  completeRegisterMaintainer
 };

@@ -1,8 +1,6 @@
 import { ObjectId } from 'bson';
 import { LoginInstance } from '../../universal-mongoose-model/user-base-interface';
 import { MongooseBaseModel } from './base-types/base-model-interface';
-import { IOrganization } from './organization-interface';
-import { ISpace } from './space-interface';
 import { IUpload } from './upload-interface';
 import { IUser } from './user-interface';
 
@@ -23,12 +21,12 @@ export interface LeanMaintainer {
   description: string;
   address: string;
   isIndividual: boolean;
-  rootSpaces: ISpace[];
+  rootSpaces: ObjectId[];
   password: string;
   // isInSpace: boolean; // todo: Why I added this?
   slug: string;
   active: boolean;
-  organizations: IOrganization[];
+  organizations: ObjectId[];
   createdBy: string | IUser;
   entity: 'maintainers'; // excluded in Schema.
   role: 'maintainer'; // excluded in Schema.

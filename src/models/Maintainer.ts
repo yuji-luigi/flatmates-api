@@ -50,8 +50,7 @@ export const maintainerSchema = new Schema<MaintainerInterface>(
     rootSpaces: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'spaces',
-        autopopulate: true
+        ref: 'spaces'
       }
     ],
     organizations: [

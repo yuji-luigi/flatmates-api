@@ -56,5 +56,6 @@ export function generateTokenMaintainer({
       spaceAddress: space.address
     };
   }
-  return signLoginInstanceJwt(payload);
+  return payload;
+  // return signLoginInstanceJwt(payload);
 }

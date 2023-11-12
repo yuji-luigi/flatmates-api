@@ -246,7 +246,7 @@ export async function checkIsActiveMaintainerFromClient(req: RequestCustom, res:
     if (!authToken) throw new Error('pin is not correct');
     res.cookie('maintenanceNonce', req.body.pin, sensitiveCookieOptions);
 
-    const maintenance = await Maintenance.findById(authToken.docHolder.instanceId);
+    const maintenance = await Maintenance.findById(authToken.docHolder.instanceId).populate({ path: 'space', populate: { path: 'admins' } });
     const maintainer = await Maintainer.findById(maintenance.maintainer);
     if (maintainer.active && maintainer.password) {
       res.send(httpStatus.OK).json({
@@ -256,12 +256,15 @@ export async function checkIsActiveMaintainerFromClient(req: RequestCustom, res:
         data: maintainer
       });
     }
+
+    res.cookie('maintenanceNonce', req.body.pin, sensitiveCookieOptions);
     // not throw error but success false
     res.status(httpStatus.OK).json({
       success: false,
       collection: 'authTokens',
       message: 'maintainer is not active or password is not set',
-      data: maintainer
+      data: maintainer,
+      maintenance
     });
   } catch (error) {
     logger.error(error.message || error);
