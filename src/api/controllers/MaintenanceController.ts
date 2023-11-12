@@ -15,6 +15,11 @@ import { sensitiveCookieOptions } from '../../config/vars';
 import { _MSG } from '../../utils/messages';
 import { aggregateWithPagination } from '../helpers/mongoose.helper';
 import AuthToken from '../../models/AuthToken';
+import Check from '../../models/Check';
+import Maintainer from '../../models/Maintainer';
+import { generateTokenMaintainer } from '../../utils/login-instance-utils/generateTokens';
+import { getIdString } from '../../utils/type-guard/mongoose/stringOrMongooseObject';
+import { handleSetCookiesFromPayload, handleSetCookiesFromSpace } from '../../utils/jwt/jwtUtils';
 /**
  * POST CONTROLLERS
  */
@@ -234,6 +239,42 @@ const deleteThread = async (req: RequestCustom, res: Response) => {
   }
 };
 
+export async function checkIsActiveMaintainerFromClient(req: RequestCustom, res: Response) {
+  try {
+    const { linkId, idMongoose } = req.params;
+    const authToken = await AuthToken.findOne({ linkId, _id: idMongoose, nonce: req.body.pin });
+    if (!authToken) throw new Error('pin is not correct');
+    res.cookie('maintenanceNonce', req.body.pin, sensitiveCookieOptions);
+
+    const maintenance = await Maintenance.findById(authToken.docHolder.instanceId).populate({ path: 'space', populate: { path: 'admins' } });
+    const maintainer = await Maintainer.findById(maintenance.maintainer);
+    if (maintainer.active && maintainer.password) {
+      res.send(httpStatus.OK).json({
+        success: true,
+        collection: 'authTokens',
+        message: 'maintainer is active and password is set',
+        data: maintainer
+      });
+    }
+
+    res.cookie('maintenanceNonce', req.body.pin, sensitiveCookieOptions);
+    // not throw error but success false
+    res.status(httpStatus.OK).json({
+      success: false,
+      collection: 'authTokens',
+      message: 'maintainer is not active or password is not set',
+      data: maintainer,
+      maintenance
+    });
+  } catch (error) {
+    logger.error(error.message || error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: error.message || error,
+      success: false
+    });
+  }
+}
+
 export async function authUserMaintenanceFiles(req: Request, res: Response) {
   try {
     const { linkId, idMongoose } = req.params;
@@ -245,18 +286,82 @@ export async function authUserMaintenanceFiles(req: Request, res: Response) {
       .populate({ path: 'organization', select: 'name' })
       .populate({
         path: 'space',
-        select: 'name address admins',
-        populate: {
-          path: 'admins', // this will populate 'admins' in 'space'
-          select: 'name surname email avatar',
-          populate: 'avatar' // assuming you want to populate name and email of admins, adjust accordingly
-        }
+        select: 'name address admins cover',
+        populate: [
+          {
+            path: 'cover',
+            select: 'url'
+          },
+          {
+            path: 'admins', // this will populate 'admins' in 'space'
+            select: 'name surname email avatar',
+            populate: 'avatar' // assuming you want to populate name and email of admins, adjust accordingly
+          }
+        ]
       });
+    // todo!!
+    const organizationId = getIdString(maintenance.organization);
+    const spaceId = getIdString(maintenance.space);
+    const maintainer = await Maintainer.findById(maintenance.maintainer);
+    const token = generateTokenMaintainer({ maintainer, organizationId, spaceId, space: maintenance.space });
+    console.log(sensitiveCookieOptions);
+    handleSetCookiesFromSpace(res, maintenance.space);
+    res.cookie('jwt', token, sensitiveCookieOptions);
 
+    const checks = await Check.find({ maintenance: maintenance.space._id }).populate('organization');
     res.status(httpStatus.OK).json({
       success: true,
       collection: 'maintenances',
-      data: { message: 'pin is correct', maintenance },
+      data: { message: 'pin is correct', maintenance, checks },
+      count: 1
+    });
+  } catch (error) {
+    logger.error(error.message || error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: error.message || error,
+      success: false
+    });
+  }
+}
+
+export async function authUserMaintenanceByJWT(req: Request, res: Response) {
+  try {
+    const { linkId, idMongoose } = req.params;
+    const authToken = await AuthToken.findOne({ linkId, _id: idMongoose, nonce: req.body.pin });
+
+    if (!authToken) throw new Error('pin is not correct');
+    res.cookie('maintenanceNonce', req.body.pin, sensitiveCookieOptions);
+    const maintenance = await Maintenance.findById(authToken.docHolder.instanceId)
+      .populate({ path: 'organization', select: 'name' })
+      .populate({
+        path: 'space',
+        select: 'name address admins cover',
+        populate: [
+          {
+            path: 'cover',
+            select: 'url'
+          },
+          {
+            path: 'admins', // this will populate 'admins' in 'space'
+            select: 'name surname email avatar',
+            populate: 'avatar' // assuming you want to populate name and email of admins, adjust accordingly
+          }
+        ]
+      });
+    // todo!!
+    const organizationId = getIdString(maintenance.organization);
+    const spaceId = getIdString(maintenance.space);
+    const maintainer = await Maintainer.findById(maintenance.maintainer);
+    const token = generateTokenMaintainer({ maintainer, organizationId, spaceId, space: maintenance.space });
+    console.log(sensitiveCookieOptions);
+    handleSetCookiesFromSpace(res, maintenance.space);
+    res.cookie('jwt', token, sensitiveCookieOptions);
+
+    const checks = await Check.find({ maintenance: maintenance.space._id }).populate('organization');
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: 'maintenances',
+      data: { message: 'pin is correct', maintenance, checks },
       count: 1
     });
   } catch (error) {

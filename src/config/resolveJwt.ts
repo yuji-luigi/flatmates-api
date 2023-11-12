@@ -6,6 +6,8 @@ import Space from '../models/Space';
 import { LeanUser } from '../types/mongoose-types/model-types/user-interface';
 import { ObjectId } from 'bson';
 import { stringifyObjectIds } from '../middlewares/auth-middlewares';
+import { LeanMaintainer } from '../types/mongoose-types/model-types/maintainer-interface';
+import Maintainer from '../models/Maintainer';
 
 const { jwtSecret } = vars;
 const JwtStrategy = passport.Strategy;
@@ -47,45 +49,101 @@ const jwtOptions = {
   // jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('Bearer'),
 };
 
-export type JwtReturnType = LeanUser & {
+export type JwtReturnType = (LeanUser | (LeanMaintainer & { role: 'maintainer' })) & JwtReturnSpaceType;
+
+export type JwtReturnSpaceType = {
   spaceName?: string;
   spaceId?: ObjectId;
   organizationId?: ObjectId;
+  entity?: 'users' | 'maintainers';
+  /** check from selected space.admins and requesting user id */
   isAdminOfSpace: boolean;
   spaceAdmins: ObjectId[] | [];
 };
-
-const jwt = async (payload: any, done: any) => {
+// now payload must have entity string
+type JwtPayload = {
+  email: string;
+  organizationId: string;
+  spaceId?: string;
+  entity: 'users' | 'maintainers';
+};
+const jwt = async (payload: JwtPayload, done: any) => {
   try {
     // const user = await User.findOne({ email: payload.email }).lean();
     // if (user) return done(null, user);
     // return done(null, false);
-    const user: LeanUser = await User.findOne({ email: payload.email }).lean();
-    const result: JwtReturnType = { ...user, spaceAdmins: [], isAdminOfSpace: false };
-    if (!user) {
+
+    const leanLoginInstance: LeanMaintainer | LeanUser = await geLeanLoginInstance(payload);
+    if (!leanLoginInstance) {
       return done(null, false);
     }
-    // Fetch space and organization if they're in the payload
 
-    if (payload.spaceId) {
+    // Fetch space and organization if they're in the payload
+    const jwtSpaceReturnObject: JwtReturnSpaceType = {
+      isAdminOfSpace: false,
+      spaceAdmins: []
+    };
+    if (leanLoginInstance && payload.spaceId) {
+      // get selected space(space organization input)
       const space = await Space.findById(payload.spaceId).lean();
-      result.spaceName = space.name;
-      result.spaceId = space._id;
-      result.spaceAdmins = space.admins;
-      result.isAdminOfSpace = stringifyObjectIds(space.admins).includes(user._id.toString());
+      jwtSpaceReturnObject.spaceName = space.name;
+      jwtSpaceReturnObject.spaceId = space._id;
+      jwtSpaceReturnObject.spaceAdmins = space.admins;
+      // from selectedSpace extract admins Array then check the requiesting user is in the array.
+      // if yes then set the user is admin of the space
+      jwtSpaceReturnObject.isAdminOfSpace = stringifyObjectIds(space.admins).includes(leanLoginInstance._id.toString());
     }
     if (payload.organizationId) {
       // const organization = await Organization.findById(payload.organizationId).lean();
-      result.organizationId = new ObjectId(payload.organizationId);
+      jwtSpaceReturnObject.organizationId = new ObjectId(payload.organizationId);
     }
-    // You can attach space and organization to the user object if you like
+    const result = createJwtReturnObject(leanLoginInstance, jwtSpaceReturnObject);
 
+    // You can attach space and organization to the user object if you like
     return done(null, result);
   } catch (error) {
     return done(error, false);
   }
 };
 
+/**
+ * @description if incoming jwt payload is maintainer then set role as maintainer.
+ * always set entity as users or maintainers
+ */
+async function geLeanLoginInstance(payload: JwtPayload): Promise<LeanUser | LeanMaintainer> {
+  let result: LeanUser | LeanMaintainer;
+  if (payload.entity === 'users') {
+    const user = (await User.findOne({ email: payload.email }).lean()) as LeanUser;
+    result = { ...user, entity: 'users' };
+  }
+  if (payload.entity === 'maintainers') {
+    const maintainer = await Maintainer.findOne({ email: payload.email }).lean();
+    result = { ...maintainer, entity: 'maintainers', role: 'maintainer' };
+  }
+
+  return result;
+}
+
+const createJwtReturnObject = (leanInstance: LeanUser | LeanMaintainer, jwtSpaceReturnObject: JwtReturnSpaceType): JwtReturnType => {
+  // Here TypeScript will infer the correct type based on the entity discriminator
+  if (leanInstance.entity === 'maintainers') {
+    const jwtReturnObject: JwtReturnType = {
+      ...leanInstance,
+      ...jwtSpaceReturnObject,
+      entity: 'maintainers'
+    };
+    return jwtReturnObject;
+  }
+  if (leanInstance.entity === 'users') {
+    const jwtReturnObject: JwtReturnType = {
+      ...leanInstance,
+      ...jwtSpaceReturnObject,
+      entity: 'users'
+    };
+    return jwtReturnObject;
+  }
+  throw new Error('createJwtReturnObject: entity is not defined');
+};
 // const handleSpaceJwt = async (payload: any, done: any) => {
 //   try {
 //     // const user = await User.findById(payload.id);

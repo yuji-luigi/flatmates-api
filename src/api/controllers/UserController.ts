@@ -396,9 +396,13 @@ async function findAndModifyUserFields(req: RequestCustom) {
   if (emailDuplicates) {
     throw new Error('Email is already in use. Please check the email.');
   }
-  const { email, password, name, surname, phone } = reqBody;
+  const { email, password, name, surname, phone, rootSpaces, role } = reqBody;
   foundUser.set({ email, name, surname, phone, role: 'user' });
   password && foundUser.set({ password });
+  if (req.user.role === 'super_admin') {
+    rootSpaces && foundUser.set({ rootSpaces });
+    role && foundUser.set({ role });
+  }
 
   // const updatedModel = await foundUser.save();
   return foundUser;

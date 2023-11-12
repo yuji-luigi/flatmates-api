@@ -17,7 +17,7 @@ import Maintainer from '../../models/Maintainer';
 import { ObjectId } from 'mongodb';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { LOOKUPS, LOOKUP_PIPELINE_STAGES, UNWIND, getUnwind } from '../aggregation-helpers/lookups';
-import { createJWTObjectFromJWTAndSpace, handleSetCookies, signJwt } from '../../utils/jwt/jwtUtils';
+import { createJWTObjectFromJWTAndSpace, handleSetCookiesFromPayload, signJwt } from '../../utils/jwt/jwtUtils';
 import { checkAdminOfSpace } from '../../middlewares/auth-middlewares';
 const entity = 'spaces';
 // import MSG from '../../utils/messages';
@@ -501,7 +501,7 @@ export const addSpaceToJWTAndSendToClient = async (req: RequestCustom, res: Resp
     //   httpOnly: false
     // };
     res.clearCookie('jwt', { domain: vars.cookieDomain });
-    handleSetCookies(res, jwt);
+    handleSetCookiesFromPayload(res, jwt);
     // res.cookie('jwt', jwt, sensitiveCookieOptions);
     // res.cookie('space', jwt, httpOnlyFalseCookieOptions);
     // res.cookie('spaceName', space.name, { domain: vars.cookieDomain });
@@ -531,10 +531,10 @@ export const addSpaceToJWTAndSendToClient = async (req: RequestCustom, res: Resp
 export const deleteSpaceCookie = async (req: RequestCustom, res: Response) => {
   try {
     deleteSpaceCookies(res);
-    res.clearCookie('jwt', { domain: vars.cookieDomain });
-    const payload = createJWTObjectFromJWTAndSpace({ user: req.user, organizationId: req.user.organizationId.toString(), space: null });
+    const payload = createJWTObjectFromJWTAndSpace({ user: req.user, organizationId: req.user.organizationId?.toString(), space: null });
     const jwt = signJwt(payload);
 
+    res.clearCookie('jwt', { domain: vars.cookieDomain });
     res.cookie('jwt', jwt, sensitiveCookieOptions);
 
     res.status(httpStatus.OK).json({

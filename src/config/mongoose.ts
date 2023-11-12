@@ -18,6 +18,7 @@ import Upload from '../models/Upload';
 import Maintenance from '../models/Maintenance';
 import Maintainer from '../models/Maintainer';
 import Check from '../models/Check';
+import SpaceTag from '../models/SpaceTag';
 import AuthToken from '../models/AuthToken';
 
 import vars from './vars';
@@ -41,6 +42,7 @@ Organization;
 Notification;
 UserSetting;
 Space;
+SpaceTag;
 Upload;
 Maintenance;
 Maintainer;

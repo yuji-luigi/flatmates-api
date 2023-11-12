@@ -18,10 +18,12 @@ export type SpaceDataType = {
 export type JwtSignPayload =
   | (SpaceDetails & {
       email: string;
+      entity: 'users' | 'maintainers';
       organizationId?: string;
     })
   | {
       email: string;
+      entity: 'users' | 'maintainers';
       organizationId?: string;
     };
 

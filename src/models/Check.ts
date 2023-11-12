@@ -37,14 +37,25 @@ export const checkSchema = new Schema<CheckInterface, CheckModel, unknown>(
       type: String,
       required: true
     },
+    // deprecate this
     maintainer: {
       type: Schema.Types.ObjectId,
       ref: 'maintainers'
       // autopopulate: true
     },
+    // deprecate this
     maintenance: {
       type: Schema.Types.ObjectId,
       ref: 'maintenances'
+    },
+    // new fields
+    of: {
+      entity: String,
+      ofId: Schema.Types.ObjectId
+    },
+    uploadedBy: {
+      entity: String,
+      uploaderId: Schema.Types.ObjectId
     },
     organization: {
       type: Schema.Types.ObjectId,

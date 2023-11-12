@@ -12,8 +12,7 @@ import Maintenance from '../../models/Maintenance';
 import Thread from '../../models/Thread';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 import { _MSG } from '../../utils/messages';
-import Check from '../../models/Check';
-import { sumUpChecksByDate, sumUpChecksByMonth } from '../aggregation-helpers/checkPipelines';
+import { sumUpChecksByMonth } from '../aggregation-helpers/checkPipelines';
 import { handleCreateStatistics } from '../helpers/customHelper';
 
 // import MSG from '../../utils/messages';
@@ -271,7 +270,7 @@ export const sendDataForHomeDashboard = async (req: RequestCustom, res: Response
 
     const threads = await Thread.find(query).limit(10);
     const maintenances = await Maintenance.find(query);
-    const checksByDate = await sumUpChecksByDate(query);
+    // const checksByDate = await sumUpChecksByDate(query);
     const checksByMonth = await sumUpChecksByMonth(query);
     const maintainers = await Maintainer.find(maintainerQuery);
 

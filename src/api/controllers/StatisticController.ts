@@ -49,6 +49,5 @@ function formatFromToQuery({ from, to }: { from: string; to: string }) {
         }
       }
     : query;
-  console.log(query);
   return query;
 }

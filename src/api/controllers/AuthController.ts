@@ -15,24 +15,29 @@ import Organization from '../../models/Organization';
 import { IOrganization } from '../../types/mongoose-types/model-types/organization-interface';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { userHasSpace } from '../helpers/spaceHelper';
-import { createJWTObjectFromJWTAndSpace, resetSpaceCookies, handleSetCookies } from '../../utils/jwt/jwtUtils';
+import { createJWTObjectFromJWTAndSpace, resetSpaceCookies, handleSetCookiesFromPayload } from '../../utils/jwt/jwtUtils';
+import Maintainer from '../../models/Maintainer';
+import { authLoginInstances } from '../../utils/login-instance-utils/authLoginInstances';
+import { generateTokenMaintainer, handleGenerateToken } from '../../utils/login-instance-utils/generateTokens';
+import { LeanMaintainer } from '../../types/mongoose-types/model-types/maintainer-interface';
+import AuthToken from '../../models/AuthToken';
 // import { CurrentSpace } from '../../types/mongoose-types/model-types/space-interface';
 
-const { jwtExpirationInterval, cookieDomain } = vars;
+const { cookieDomain } = vars;
 
 /**
  * Returns a formatted object with tokens
  * @private
  */
-function generateTokenResponse(user: any, accessToken: string) {
-  const tokenType = 'Bearer';
-  const expiresIn = moment().add(jwtExpirationInterval, 'seconds');
-  return {
-    tokenType,
-    accessToken,
-    expiresIn
-  };
-}
+// function generateTokenResponse(user: any, accessToken: string) {
+//   const tokenType = 'Bearer';
+//   const expiresIn = moment().add(jwtExpirationInterval, 'seconds');
+//   return {
+//     tokenType,
+//     accessToken,
+//     expiresIn
+//   };
+// }
 
 // const TypeofSpaceFromPurpose = {
 //   condoAdmin: 'condominium',
@@ -77,9 +82,12 @@ const register = async (req: Request, res: Response) => {
 
     newUser.rootSpaces.push(newRootSpace);
     newUser.organizations.push(newOrganization);
-    const createdUser = await newUser.save();
-    const jwt = createJWTObjectFromJWTAndSpace({ user: createdUser, space: newRootSpace });
-    handleSetCookies(res, jwt);
+    await newUser.save();
+
+    const _leanedUser = newUser.toObject();
+    _leanedUser.entity = 'users';
+    const jwt = createJWTObjectFromJWTAndSpace({ user: _leanedUser, space: newRootSpace });
+    handleSetCookiesFromPayload(res, jwt);
     // res.cookie('organization', organizationToken, sensitiveCookieOptions);
     // res.cookie('space', spaceCookie, sensitiveCookieOptions);
     // res.cookie('jwt', token.accessToken, sensitiveCookieOptions);
@@ -87,8 +95,80 @@ const register = async (req: Request, res: Response) => {
     res.status(httpStatus.CREATED).send({
       success: true,
       message: _MSG.OBJ_CREATED,
-      user: createdUser,
+      user: newUser,
       accessToken,
+      count: 1
+    });
+    // return res.status(httpStatus.OK).redirect('/');
+  } catch (error) {
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message || error });
+  }
+};
+const completeRegisterMaintainer = async (req: RequestCustom, res: Response) => {
+  try {
+    const {
+      email,
+      password,
+      password2,
+      name,
+      surname,
+      rootSpace,
+      organization,
+      _id,
+      maintenanceId,
+      description,
+      tel,
+      address,
+      homepage,
+      company,
+      type
+    } = req.body;
+
+    if (password !== password2) {
+      throw new Error('Password non corrispondenti');
+    }
+
+    const authToken = await AuthToken.findOne({
+      'docHolder.ref': 'maintenances',
+      'docHolder.instanceId': maintenanceId,
+      nonce: req.cookies.maintenanceNonce
+    });
+
+    if (!authToken) throw new Error('invalid access');
+    // find a space for jwt generation
+    const space = await Space.findById(rootSpace);
+    const maintainer = await Maintainer.findById(_id);
+    // set all the values passed from the client
+    maintainer.name = name;
+    maintainer.surname = surname;
+    maintainer.email = email;
+    maintainer.password = password;
+    maintainer.active = true;
+    maintainer.description = description;
+    maintainer.tel = tel;
+    maintainer.address = address;
+    maintainer.homepage = homepage;
+    maintainer.company = company;
+    maintainer.type = type;
+
+    const rootSpaceIds = maintainer.rootSpaces.map((space) => space.toString());
+    maintainer.rootSpaces = [...new Set([...rootSpaceIds, rootSpace])];
+    const organizationIds = maintainer.organizations.map((org) => org.toString());
+    maintainer.organizations = [...new Set([...organizationIds, organization])];
+
+    await maintainer.save();
+
+    const _leanedMaintainer = maintainer.toObject() as LeanMaintainer;
+    _leanedMaintainer.entity = 'maintainers';
+    _leanedMaintainer.role = 'maintainer';
+    const jwt = generateTokenMaintainer({ maintainer, space });
+    handleSetCookiesFromPayload(res, jwt);
+
+    res.status(httpStatus.CREATED).send({
+      success: true,
+      message: _MSG.OBJ_CREATED,
+      user: maintainer,
+      accessToken: jwt,
       count: 1
     });
     // return res.status(httpStatus.OK).redirect('/');
@@ -135,11 +215,25 @@ async function createNewSpaceAtRegister({
  */
 const login = async (req: Request, res: Response) => {
   try {
-    const { user, accessToken } = await User.findAndGenerateToken(req.body);
+    const { email, password } = req.body;
+    // const { user, accessToken: token } = await User.findAndGenerateToken(req.body);
+    const { user, maintainer } = await authLoginInstances({ email, password });
+    if (user && maintainer) {
+      return res.status(httpStatus.OK).json({
+        success: false,
+        data: {
+          user,
+          maintainer
+        },
+        message: 'Decide in which entity you want to login'
+      });
+    }
+
+    const token = handleGenerateToken({ user, maintainer });
     //clear all spaceCookies
     resetSpaceCookies(res);
-    const token = generateTokenResponse(user, accessToken);
-    res.cookie('jwt', token.accessToken, sensitiveCookieOptions);
+
+    res.cookie('jwt', token, sensitiveCookieOptions);
 
     return res.send({
       success: true,
@@ -190,7 +284,7 @@ const me = async (req: RequestCustom, res: Response) => {
 export const sendMainSpaceSelectionsToClient = async (req: RequestCustom, res: Response) => {
   try {
     // case user show user.rootSpaces
-
+    //!todo think about structure of the maintainers. do they have to have root spaces? role must be maintainers
     let query: Record<string, string | any> = { isMain: true, _id: { $in: req.user.rootSpaces } };
     // let mainSpaces = await Space.find({ isMain: true, _id: { $in: req.user.rootSpaces } });
     // case admin show all main spaces of his organizations
@@ -247,7 +341,7 @@ export const setSpaceAndOrgInJwt = async (req: RequestCustom, res: Response) => 
     // const jwt = signJwt(updatedJwt);
 
     res.clearCookie('jwt', { domain: vars.cookieDomain });
-    handleSetCookies(res, jwt);
+    handleSetCookiesFromPayload(res, jwt);
 
     res.status(httpStatus.OK).json({
       success: true,
@@ -277,5 +371,6 @@ export default {
   login,
   logout,
   me,
-  register
+  register,
+  completeRegisterMaintainer
 };
