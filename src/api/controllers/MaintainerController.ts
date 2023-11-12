@@ -31,7 +31,7 @@ export const createMaintainer = async (req: RequestCustom, res: Response) => {
 
     const space = await Space.findById(req.user.spaceId).lean();
     if (space) {
-      newMaintainer.spaces.push(space);
+      newMaintainer.rootSpaces.push(space._id);
       // space.maintainers.push(newMaintainer);
       // await space.save();
     }
@@ -64,8 +64,8 @@ export const sendMaintainersWithPaginationToClient = async (req: RequestCustom, 
       typeof maintainer.avatar === 'object' && (await maintainer.avatar.setUrl());
       typeof maintainer.cover === 'object' && (await maintainer.cover.setUrl());
 
-      if (maintainer.spaces.includes(req.cookies.spaceId)) {
-        maintainer.isInSpace = true;
+      if (maintainer.rootSpaces.includes(req.cookies.spaceId)) {
+        // maintainer.isInSpace = true;
       }
     }
 
@@ -130,7 +130,7 @@ export async function updateMaintainerById(req: RequestCustom, res: Response) {
 
     foundModel.set(req.body);
     if (req.body.spaces?.length) {
-      foundModel.spaces.push(...req.body.spaces);
+      foundModel.rootSpaces.push(...req.body.spaces);
     }
 
     const updatedModel = await foundModel.save();
@@ -159,8 +159,8 @@ export const removeSpaceFromMaintainerById = async (req: RequestCustom, res: Res
      */
     const { maintainer, space } = req.query;
     const foundMaintainer = await Maintainer.findById(maintainer);
-    const deletedSpaces = foundMaintainer.spaces.filter((_space) => _space._id.toString() !== space.toString()).map((_space) => _space._id);
-    foundMaintainer.spaces = deletedSpaces as any;
+    const deletedSpaces = foundMaintainer.rootSpaces.filter((_space) => _space.toString() !== space.toString()).map((_space) => _space);
+    foundMaintainer.rootSpaces = deletedSpaces as any;
     await foundMaintainer.save();
     res.status(httpStatus.OK).json({
       success: true,

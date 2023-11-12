@@ -1,3 +1,4 @@
+import { urlSlug } from 'mongoose-slug-generator';
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
 import logger from '../../config/logger';
@@ -11,6 +12,7 @@ import { RequestCustom } from '../../types/custom-express/express-custom';
 import { sensitiveCookieOptions } from '../../config/vars';
 import { signJwt } from '../../utils/jwt/jwtUtils';
 import { JwtSignPayload } from '../../utils/jwt/jwtUtils-types';
+import Space from '../../models/Space';
 
 const entity = 'authTokens';
 //= ===============================================================================
@@ -88,9 +90,13 @@ export const verifyPinAndSendUserToClient = async (req: RequestCustom, res: Resp
     if (!typeGuardAuthTokenSpaceOrg(authToken)) return;
 
     const user = await User.findById(authToken.docHolder.instanceId).lean();
-
+    const space = await Space.findById(authToken.space._id).lean().populate({ path: 'cover', select: 'url' });
     const jwtObj: JwtSignPayload = {
       email: user.email,
+      spaceSlug: space.slug,
+      spaceImage: space.cover?.url,
+      entity: 'users',
+      spaceAddress: space.address,
       spaceName: authToken.space.name,
       spaceId: authToken.space._id.toString(),
       organizationId: authToken.space.organization.toString()

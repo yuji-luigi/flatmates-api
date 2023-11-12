@@ -51,6 +51,7 @@ export const getUnwind = (path: string): PipelineStage.FacetPipelineStage => ({
 });
 
 export const LOOKUP_PIPELINE_STAGES: Record<Entities, PipelineStage.FacetPipelineStage[]> = {
+  spaceTags: [],
   users: [LOOKUPS.ROOT_SPACES],
   spaces: [LOOKUPS.ADMINS, getUnwind('$admins'), LOOKUPS.ORGANIZATION, getUnwind('$organization')],
   organizations: [],

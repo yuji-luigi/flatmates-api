@@ -19,7 +19,7 @@ import Check from '../../models/Check';
 import Maintainer from '../../models/Maintainer';
 import { generateTokenMaintainer } from '../../utils/login-instance-utils/generateTokens';
 import { getIdString } from '../../utils/type-guard/mongoose/stringOrMongooseObject';
-import { handleSetCookiesFromPayload, handleSetCookiesFromSpace } from '../../utils/jwt/jwtUtils';
+import { handleSetCookiesFromSpace } from '../../utils/jwt/jwtUtils';
 /**
  * POST CONTROLLERS
  */
