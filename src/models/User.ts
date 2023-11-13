@@ -72,6 +72,10 @@ export const userSchema = new Schema<IUser, UserModel>(
       type: Boolean,
       default: false
     },
+    lastLogin: {
+      type: Date
+    },
+
     // rootSpaces refer to mainSpaces.
     rootSpaces: [
       {

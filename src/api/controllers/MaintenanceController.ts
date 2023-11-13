@@ -17,9 +17,9 @@ import { aggregateWithPagination } from '../helpers/mongoose.helper';
 import AuthToken from '../../models/AuthToken';
 import Check from '../../models/Check';
 import Maintainer from '../../models/Maintainer';
-import { generateTokenMaintainer } from '../../utils/login-instance-utils/generateTokens';
+import { generatePayloadMaintainer } from '../../utils/login-instance-utils/generateTokens';
 import { getIdString } from '../../utils/type-guard/mongoose/stringOrMongooseObject';
-import { handleSetCookiesFromSpace } from '../../utils/jwt/jwtUtils';
+import { handleSetCookiesFromSpace, signLoginInstanceJwt } from '../../utils/jwt/jwtUtils';
 /**
  * POST CONTROLLERS
  */
@@ -303,7 +303,7 @@ export async function authUserMaintenanceFiles(req: Request, res: Response) {
     const organizationId = getIdString(maintenance.organization);
     const spaceId = getIdString(maintenance.space);
     const maintainer = await Maintainer.findById(maintenance.maintainer);
-    const token = generateTokenMaintainer({ maintainer, organizationId, spaceId, space: maintenance.space });
+    const token = generatePayloadMaintainer({ maintainer, organizationId, spaceId, space: maintenance.space });
     console.log(sensitiveCookieOptions);
     handleSetCookiesFromSpace(res, maintenance.space);
     res.cookie('jwt', token, sensitiveCookieOptions);
@@ -352,8 +352,8 @@ export async function authUserMaintenanceByJWT(req: Request, res: Response) {
     const organizationId = getIdString(maintenance.organization);
     const spaceId = getIdString(maintenance.space);
     const maintainer = await Maintainer.findById(maintenance.maintainer);
-    const token = generateTokenMaintainer({ maintainer, organizationId, spaceId, space: maintenance.space });
-    console.log(sensitiveCookieOptions);
+    const payload = generatePayloadMaintainer({ maintainer, organizationId, spaceId, space: maintenance.space });
+    const token = signLoginInstanceJwt(payload);
     handleSetCookiesFromSpace(res, maintenance.space);
     res.cookie('jwt', token, sensitiveCookieOptions);
 

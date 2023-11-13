@@ -2,35 +2,35 @@ import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { MaintainerInterface } from '../../types/mongoose-types/model-types/maintainer-interface';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 import { JwtSignPayload } from '../jwt/jwtUtils-types';
-import { signLoginInstanceJwt } from '../jwt/jwtUtils';
 
 // const { jwtSecret /* , jwtExpirationInterval  */ } = vars;
 
 export function handleGenerateToken({ maintainer, user }: { maintainer?: MaintainerInterface; user: IUser }) {
   if (maintainer) {
-    return generateTokenMaintainer({ maintainer });
+    return generatePayloadMaintainer({ maintainer });
   }
   if (user) {
-    return generateTokenUser(user);
+    return generatePayloadUser(user);
   }
   throw new Error('Login instance not recognized');
 }
 
 //users
-export function generateTokenUser(user: IUser) {
+export function generatePayloadUser(user: IUser) {
   const payload: JwtSignPayload = {
     entity: 'users',
     email: user.email,
     organizationId: user.organizations[0]?._id.toString()
   };
-  return signLoginInstanceJwt(payload);
+  return payload;
+  // return signLoginInstanceJwt(payload);
   // return jwt.sign(payload, jwtSecret, {
   //   expiresIn: vars.jwtExpirationInterval // expires in 24 hours
   // });
 }
 
 // maintainers
-export function generateTokenMaintainer({
+export function generatePayloadMaintainer({
   maintainer,
   organizationId,
   spaceId,

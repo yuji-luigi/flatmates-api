@@ -9,6 +9,7 @@ export interface LoginInstanceProperties {
   email?: string;
   password: string;
   active: boolean;
+  lastLogin?: Date;
 }
 
 export interface LoginInstanceMethods<UserType> {

@@ -2,7 +2,6 @@
 // import { RegisterData } from './../../types/auth/formdata.d';
 /** *********** User ************* */
 import { Request, Response } from 'express';
-import moment from 'moment-timezone';
 import httpStatus from 'http-status';
 import User, { isSuperAdmin } from '../../models/User';
 // import { UserModel } from 'model/user';
@@ -15,10 +14,10 @@ import Organization from '../../models/Organization';
 import { IOrganization } from '../../types/mongoose-types/model-types/organization-interface';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { userHasSpace } from '../helpers/spaceHelper';
-import { createJWTObjectFromJWTAndSpace, resetSpaceCookies, handleSetCookiesFromPayload } from '../../utils/jwt/jwtUtils';
+import { createJWTObjectFromJWTAndSpace, resetSpaceCookies, handleSetCookiesFromPayload, signLoginInstanceJwt } from '../../utils/jwt/jwtUtils';
 import Maintainer from '../../models/Maintainer';
 import { authLoginInstances } from '../../utils/login-instance-utils/authLoginInstances';
-import { generateTokenMaintainer, handleGenerateToken } from '../../utils/login-instance-utils/generateTokens';
+import { generatePayloadMaintainer, handleGenerateToken } from '../../utils/login-instance-utils/generateTokens';
 import { LeanMaintainer } from '../../types/mongoose-types/model-types/maintainer-interface';
 import AuthToken from '../../models/AuthToken';
 // import { CurrentSpace } from '../../types/mongoose-types/model-types/space-interface';
@@ -161,7 +160,8 @@ const completeRegisterMaintainer = async (req: RequestCustom, res: Response) => 
     const _leanedMaintainer = maintainer.toObject() as LeanMaintainer;
     _leanedMaintainer.entity = 'maintainers';
     _leanedMaintainer.role = 'maintainer';
-    const jwt = generateTokenMaintainer({ maintainer, space });
+    const jwt = generatePayloadMaintainer({ maintainer, space });
+
     handleSetCookiesFromPayload(res, jwt);
 
     res.status(httpStatus.CREATED).send({
@@ -229,7 +229,8 @@ const login = async (req: Request, res: Response) => {
       });
     }
 
-    const token = handleGenerateToken({ user, maintainer });
+    const payload = handleGenerateToken({ user, maintainer });
+    const token = signLoginInstanceJwt(payload);
     //clear all spaceCookies
     resetSpaceCookies(res);
 
@@ -267,8 +268,9 @@ const removeSpaceToken = (req: Request, res: Response) => {
 const me = async (req: RequestCustom, res: Response) => {
   // set last login
   try {
-    const user = await User.findOne({ _id: req.user._id.toString() });
-    user.last_login = new Date(Date.now());
+    let user = await User.findOne({ _id: req.user._id.toString() });
+    user = user ? user : await Maintainer.findById({ _id: req.user._id.toString() });
+    user.lastLogin = new Date(Date.now());
     await user.save();
 
     return res.send({
@@ -330,9 +332,10 @@ export const sendMainOrganizationSelectionsToClient = async (req: RequestCustom,
 
 export const setSpaceAndOrgInJwt = async (req: RequestCustom, res: Response) => {
   try {
-    const user = await User.findById(req.user._id);
-
-    if (!user.isSuperAdmin() && !userHasSpace(user as IUser, req.params.idMongoose)) {
+    const { user } = req;
+    // const user = await User.findById(req.user._id);
+    // set new property to resolved jwt(jwtReturnType.)
+    if (user.role !== 'super_admin' && !userHasSpace(user, req.params.idMongoose)) {
       throw new Error(_MSG.NOT_ALLOWED);
     }
     // user is super admin or has the root space.

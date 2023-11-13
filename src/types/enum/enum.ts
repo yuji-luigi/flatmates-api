@@ -12,10 +12,11 @@ export enum aa {
 export enum USER_ROLES_ENUM {
   USER = 'user',
   ADMIN = 'admin',
-  SUPER_ADMIN = 'super_admin'
+  SUPER_ADMIN = 'super_admin',
+  MAINTAINER = 'maintainer'
 }
 
-export const USER_ROLES = ['admin', 'user', 'super_admin'];
+export const USER_ROLES = ['admin', 'user', 'super_admin', 'maintainer'];
 export type USER_ROLES = (typeof USER_ROLES)[number];
 
 export const MAINTAINER_TYPES = ['Electrician', 'Plumber', 'Carpenter', 'Painter', 'Gardener', 'Cleaner', 'Other'] as const;

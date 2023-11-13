@@ -48,7 +48,6 @@ export interface LeanUser {
   _update?: {
     password?: Buffer | string;
   };
-  last_login?: Date;
   entity: 'users';
 }
 

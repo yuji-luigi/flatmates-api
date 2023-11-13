@@ -51,7 +51,8 @@ export function handleSetCookiesFromPayload(res: Response, payload: JwtSignPaylo
     res.cookie('spaceImage', payload.spaceImage);
   }
 }
-/** @description sign payload as jwt then res.cookie with type checking. set jwt and space + organization cookie*/
+/**
+ * @description sign payload({spaceId, spaceImage...etc}) then res.cookie with type checking. set jwt and space + organization cookie*/
 export function handleSetCookiesFromSpace(res: Response, space: ISpace) {
   res.cookie('spaceId', space._id, basicCookieOptions);
   res.cookie('spaceName', space.name, basicCookieOptions);

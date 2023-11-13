@@ -74,6 +74,10 @@ export const maintainerSchema = new Schema<MaintainerInterface>(
       type: Boolean,
       default: true
     },
+    lastLogin: {
+      type: Date
+    },
+
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: 'users',
