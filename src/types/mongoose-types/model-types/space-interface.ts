@@ -54,7 +54,7 @@ export interface ISpaceMethods {
   getAncestors(currentDocument: ISpace, children: string[]): Promise<string[] | null | undefined>;
   /** returns root space. */
   // getHeadSpace(): Promise<ISpace | null | undefined>;
-  // getMainSpace(): Promise<ISpace | null | undefined>;
+  getMainSpace(): Promise<ISpace | null | undefined>;
   /** returns jwt string with expiration and secret */
   token(): string;
 }

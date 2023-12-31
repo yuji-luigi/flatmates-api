@@ -28,6 +28,7 @@ import vars from './vars';
 mongoose.Promise = Promise;
 
 mongoose.set('strictQuery', false);
+
 Bookmark;
 Comment;
 Fund;

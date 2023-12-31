@@ -3,9 +3,6 @@
 	"version": "1.0.0",
 	"description": "generic api per iniziare un progetto",
 	"main": "src/server.js",
-	"engines": {
-		"node": "18.14.2"
-	},
 	"scripts": {
 		"test": "jest",
 		"start": "npm run build && node dist/server.js",

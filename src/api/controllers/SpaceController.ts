@@ -9,14 +9,14 @@ import { aggregateWithPagination } from '../helpers/mongoose.helper';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import vars, { sensitiveCookieOptions } from '../../config/vars';
 import User from '../../models/User';
-import { aggregateDescendantIds, setUrlToSpaceImages, userHasSpace } from '../helpers/spaceHelper';
+import { aggregateDescendantIds, userHasSpace } from '../helpers/spaceHelper';
 import { _MSG } from '../../utils/messages';
 import Thread from '../../models/Thread';
 import Maintenance from '../../models/Maintenance';
 import Maintainer from '../../models/Maintainer';
 import { ObjectId } from 'mongodb';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
-import { LOOKUPS, LOOKUP_PIPELINE_STAGES, UNWIND, getUnwind } from '../aggregation-helpers/lookups';
+import { LOOKUP_PIPELINE_STAGES } from '../aggregation-helpers/lookups';
 import { createJWTObjectFromJWTAndSpace, handleSetCookiesFromPayload, signJwt } from '../../utils/jwt/jwtUtils';
 import { checkAdminOfSpace } from '../../middlewares/auth-middlewares';
 const entity = 'spaces';
@@ -296,7 +296,7 @@ export const sendSpaceSettingPageDataToClient = async (req: RequestCustom, res: 
     const data = await Space.findOne({ slug: req.params.slug });
     const maintainers = await Maintainer.find({ spaces: { $in: [data._id] } });
     const isSpaceAdmin = await checkAdminOfSpace({ space: data, currentUser: req.user });
-    await setUrlToSpaceImages(data);
+    // await setUrlToSpaceImages(data);
     for (const maintainer of maintainers) {
       await maintainer.avatar?.setUrl();
     }

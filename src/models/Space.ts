@@ -128,16 +128,17 @@ export const spacesSchema = new Schema<ISpace, SpaceModel, ISpaceMethods>(
       //     logger.error(error.message || error);
       //   }
       // },
-      // async getMainSpace() {
-      //   try {
-      //     if (this.isMain) {
-      //       return this;
-      //     }
-      //     return this.getHeadSpace();
-      //   } catch (error) {
-      //     logger.error(error.message || error);
-      //   }
-      // },
+      async getMainSpace() {
+        try {
+          if (this.isMain) {
+            return this;
+          }
+          return this.getMainSpace();
+        } catch (error) {
+          logger.error('getMainSpace error in space model');
+          throw error;
+        }
+      },
       token() {
         const payload = {
           _id: this._id,
