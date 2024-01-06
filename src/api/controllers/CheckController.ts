@@ -100,3 +100,33 @@ export async function verifyNonceCookieSendChecksMaintenanceToClient(req: Reques
     });
   }
 }
+
+export async function getChecksByMaintenanceId(req: RequestCustom, res: Response) {
+  try {
+    const { idMongoose } = req.params;
+    const maintenance = await Maintenance.findOne({
+      _id: idMongoose,
+      ...req.query
+    });
+    if (!maintenance) throw new Error('maintenance not found');
+    const checks = await Check.find({ maintenance: idMongoose });
+    for (const check of checks) {
+      const promises = check.files.map(async (file) => {
+        await file.setUrl();
+      });
+      await Promise.all(promises);
+    }
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: entity,
+      data: { checks, maintenance },
+      count: 1
+    });
+  } catch (err) {
+    logger.error(err);
+    res.status(err).json({
+      message: err.message || err
+    });
+  }
+}
