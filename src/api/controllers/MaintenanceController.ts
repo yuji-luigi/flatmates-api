@@ -168,12 +168,12 @@ const sendMaintenancesToFrondEnd = async (req: Request, res: Response) => {
 
 const sendMaintenancesForHomeDashboard = async (req: RequestCustom, res: Response) => {
   try {
-    const threads = await Maintenance.find(req.query).limit(10);
+    const maintenances = await Maintenance.find(req.query).limit(10);
 
     res.status(httpStatus.OK).json({
       success: true,
-      collection: 'threads',
-      data: threads,
+      collection: 'maintenances',
+      data: maintenances,
       totalDocuments: 1
     });
   } catch (err) {
