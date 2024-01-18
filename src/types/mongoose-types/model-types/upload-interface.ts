@@ -22,4 +22,5 @@ export interface IUploadMethods {
   removeThis: () => Promise<object>;
   deleteFromStorage: () => Promise<void>;
   setUrl: (compact?: boolean) => Promise<void>;
+  getUrl: (compact?: boolean) => Promise<string | undefined>;
 }

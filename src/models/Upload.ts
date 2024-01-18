@@ -79,12 +79,7 @@ const uploadSchema = new Schema<IUpload, IUploadModel, IUploadMethods>(
         return thisData;
       },
       async setUrl(compact = true) {
-        let url = vars.storageUrl + '/' + this.fullPath;
-        if (this.ACL !== ACL_STATUS.PUBLIC_READ) {
-          const obj = { params: { key: this.fullPath } };
-          url = await getPrivateUrlOfSpace(obj);
-          // return;
-        }
+        const url = await handleGetUploadUrl(this);
         if (compact) {
           this.fileName = undefined;
           // delete this.originalFileName
@@ -101,8 +96,10 @@ const uploadSchema = new Schema<IUpload, IUploadModel, IUploadMethods>(
           };
           // delete this.uploadedBy
         }
-
         this.url = url;
+      },
+      async getUrl() {
+        return handleGetUploadUrl(this);
       },
 
       async deleteFromStorage() {
@@ -114,6 +111,16 @@ const uploadSchema = new Schema<IUpload, IUploadModel, IUploadMethods>(
     }
   }
 );
+
+export async function handleGetUploadUrl(document: IUpload) {
+  let url = vars.storageUrl + '/' + document.fullPath;
+  if (document.ACL !== ACL_STATUS.PUBLIC_READ) {
+    const obj = { params: { key: document.fullPath } };
+    url = await getPrivateUrlOfSpace(obj);
+    // return;
+  }
+  return url;
+}
 
 uploadSchema.plugin(autoPopulate);
 
