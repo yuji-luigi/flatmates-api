@@ -7,6 +7,8 @@ import { RequestCustom } from '../../types/custom-express/express-custom';
 import Check from '../../models/Check';
 import Maintenance from '../../models/Maintenance';
 import AuthToken from '../../models/AuthToken';
+import Upload from '../../models/Upload';
+import { getOCRSpaceText } from '../../lib/ocr-space/initOcr';
 const entity = 'checks';
 
 export const createCheck = async (req: RequestCustom, res: Response) => {
@@ -16,6 +18,12 @@ export const createCheck = async (req: RequestCustom, res: Response) => {
     req.body = deleteEmptyFields(req.body);
     const newCheck = new Check(req.body);
     await newCheck.save();
+    const files = await Upload.find({ _id: { $in: newCheck.files } });
+    for (const file of files) {
+      const filePath = await file.getUrl();
+      const text = await getOCRSpaceText(filePath);
+      // call AI to get the json.
+    }
 
     //! Todo: handle this in frontend.
     // return sendCrudObjectsWithPaginationToClient(req, res);
