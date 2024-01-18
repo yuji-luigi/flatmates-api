@@ -9,3 +9,4 @@ dist/
 demo.js
 pnpm-lock.yaml
 yarn.lock
+**/assets/dev/invoice.pdf
