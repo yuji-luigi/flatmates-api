@@ -15,6 +15,8 @@ const PROD = process.env.NODE_ENV === 'prod';
 
 const frontendUrl = PROD ? process.env.FRONTEND_URL_PROD : process.env.FRONTEND_URL_DEV;
 
+const devVars = {};
+
 const day = 24 * 60 * 60;
 const vars = {
   env: process.env.NODE_ENV,
@@ -46,8 +48,12 @@ const vars = {
   gmailAddress: process.env.GMAIL_ADDRESS,
   testMail: process.env.TEST_MAIL,
   ssgSecret: process.env.SSG_SECRET,
-  redirectUrl: frontendUrl + '/' + process.env.REDIRECT_URL
+  redirectUrl: frontendUrl + '/' + process.env.REDIRECT_URL,
+  ocrSpaceSecret: process.env.OCR_SECRET,
+  ...(!PROD && devVars)
 };
+
+export const rootDir = process.cwd();
 
 export const basicCookieOptions = {
   sameSite: true,
