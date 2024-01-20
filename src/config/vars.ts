@@ -50,10 +50,12 @@ const vars = {
   ssgSecret: process.env.SSG_SECRET,
   redirectUrl: frontendUrl + '/' + process.env.REDIRECT_URL,
   ocrSpaceSecret: process.env.OCR_SECRET,
+  openAiSecret: process.env.OPEN_AI_SECRET,
   ...(!PROD && devVars)
 };
 
 export const rootDir = process.cwd();
+export const assetsDir = path.join(rootDir, 'src', 'assets');
 
 export const basicCookieOptions = {
   sameSite: true,
