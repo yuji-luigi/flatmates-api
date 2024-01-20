@@ -1,5 +1,6 @@
 import { Request } from 'express';
 import { JwtReturnType } from '../../config/resolveJwt';
+import { FileArray, UploadedFile } from 'express-fileupload';
 
 interface TypedRequestBody<T, U> extends Request {
   params: { [key: string]: string };
@@ -102,6 +103,8 @@ export interface RequestCustom<
   // files?: File[];
   // query: QueryInterface;
 }
+
+export type RequestWithFiles = RequestCustom & { files: UploadedFile[] };
 
 export interface LoggedInRequest<
   P = core.ParamsDictionary,
