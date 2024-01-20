@@ -3,12 +3,16 @@ import httpStatus from 'http-status';
 import logger from '../../config/logger';
 
 import { deleteEmptyFields } from '../../utils/functions';
-import { RequestCustom } from '../../types/custom-express/express-custom';
+import { RequestCustom, RequestWithFiles } from '../../types/custom-express/express-custom';
 import Check from '../../models/Check';
 import Maintenance from '../../models/Maintenance';
 import AuthToken from '../../models/AuthToken';
 import Upload from '../../models/Upload';
 import { getOCRSpaceText } from '../../lib/ocr-space/initOcr';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { assetsDir } from '../../config/vars';
+import { UploadedFile } from 'express-fileupload';
 const entity = 'checks';
 
 export const createCheck = async (req: RequestCustom, res: Response) => {
@@ -18,12 +22,12 @@ export const createCheck = async (req: RequestCustom, res: Response) => {
     req.body = deleteEmptyFields(req.body);
     const newCheck = new Check(req.body);
     await newCheck.save();
-    const files = await Upload.find({ _id: { $in: newCheck.files } });
-    for (const file of files) {
-      const filePath = await file.getUrl();
-      const text = await getOCRSpaceText(filePath);
-      // call AI to get the json.
-    }
+    // const files = await Upload.find({ _id: { $in: newCheck.files } });
+    // for (const file of files) {
+    //   const filePath = await file.getUrl();
+    //   const text = await getOCRSpaceText(filePath);
+    //   // call AI to get the json.
+    // }
 
     //! Todo: handle this in frontend.
     // return sendCrudObjectsWithPaginationToClient(req, res);
@@ -37,6 +41,42 @@ export const createCheck = async (req: RequestCustom, res: Response) => {
   } catch (err) {
     logger.error(err.message || err);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: err.message || err });
+  }
+};
+const PATH = path.join(assetsDir, 'private');
+
+export const getMaintenanceCheckDataWithOCR = async (req: RequestWithFiles, res: Response) => {
+  try {
+    await fs.access(PATH).catch(async () => {
+      await fs.mkdir(PATH);
+    });
+    for (const key in req.files) {
+      const file = req.files[key] as UploadedFile;
+      const filePath = `${PATH}/${file.name}`;
+      await fs.writeFile(filePath, file.data);
+      // get the text from the file b ocr.
+
+      // generate json by AI only total
+
+      // sum them up
+    }
+
+    // delete the file(or if I want to use it for saving to spaces DO then response back the file name to client.)
+    // deleting example
+    for (const key in req.files) {
+      const file = req.files[key] as UploadedFile;
+      const filePath = `${PATH}/${file.name}`;
+      await fs.unlink(filePath);
+    }
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: entity,
+      data: 'data',
+      count: 1
+    });
+  } catch (error) {
+    logger.error(error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message || error });
   }
 };
 

@@ -4,6 +4,7 @@ const router = express.Router();
 import {
   createCheck,
   getChecksByMaintenanceId,
+  getMaintenanceCheckDataWithOCR,
   sendCheckToClient,
   verifyNonceCookieSendChecksMaintenanceToClient
 } from '../controllers/CheckController';
@@ -12,6 +13,7 @@ import { queryHandler } from '../../middlewares/handleSetQuery';
 
 //! todo: protect this route createCheck
 router.post('/', createCheck);
+router.post('/ocr-maintenance', getMaintenanceCheckDataWithOCR);
 router.put('/:idMongoose', (req, res) => res.status(500).json({ message: 'not implemented' }));
 router.get('/by-maintenance/:idMongoose', handleUserFromRequest, queryHandler, getChecksByMaintenanceId);
 router.get('/:linkId/:idMongoose', verifyNonceCookieSendChecksMaintenanceToClient);
