@@ -50,12 +50,14 @@ export const getMaintenanceCheckDataWithOCR = async (req: RequestWithFiles, res:
     await fs.access(PATH).catch(async () => {
       await fs.mkdir(PATH);
     });
+    const texts = [];
     for (const key in req.files) {
       const file = req.files[key] as UploadedFile;
       const filePath = `${PATH}/${file.name}`;
       await fs.writeFile(filePath, file.data);
       // get the text from the file b ocr.
-
+      const text = await getOCRSpaceText(filePath);
+      texts.push(text);
       // generate json by AI only total
 
       // sum them up
@@ -71,7 +73,7 @@ export const getMaintenanceCheckDataWithOCR = async (req: RequestWithFiles, res:
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity,
-      data: 'data',
+      data: texts,
       count: 1
     });
   } catch (error) {
