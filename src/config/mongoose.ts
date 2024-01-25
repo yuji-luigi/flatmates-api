@@ -20,6 +20,8 @@ import Maintainer from '../models/Maintainer';
 import Check from '../models/Check';
 import SpaceTag from '../models/SpaceTag';
 import AuthToken from '../models/AuthToken';
+import Role from '../models/Role';
+import BusinessProfile from '../models/BusinessProfile';
 
 import vars from './vars';
 
@@ -49,6 +51,8 @@ Maintenance;
 Maintainer;
 Check;
 AuthToken;
+BusinessProfile;
+Role;
 // Exit Applicatioin on Error
 mongoose.connection.on('error', (err: object | string) => {
   logger.error(`Mongoose connection error: ${err}`);
