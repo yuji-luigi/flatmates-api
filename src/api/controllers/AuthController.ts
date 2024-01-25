@@ -16,7 +16,6 @@ import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { userHasSpace } from '../helpers/spaceHelper';
 import { createJWTObjectFromJWTAndSpace, resetSpaceCookies, handleSetCookiesFromPayload, signLoginInstanceJwt } from '../../utils/jwt/jwtUtils';
 import Maintainer from '../../models/Maintainer';
-import { authLoginInstances } from '../../utils/login-instance-utils/authLoginInstances';
 import { generatePayloadMaintainer, handleGenerateToken } from '../../utils/login-instance-utils/generateTokens';
 import { LeanMaintainer } from '../../types/mongoose-types/model-types/maintainer-interface';
 import AuthToken from '../../models/AuthToken';
@@ -217,19 +216,23 @@ const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
     // const { user, accessToken: token } = await User.findAndGenerateToken(req.body);
-    const { user, maintainer } = await authLoginInstances({ email, password });
-    if (user && maintainer) {
-      return res.status(httpStatus.OK).json({
-        success: false,
-        data: {
-          user,
-          maintainer
-        },
-        message: 'Decide in which entity you want to login'
-      });
+    // const { user, maintainer } = await authLoginInstances({ email, password });
+    const user = await User.findOne({ email }).populate({ path: 'roleNew', populate: { path: 'maintainer.profile' } });
+    if (!(await user.passwordMatches(password))) {
+      throw new Error('Password non corrispondenti');
     }
+    // if (user && maintainer) {
+    //   return res.status(httpStatus.OK).json({
+    //     success: false,
+    //     data: {
+    //       user,
+    //       maintainer
+    //     },
+    //     message: 'Decide in which entity you want to login'
+    //   });
+    // }
 
-    const payload = handleGenerateToken({ user, maintainer });
+    const payload = handleGenerateToken({ user });
     const token = signLoginInstanceJwt(payload);
     //clear all spaceCookies
     resetSpaceCookies(res);
