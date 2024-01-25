@@ -69,5 +69,6 @@ export const LOOKUP_PIPELINE_STAGES: Record<Entities, PipelineStage.FacetPipelin
   maintenances: [LOOKUPS.MAINTAINERS, { $unwind: '$maintainer' }],
   maintainers: [],
   checks: [],
-  'auth-tokens': []
+  'auth-tokens': [],
+  role: []
 };
