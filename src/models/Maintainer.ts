@@ -6,6 +6,7 @@ import logger from '../config/logger';
 import { generateWord, replaceSpecialCharsWith } from '../utils/functions';
 import { MAINTAINER_TYPES } from '../types/enum/enum';
 import { MaintainerInterface } from '../types/mongoose-types/model-types/maintainer-interface';
+import { belongsToFields } from './field/belongsToFields';
 const { Schema } = mongoose;
 
 export const maintainerSchema = new Schema<MaintainerInterface>(
@@ -13,6 +14,11 @@ export const maintainerSchema = new Schema<MaintainerInterface>(
     name: {
       type: String,
       required: true
+    },
+    surname: {
+      type: String,
+      // required: false,
+      default: ''
     },
     company: {
       type: String,
@@ -47,18 +53,19 @@ export const maintainerSchema = new Schema<MaintainerInterface>(
     password: {
       type: String
     },
-    rootSpaces: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'spaces'
-      }
-    ],
-    organizations: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'organizations'
-      }
-    ],
+    ...belongsToFields,
+    // rootSpaces: [
+    //   {
+    //     type: Schema.Types.ObjectId,
+    //     ref: 'spaces'
+    //   }
+    // ],
+    // organizations: [
+    //   {
+    //     type: Schema.Types.ObjectId,
+    //     ref: 'organizations'
+    //   }
+    // ],
     description: String,
     address: String,
     // isInSpace: Boolean,
@@ -77,7 +84,6 @@ export const maintainerSchema = new Schema<MaintainerInterface>(
     lastLogin: {
       type: Date
     },
-
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: 'users',
