@@ -1,3 +1,4 @@
+import { belongsToFields } from './field/belongsToFields';
 import { USER_ROLES } from './../types/enum/enum';
 import { Schema, model } from 'mongoose';
 import bcrypt from 'bcrypt';
@@ -14,6 +15,7 @@ import { ISpace } from '../types/mongoose-types/model-types/space-interface';
 import { IUser, LeanUser, UserError, UserModel } from '../types/mongoose-types/model-types/user-interface';
 import { _MSG } from '../utils/messages';
 import { JwtReturnType } from '../config/resolveJwt';
+import Role from './Role';
 
 export type modules = {
   [key: string]: boolean;
@@ -52,6 +54,10 @@ export const userSchema = new Schema<IUser, UserModel>(
       default: 'user',
       required: true
     },
+    roleNew: {
+      type: Schema.Types.ObjectId,
+      ref: 'roles'
+    },
     email: {
       type: String,
       match: /^\S+@\S+\.\S+$/,
@@ -77,21 +83,22 @@ export const userSchema = new Schema<IUser, UserModel>(
     },
 
     // rootSpaces refer to mainSpaces.
-    rootSpaces: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'spaces',
-        required: true
-        // autopopulate: true
-      }
-    ],
-    organizations: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'organizations'
-        // required: true
-      }
-    ]
+    ...belongsToFields
+    // rootSpaces: [
+    //   {
+    //     type: Schema.Types.ObjectId,
+    //     ref: 'spaces',
+    //     required: true
+    //     // autopopulate: true
+    //   }
+    // ],
+    // organizations: [
+    //   {
+    //     type: Schema.Types.ObjectId,
+    //     ref: 'organizations'
+    //     // required: true
+    //   }
+    // ]
     // organization: {
     //   type: Schema.Types.ObjectId,
     //   ref: 'organizations'
@@ -121,6 +128,17 @@ userSchema.pre('save', async function save(next) {
       const hash = await bcrypt.hash(this.password, rounds);
       this.password = hash;
     }
+    return next();
+  } catch (error) {
+    return next(error);
+  }
+});
+
+// HASH PASSWORD BEFORE CREATION OF USER
+userSchema.pre('findOneAndDelete', async function save(next) {
+  try {
+  
+    const foundRole = await Role.findByIdAndDelete(this.roleNew);
     return next();
   } catch (error) {
     return next(error);
