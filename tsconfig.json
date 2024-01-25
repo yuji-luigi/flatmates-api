@@ -1,6 +1,6 @@
 {
   "ts-node": {
-    // "transpileOnly": true, //  if you want to use ts-node without type checking
+    "transpileOnly": true, //  if you want to use ts-node without type checking
     "files": false
   },
   "compilerOptions": {
