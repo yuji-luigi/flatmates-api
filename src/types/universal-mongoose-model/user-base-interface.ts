@@ -14,7 +14,7 @@ export interface LoginInstanceProperties {
 
 export interface LoginInstanceMethods<UserType> {
   token: () => string;
-  passwordMatches: (password: string) => boolean;
+  passwordMatches: (password: string) => Promise<boolean>;
   findAndGenerateToken: (body: tokenGeneratePayload) => Promise<{
     user: UserType;
     accessToken: string;
@@ -24,14 +24,6 @@ export interface LoginInstanceMethods<UserType> {
     accessToken: string;
   }>;
 }
-// abstract class LoginInstanceMethods {
-//   token: () => string;
-//   passwordMatches: (password: string) => boolean;
-//   findAndGenerateToken: <UserType>(body: tokenGeneratePayload) => Promise<{
-//     user: UserType;
-//     accessToken: string;
-//   }>;
-// }
 
 export type tokenGeneratePayload = {
   email: string;
