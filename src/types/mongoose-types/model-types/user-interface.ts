@@ -17,7 +17,7 @@ export type UserError = {
 type userRoles = 'user' | 'admin' | 'super_admin';
 export interface IUser extends Omit<LeanUser, 'entity'>, LoginInstance<IUser>, MongooseBaseModel {
   // tailSpace: ISpace | string;
-  passwordMatches: (password: string) => boolean;
+  passwordMatches: (password: string) => Promise<boolean>;
   // hasOrganization: (organizationId: string) => Promise<boolean>;
   token: () => string;
   save: () => void;
@@ -36,6 +36,7 @@ export interface LeanUser {
   /** will be only super_admin and user. will use adminOf field to check if user is admin of an space.
    */
   role?: userRoles;
+  roleNew?: ObjectId;
   // need to put the control when user is created/updated
   adminOf: ISpace[] | [];
   // wallet?: string;
