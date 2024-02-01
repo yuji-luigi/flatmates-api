@@ -1,5 +1,4 @@
 import { belongsToFields } from './field/belongsToFields';
-import { USER_ROLES } from './../types/enum/enum';
 import { Schema, model } from 'mongoose';
 import bcrypt from 'bcrypt';
 import httpStatus from 'http-status';
@@ -49,12 +48,6 @@ export const userSchema = new Schema<IUser, UserModel>(
       autopopulate: true
     },
     role: {
-      type: String,
-      enum: USER_ROLES,
-      default: 'user',
-      required: true
-    },
-    roleNew: {
       type: Schema.Types.ObjectId,
       ref: 'roles'
     },
@@ -135,10 +128,9 @@ userSchema.pre('save', async function save(next) {
 });
 
 // HASH PASSWORD BEFORE CREATION OF USER
-userSchema.pre('findOneAndDelete', async function save(next) {
+userSchema.pre<IUser>('findOneAndDelete', async function save(next) {
   try {
-  
-    const foundRole = await Role.findByIdAndDelete(this.roleNew);
+    await Role.findByIdAndDelete(this.role);
     return next();
   } catch (error) {
     return next(error);
@@ -341,4 +333,7 @@ const User = model<IUser, UserModel>('users', userSchema);
 export default User;
 // export default UserSchema as UserModel<Model<IUserDocument>>;
 
-export const isSuperAdmin = (user: LeanUser | IUser | JwtReturnType) => user.role === 'super_admin';
+export const isSuperAdmin = async (user: LeanUser | IUser | JwtReturnType) => {
+  const role = await Role.findById(user.role);
+  return role.isSuperAdmin;
+};
