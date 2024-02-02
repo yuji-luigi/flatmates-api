@@ -1,24 +1,24 @@
-import { JwtReturnType } from '../../config/resolveJwt';
 import jwt from 'jsonwebtoken';
 import vars, { basicCookieOptions, sensitiveCookieOptions } from '../../config/vars';
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
 import { Response } from 'express';
-import { JsonObjPayload, JwtSignPayload, SpaceDataType, SpaceDetails } from './jwtUtils-types';
+import { JsonObjPayload, JwtSignPayload, SpaceDataInCookieFull, SpaceDetails } from './jwtUtils-types';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
+import { ReqUser } from './jwtTypings';
 const baseUrl = vars.frontendUrl + '/auth-tokens';
 
 export const generateTokenUrl = {
   userRegister: (authToken: AuthTokenInterface) => `${baseUrl}/users/${authToken.linkId}/${authToken._id.toString()}`
 };
 
-export const formatUserDataForJwt = (user: JwtReturnType) => ({
+export const formatUserDataForJwt = (user: ReqUser) => ({
   email: user.email
 });
 
 export const signJwt = (payload: string | Record<string, any>) => jwt.sign(payload, vars.jwtSecret, { expiresIn: vars.jwtExpirationInterval });
 
 export const createJWTObjectFromJWTAndSpace = (payload: JsonObjPayload): JwtSignPayload => {
-  let spaceData: SpaceDataType | null = null;
+  let spaceData: SpaceDataInCookieFull | null = null;
   spaceData = payload.space
     ? {
         spaceName: payload.space.name,
@@ -33,7 +33,7 @@ export const createJWTObjectFromJWTAndSpace = (payload: JsonObjPayload): JwtSign
   spaceData = payload.organizationId ? { ...spaceData, organizationId: payload.organizationId } : spaceData;
   const data: JwtSignPayload = {
     email: payload.user?.email,
-    entity: payload.user?.entity,
+    loggedAs: payload.user?.loggedAs,
     ...spaceData
   };
   // return  signJwt(data);
