@@ -10,7 +10,7 @@ import User from '../../models/User';
 import { _MSG } from '../../utils/messages';
 import { deleteEmptyFields } from '../../utils/functions';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
-import { createJWTObjectFromJWTAndSpace, formatUserDataForJwt, handleSetCookiesFromPayload, signJwt } from '../../utils/jwt/jwtUtils';
+import { createJWTObjectFromJWTAndSpace, formatUserDataForJwt, handleSetCookiesFromPayload, signJwt } from '../../lib/jwt/jwtUtils';
 
 export async function sendOrganizations(req: RequestCustom, res: Response) {
   try {

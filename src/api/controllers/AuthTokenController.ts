@@ -10,8 +10,8 @@ import { stringifyAuthToken, typeGuardAuthTokenSpaceOrg, verifyPinFromRequest } 
 import User from '../../models/User';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { sensitiveCookieOptions } from '../../config/vars';
-import { signJwt } from '../../utils/jwt/jwtUtils';
-import { JwtSignPayload } from '../../utils/jwt/jwtUtils-types';
+import { signJwt } from '../../lib/jwt/jwtUtils';
+import { JwtSignPayload } from '../../lib/jwt/jwtUtils-types';
 import Space from '../../models/Space';
 
 const entity = 'authTokens';

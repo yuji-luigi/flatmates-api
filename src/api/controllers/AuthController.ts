@@ -1,3 +1,4 @@
+import { sensitiveCookieOptions } from './../../config/vars';
 // import { IUser } from './../../types/model/user.d';
 // import { RegisterData } from './../../types/auth/formdata.d';
 /** *********** User ************* */
@@ -5,7 +6,7 @@ import { Request, Response } from 'express';
 import httpStatus from 'http-status';
 import User, { isSuperAdmin } from '../../models/User';
 // import { UserModel } from 'model/user';
-import vars, { sensitiveCookieOptions } from '../../config/vars';
+import vars from '../../config/vars';
 import { _MSG } from '../../utils/messages';
 import logger from '../../config/logger';
 import { RequestCustom } from '../../types/custom-express/express-custom';
@@ -14,11 +15,13 @@ import Organization from '../../models/Organization';
 import { IOrganization } from '../../types/mongoose-types/model-types/organization-interface';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { userHasSpace } from '../helpers/spaceHelper';
-import { createJWTObjectFromJWTAndSpace, resetSpaceCookies, handleSetCookiesFromPayload, signLoginInstanceJwt } from '../../utils/jwt/jwtUtils';
+import { createJWTObjectFromJWTAndSpace, resetSpaceCookies, handleSetCookiesFromPayload, signLoginInstanceJwt } from '../../lib/jwt/jwtUtils';
 import Maintainer from '../../models/Maintainer';
-import { generatePayloadMaintainer, handleGenerateToken } from '../../utils/login-instance-utils/generateTokens';
+import { generatePayloadMaintainer, handleGenerateToken, handleGenerateTokenByRole } from '../../utils/login-instance-utils/generateTokens';
 import { LeanMaintainer } from '../../types/mongoose-types/model-types/maintainer-interface';
 import AuthToken from '../../models/AuthToken';
+import { RoleFields } from '../../types/mongoose-types/model-types/role-interface';
+import { ObjectId } from 'mongodb';
 // import { CurrentSpace } from '../../types/mongoose-types/model-types/space-interface';
 
 const { cookieDomain } = vars;
@@ -212,15 +215,19 @@ async function createNewSpaceAtRegister({
  * Returns jwt token if valid username and password is provided
  * @public
  */
-const login = async (req: Request, res: Response) => {
+const login = async (req: Request<{ role: RoleFields }>, res: Response) => {
   try {
     const { email, password } = req.body;
     // const { user, accessToken: token } = await User.findAndGenerateToken(req.body);
     // const { user, maintainer } = await authLoginInstances({ email, password });
-    const user = await User.findOne({ email }).populate({ path: 'roleNew', populate: { path: 'maintainer.profile' } });
+    const user = await User.findOne({ email }).populate({
+      path: 'role',
+      populate: [{ path: 'maintainer.profile' }, { path: 'administrator.profile' }]
+    });
     if (!(await user.passwordMatches(password))) {
       throw new Error('Password non corrispondenti');
     }
+
     // if (user && maintainer) {
     //   return res.status(httpStatus.OK).json({
     //     success: false,
@@ -238,11 +245,54 @@ const login = async (req: Request, res: Response) => {
     resetSpaceCookies(res);
 
     res.cookie('jwt', token, sensitiveCookieOptions);
-
     return res.send({
       success: true,
       data: { token }
     });
+  } catch (error) {
+    logger.error(error.message || error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ ...error, message: error.message || error });
+  }
+};
+/**
+ * Returns jwt token if valid username and password is provided
+ * @public
+ */
+const loginByRole = async (req: Request<{ role: RoleFields }>, res: Response) => {
+  try {
+    const { email, password } = req.body;
+    const { role } = req.params;
+    // const { user, accessToken: token } = await User.findAndGenerateToken(req.body);
+    // const { user, maintainer } = await authLoginInstances({ email, password });
+    const user = await User.findOne({ email }).populate({
+      path: 'role',
+      populate: [{ path: 'maintainer.profile' }, { path: 'administrator.profile' }]
+    });
+    if (!(await user.passwordMatches(password))) {
+      throw new Error('Password non corrispondenti');
+    }
+    if (user.role instanceof ObjectId) {
+      return;
+    }
+    const userRoleField = user.role[role];
+
+    if (!userRoleField.hasAccess) {
+      throw new Error('You have no access to this entity');
+    }
+
+    const payload = await handleGenerateTokenByRole({ selectedRole: role, user });
+    const token = signLoginInstanceJwt(payload);
+    //clear all spaceCookies
+    resetSpaceCookies(res);
+
+    res.cookie('jwt', token, sensitiveCookieOptions);
+    res.cookie('role', role, { ...sensitiveCookieOptions, httpOnly: false });
+
+    res.send({
+      success: true,
+      data: { token }
+    });
+    return;
   } catch (error) {
     logger.error(error.message || error);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ ...error, message: error.message || error });
@@ -254,6 +304,7 @@ const logout = (req: Request, res: Response) => {
   // cancello il cookie
   res.clearCookie('jwt', { domain: cookieDomain });
   res.clearCookie('space', { domain: cookieDomain });
+
   res.clearCookie('spaceName', { domain: cookieDomain });
   // res.clearCookie('maintenance', { domain: cookieDomain });
   // res.clearCookie('maintenanceNonce', { domain: cookieDomain });
@@ -271,8 +322,7 @@ const removeSpaceToken = (req: Request, res: Response) => {
 const me = async (req: RequestCustom, res: Response) => {
   // set last login
   try {
-    let user = await User.findOne({ _id: req.user._id.toString() });
-    user = user ? user : await Maintainer.findById({ _id: req.user._id.toString() });
+    const user = await User.findOne({ _id: req.user._id.toString() });
     user.lastLogin = new Date(Date.now());
     await user.save();
 
@@ -293,11 +343,11 @@ export const sendMainSpaceSelectionsToClient = async (req: RequestCustom, res: R
     let query: Record<string, string | any> = { isMain: true, _id: { $in: req.user.rootSpaces } };
     // let mainSpaces = await Space.find({ isMain: true, _id: { $in: req.user.rootSpaces } });
     // case admin show all main spaces of his organizations
-    if (req.user.role === 'admin') {
+    if (req.user.loggedAs === 'administrator') {
       query = { isMain: true, organization: { $in: req.user.organizations } };
       // mainSpaces = await Space.find({ isMain: true, organization: { $in: req.user.organizations } });
     }
-    if (req.user.role === 'super_admin') {
+    if (req.user.isSuperAdmin) {
       query = { isMain: true, organization: req.user.organizationId };
       // mainSpaces = await Space.find({ isMain: true, organization: req.user.organizationId });
     }
@@ -337,8 +387,8 @@ export const setSpaceAndOrgInJwt = async (req: RequestCustom, res: Response) => 
   try {
     const { user } = req;
     // const user = await User.findById(req.user._id);
-    // set new property to resolved jwt(jwtReturnType.)
-    if (user.role !== 'super_admin' && !userHasSpace(user, req.params.idMongoose)) {
+    // set new property to resolved jwt(.)
+    if (!user.isSuperAdmin && !userHasSpace(user, req.params.idMongoose)) {
       throw new Error(_MSG.NOT_ALLOWED);
     }
     // user is super admin or has the root space.
@@ -375,6 +425,7 @@ export const setSpaceAndOrgInJwt = async (req: RequestCustom, res: Response) => 
 export default {
   removeSpaceToken,
   login,
+  loginByRole,
   logout,
   me,
   register,
