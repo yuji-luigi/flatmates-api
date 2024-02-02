@@ -13,7 +13,6 @@ import Organization from './Organization';
 import { ISpace } from '../types/mongoose-types/model-types/space-interface';
 import { IUser, LeanUser, UserError, UserModel } from '../types/mongoose-types/model-types/user-interface';
 import { _MSG } from '../utils/messages';
-import { JwtReturnType } from '../config/resolveJwt';
 import Role from './Role';
 
 export type modules = {
@@ -51,6 +50,11 @@ export const userSchema = new Schema<IUser, UserModel>(
       type: Schema.Types.ObjectId,
       ref: 'roles'
     },
+    // roleNew: {
+    //   type: Schema.Types.ObjectId,
+    //   ref: 'roles'
+    // },
+
     email: {
       type: String,
       match: /^\S+@\S+\.\S+$/,
@@ -333,7 +337,7 @@ const User = model<IUser, UserModel>('users', userSchema);
 export default User;
 // export default UserSchema as UserModel<Model<IUserDocument>>;
 
-export const isSuperAdmin = async (user: LeanUser | IUser | JwtReturnType) => {
+export const isSuperAdmin = async (user: LeanUser) => {
   const role = await Role.findById(user.role);
   return role.isSuperAdmin;
 };

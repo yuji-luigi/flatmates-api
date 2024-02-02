@@ -21,14 +21,17 @@ export const RoleSchema = new Schema<RoleInterface>(
         ref: 'businessProfiles'
       }
     },
-    inhabitant: belongsToFields
+    inhabitant: belongsToFields,
+    isSuperAdmin: {
+      type: Boolean,
+      default: false
+    }
   },
   {
     versionKey: false,
     timestamps: true
   }
 );
-
 RoleSchema.statics = {};
 
 RoleSchema.plugin(autoPopulate);

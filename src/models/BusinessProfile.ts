@@ -45,13 +45,33 @@ export const BusinessProfileSchema = new Schema<BusinessProfileInterface>(
       type: String,
       required: false
     },
-    address: {
+    country: {
+      type: String
+    },
+    city: {
+      type: String,
+      required: false
+    },
+    street1: {
+      type: String,
+      required: false
+    },
+    street2: {
+      type: String,
+      required: false
+    },
+    zipCode: {
       type: String,
       required: false
     },
     _role: {
       type: String,
       enum: ['maintainer', 'administrator'],
+      required: true
+    },
+    user: {
+      type: Types.ObjectId,
+      ref: 'users',
       required: true
     }
   },
