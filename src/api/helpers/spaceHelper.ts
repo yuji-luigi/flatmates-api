@@ -4,10 +4,9 @@ import logger from '../../config/logger';
 import { _MSG } from '../../utils/messages';
 import { CurrentSpace, ISpace } from '../../types/mongoose-types/model-types/space-interface';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
-import { JwtReturnType } from '../../config/resolveJwt';
 
 /**  searches only root spaces of user */
-export async function userHasSpace(user: IUser | JwtReturnType, selectedSpace: string): Promise<boolean> {
+export async function userHasSpace(user: IUser | Jwt, selectedSpace: string): Promise<boolean> {
   // return user.rootSpaces.includes(selectedSpace._id.toString());
   const rootSpaces = user.rootSpaces.map((rootSpace) => rootSpace.toString());
 

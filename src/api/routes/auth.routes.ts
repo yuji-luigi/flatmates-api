@@ -18,6 +18,7 @@ router.get('/', (req: Request, res: Response) => {
 // USER CREATE ROUTE IS ALLOWED ONLY FOR ADMIN
 
 router.post('/login', authCtrl.login);
+router.post('/login/:role', authCtrl.loginByRole);
 
 router.post('/register', authCtrl.register);
 router.post('/complete-register/maintainer/', authCtrl.completeRegisterMaintainer);

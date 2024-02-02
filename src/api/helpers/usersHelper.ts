@@ -5,7 +5,7 @@ import AuthToken from '../../models/AuthToken';
 import User from '../../models/User';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
-import { generateTokenUrl } from '../../utils/jwt/jwtUtils';
+import { generateTokenUrl } from '../../lib/jwt/jwtUtils';
 import { checkDuplicateEmail } from './mongoose.helper';
 import { ObjectId } from 'bson';
 
