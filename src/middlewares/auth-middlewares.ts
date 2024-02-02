@@ -4,11 +4,11 @@ import httpStatus from 'http-status';
 import { _MSG } from '../utils/messages';
 import { RequestCustom } from '../types/custom-express/express-custom';
 import { ObjectId } from 'mongodb';
-import { JwtReturnType } from '../config/resolveJwt';
 import { ISpace } from '../types/mongoose-types/model-types/space-interface';
+import { ReqUser } from '../lib/jwt/jwtTypings';
 
 export function clearQueriesForSAdmin(req: RequestCustom, res: Response, next: NextFunction) {
-  if (req.user.role === 'super_admin') {
+  if (req.user.isSuperAdmin) {
     delete req.query.organization;
     delete req.query.space;
   }
@@ -31,8 +31,8 @@ export const ADMIN = 'admin';
 export const LOGGED_USER = 'user';
 export const SUPER_ADMIN = 'super_admin';
 
-export async function checkAdminOfSpace({ space, currentUser }: { space: ISpace; currentUser: JwtReturnType }) {
-  if (currentUser.role === SUPER_ADMIN) {
+export async function checkAdminOfSpace({ space, currentUser }: { space: ISpace; currentUser: ReqUser }) {
+  if (currentUser.isSuperAdmin) {
     return true;
   }
   const mainSpace = await space.getMainSpace();

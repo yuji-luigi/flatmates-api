@@ -7,14 +7,14 @@ import { _MSG } from '../utils/messages';
 // called in handleQuery middleware.
 export function queryHandler(req: RequestCustom, res: Response, next: NextFunction) {
   try {
-    // case admin: at least organizationId is required
-    if (req.user.role === 'admin' && !req.user.organizationId) {
-      throw new Error('organization not found');
-    }
-    // case user: at least spaceId is required
-    if (req.user.role === 'user' && !req.user.spaceId) {
-      throw new Error('space not found');
-    }
+    // // case admin: at least organizationId is required
+    // if (req.user.role === 'admin' && !req.user.organizationId) {
+    //   throw new Error('organization not found');
+    // }
+    // // case user: at least spaceId is required
+    // if (req.user.role === 'user' && !req.user.spaceId) {
+    //   throw new Error('space not found');
+    // }
 
     if (req.user.spaceId) {
       req.query.space = req.user.spaceId;

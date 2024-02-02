@@ -1,9 +1,9 @@
 import { NextFunction, Response } from 'express';
 import passport from 'passport';
 import { RequestCustom } from '../types/custom-express/express-custom';
-import { JwtReturnType } from '../config/resolveJwt';
 import logger from '../config/logger';
 import httpStatus from 'http-status';
+import { ReqUser } from '../lib/jwt/jwtTypings';
 
 export const handleUserFromRequest = (req: RequestCustom, res: Response, next: NextFunction) =>
   passport.authenticate('jwt', { session: false }, setUserInRequest(req, res, next))(req, res, next);
@@ -11,7 +11,7 @@ export const handleUserFromRequest = (req: RequestCustom, res: Response, next: N
 // if user is present frm jwt token then set it to req.user
 // if not just pass without setting req.user
 const setUserInRequest =
-  (req: RequestCustom, res: Response, next: NextFunction) => async (err: any, jwtReturnedData: JwtReturnType & boolean, info: any) => {
+  (req: RequestCustom, res: Response, next: NextFunction) => async (err: any, jwtReturnedData: ReqUser & boolean, info: any) => {
     try {
       if (jwtReturnedData === false) {
         return next();
