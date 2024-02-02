@@ -1,6 +1,6 @@
 import { Request } from 'express';
-import { JwtReturnType } from '../../config/resolveJwt';
-import { FileArray, UploadedFile } from 'express-fileupload';
+import { UploadedFile } from 'express-fileupload';
+import { ReqUser } from '../../lib/jwt/jwtTypings';
 
 interface TypedRequestBody<T, U> extends Request {
   params: { [key: string]: string };
@@ -14,7 +14,7 @@ type QueryReturnType = object | string | number | boolean | undefined;
 
 // interface RequestCustom extends RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>> {
 //   logIn: (userId: string | IUser) => Promise<void>;
-//   user?: IUser;
+//   user?: IUser
 //   params: {
 //     [key: string]: string
 //     idMongoose?: string;
@@ -95,7 +95,7 @@ export interface RequestCustom<
   ReqQuery = QueryCustom,
   Locals extends Record<string, any> = Record<string, any>
 > extends Request<P, ResBody, ReqBody, ReqQuery, Locals> {
-  user?: JwtReturnType | undefined;
+  user?: ReqUser | undefined;
   // user?: (IUser & { spaceId?: ObjectId; spaceName?: string; organizationId: ObjectId }) | undefined;
   // space?: ISpace | null;
   // organization: IOrganization;
@@ -113,7 +113,7 @@ export interface LoggedInRequest<
   ReqQuery = QueryCustom,
   Locals extends Record<string, any> = Record<string, any>
 > extends Request<P, ResBody, ReqBody, ReqQuery, Locals> {
-  user: JwtReturnType | undefined;
+  user: ReqUser | undefined;
   // user?: (IUser & { spaceId?: ObjectId; spaceName?: string; organizationId: ObjectId }) | undefined;
   // space?: ISpace | null;
   // organization: IOrganization;
