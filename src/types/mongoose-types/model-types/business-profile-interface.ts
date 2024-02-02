@@ -11,6 +11,11 @@ export interface BusinessProfileInterface {
   email: string;
   logo?: ObjectId;
   description?: string;
-  address?: string;
+  country?: string;
+  city?: string;
+  street1?: string;
+  street2?: string;
+  zipCode?: string;
   _role: 'maintainer' | 'administrator';
+  user: ObjectId; // todo: can be a string??
 }

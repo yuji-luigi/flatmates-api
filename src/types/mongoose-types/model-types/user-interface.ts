@@ -7,17 +7,18 @@ import { IUpload } from './upload-interface';
 import { MongooseBaseModel } from './base-types/base-model-interface';
 import { LoginInstance, LoginInstanceMethods, tokenGeneratePayload } from '../../universal-mongoose-model/user-base-interface';
 import { Model } from 'mongoose';
-import { ObjectId } from 'bson';
+import { ObjectId } from 'mongodb';
+import { RoleInterface } from './role-interface';
 export type UserError = {
   status?: number;
   isPublic?: boolean;
   message?: string;
 };
 
-type userRoles = 'user' | 'admin' | 'super_admin';
-export interface IUser extends Omit<LeanUser, 'entity'>, LoginInstance<IUser>, MongooseBaseModel {
+export interface IUser extends LeanUser, LoginInstance<IUser>, MongooseBaseModel {
   // tailSpace: ISpace | string;
   passwordMatches: (password: string) => Promise<boolean>;
+
   // hasOrganization: (organizationId: string) => Promise<boolean>;
   token: () => string;
   save: () => void;
@@ -35,21 +36,20 @@ export interface LeanUser {
   phone?: string | undefined;
   /** will be only super_admin and user. will use adminOf field to check if user is admin of an space.
    */
-  role?: userRoles;
-  roleNew?: ObjectId;
+  role: ObjectId | RoleInterface;
+  // role: ObjectId | RoleInterface;
   // need to put the control when user is created/updated
-  adminOf: ISpace[] | [];
+  adminOf: ISpace[];
   // wallet?: string;
   // userSetting: string | boolean;
-  rootSpaces?: ISpace[] | [];
+  rootSpaces?: ObjectId[];
   active: boolean;
   // organization?: IOrganization | null | undefined;
-  organizations?: IOrganization[] | [];
+  organizations?: ObjectId[];
   cover: IUpload;
   _update?: {
     password?: Buffer | string;
   };
-  entity: 'users';
 }
 
 export interface IUserStatics {
