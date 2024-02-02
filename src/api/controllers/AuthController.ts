@@ -286,7 +286,7 @@ const loginByRole = async (req: Request<{ role: RoleFields }>, res: Response) =>
     resetSpaceCookies(res);
 
     res.cookie('jwt', token, sensitiveCookieOptions);
-    res.cookie('role', role, { ...sensitiveCookieOptions, httpOnly: false });
+    res.cookie('loggedAs', role, { ...sensitiveCookieOptions, httpOnly: false });
 
     res.send({
       success: true,
