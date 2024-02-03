@@ -23,7 +23,6 @@ export interface IUser extends LeanUser, LoginInstance<IUser>, MongooseBaseModel
   token: () => string;
   save: () => void;
   getOrganizations: () => Promise<IOrganization[]>;
-  isSuperAdmin: () => boolean;
   isAdminOrganization: (organizationId: ObjectId) => Promise<boolean>;
 }
 export interface LeanUser {
