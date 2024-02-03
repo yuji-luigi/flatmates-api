@@ -258,10 +258,10 @@ const login = async (req: Request<{ role: RoleFields }>, res: Response) => {
  * Returns jwt token if valid username and password is provided
  * @public
  */
-const loginByRole = async (req: Request<{ role: RoleFields }>, res: Response) => {
+const loginByRole = async (req: Req<{ role: RoleFields }>, res: Response) => {
   try {
     const { email, password } = req.body;
-    const { role } = req.params;
+    const { role } = req.params as { role: RoleFields };
     // const { user, accessToken: token } = await User.findAndGenerateToken(req.body);
     // const { user, maintainer } = await authLoginInstances({ email, password });
     const user = await User.findOne({ email }).populate({
@@ -274,9 +274,9 @@ const loginByRole = async (req: Request<{ role: RoleFields }>, res: Response) =>
     if (user.role instanceof ObjectId) {
       return;
     }
-    const userRoleField = user.role[role];
+    const userRoleField = user.role?.[role];
 
-    if (!userRoleField.hasAccess) {
+    if (!user.role.isSuperAdmin && !userRoleField.hasAccess) {
       throw new Error('You have no access to this entity');
     }
 
@@ -325,6 +325,7 @@ const me = async (req: RequestCustom, res: Response) => {
     const user = await User.findOne({ _id: req.user._id.toString() });
     user.lastLogin = new Date(Date.now());
     await user.save();
+    await user.populate('role');
 
     return res.send({
       success: true,
@@ -345,12 +346,12 @@ export const sendMainSpaceSelectionsToClient = async (req: RequestCustom, res: R
     // case admin show all main spaces of his organizations
     if (req.user.loggedAs === 'administrator') {
       query = { isMain: true, organization: { $in: req.user.organizations } };
-      // mainSpaces = await Space.find({ isMain: true, organization: { $in: req.user.organizations } });
     }
     if (req.user.isSuperAdmin) {
       query = { isMain: true, organization: req.user.organizationId };
       // mainSpaces = await Space.find({ isMain: true, organization: req.user.organizationId });
     }
+
     const mainSpaces = await Space.find(query).populate({ path: 'cover', select: 'url' }).lean();
 
     res.status(httpStatus.OK).json({
@@ -371,7 +372,7 @@ export const sendMainSpaceSelectionsToClient = async (req: RequestCustom, res: R
 export const sendMainOrganizationSelectionsToClient = async (req: RequestCustom, res: Response) => {
   try {
     // query by users organizations. in all user cases. Since user can have multiple organizations.
-    const query = isSuperAdmin(req.user) ? {} : { _id: { $in: req.user.organizations } };
+    const query = req.user.isSuperAdmin ? {} : { _id: { $in: req.user.organizations } };
     const organizations = await Organization.find(query).lean();
     res.status(httpStatus.OK).json({ success: true, data: organizations });
   } catch (error) {
