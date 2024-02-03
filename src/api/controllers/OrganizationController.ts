@@ -26,7 +26,7 @@ export async function sendOrganizations(req: RequestCustom, res: Response) {
     const filteredArray = new Set(organizationIds);
     organizationIds = [...filteredArray];
     // super admin gets all organizations, other users get only their organizations
-    const query = user.isSuperAdmin() ? req.query : { ...req.query, _id: { $in: organizationIds } };
+    const query = req.user.isSuperAdmin ? req.query : { ...req.query, _id: { $in: organizationIds } };
     // TEST CODE const query = { _id: { $in: ['6444f0a8c9243bfee443c53e', '643861526aec086124b0e0e7', '6432ceb45647e578ce20f896'] } };
     delete query.space;
     delete query.organization;
@@ -103,7 +103,7 @@ export async function organizationSelected(req: RequestCustom, res: Response) {
   try {
     const user = await User.findById(req.user._id);
 
-    if (!(await user.isAdminOrganization(req.params.organizationId))) {
+    if (!req.user.isSuperAdmin && !(await user.isAdminOrganization(req.params.organizationId))) {
       throw new Error(_MSG.NOT_AUTHORIZED);
     }
     const organization = await Organization.findById(req.params.organizationId).lean();
