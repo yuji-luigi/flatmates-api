@@ -30,6 +30,7 @@ const entity = 'spaces';
 
 export const sendSpacesToClient = async (req: RequestCustom, res: Response) => {
   try {
+    throw new Error('GET /spaces is called! check the usage. why currentSpaceId is needed?');
     if (!req.user) {
       throw new Error(_MSG.NOT_AUTHORIZED);
     }
