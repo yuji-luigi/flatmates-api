@@ -1,4 +1,4 @@
-# ADMIN 
+# ADMIN contardo ferrini
 POST {{host}}/api/v1/auth/login HTTP/1.1
 content-type: application/json
 
@@ -7,7 +7,7 @@ content-type: application/json
   "password": "{{password}}"
 }
 
-###
+###SuperAdmin
 POST {{host}}/api/v1/auth/login HTTP/1.1
 content-type: application/json
 
