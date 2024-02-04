@@ -17,7 +17,7 @@ const router = express.Router();
 // router.post('/customers', checkEntity, isLoggedIn([SUPER_ADMIN]), CrudController.createCrudObject);
 // router.post('/customers/:idMongoose', checkEntity, isLoggedIn([SUPER_ADMIN]), CrudController.updateCrudObjectById);
 
-// router.delete('/linkedChildren/:entity/:id', checkEntity, isLoggedIn([ADMIN, LOGGED_USER, SUPER_ADMIN]), deleteLinkedChild);
+// router.delete('/linkedChildren/:entity/:id', checkEntity, isLoggedIn(), deleteLinkedChild);
 router.get('/home', isLoggedIn(), sendDataForHomeDashboard);
 
 /**
