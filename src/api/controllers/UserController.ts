@@ -17,6 +17,7 @@ import { PipelineStage } from 'mongoose';
 import AuthToken from '../../models/AuthToken';
 import ErrorEx from '../../errors/extendable.error';
 import { deleteCrudObjectByIdAndSendDataWithPagination } from './DataTableController';
+import UserSpaceConjunction from '../../models/UserSpaceConjunction';
 
 const entity = 'users';
 
@@ -305,10 +306,28 @@ export async function sendTokenEmail(req: RequestCustom, res: Response) {
 
 export async function sendAuthTokenOfUserToClient(req: RequestCustom, res: Response) {
   try {
-    console.log(User.collection.collectionName);
-    let authToken = await AuthToken.findOne({ 'docHolder.ref': User.collection.collectionName, 'docHolder.instanceId': req.params.idMongoose });
+    if (!req.user.spaceId) {
+      throw new Error('space is not set. Please select the space in the header nav first to generate the qr code.');
+    }
+    let conjunctionDoc = await UserSpaceConjunction.findOne({
+      user: req.params.idMongoose,
+      space: req.user.spaceId
+    });
+    if (!conjunctionDoc) {
+      conjunctionDoc = await UserSpaceConjunction.create({
+        user: req.params.idMongoose,
+        space: req.user.spaceId
+      });
+    }
+
+    let authToken = await AuthToken.findOne({
+      userSpaceConjunction: conjunctionDoc._id
+    });
+
     if (!authToken) {
-      authToken = await AuthToken.create({ docHolder: { ref: User.collection.collectionName, instanceId: req.params.idMongoose } });
+      authToken = await AuthToken.create({
+        userSpaceConjunction: conjunctionDoc._id
+      });
     }
     res.status(httpStatus.OK).json({
       success: true,
