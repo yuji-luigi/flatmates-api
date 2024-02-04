@@ -10,7 +10,7 @@ const baseUrl = vars.frontendUrl + '/auth-tokens';
 export const generateTokenUrl = {
   userRegister: (authToken: AuthTokenInterface) => `${baseUrl}/users/${authToken.linkId}/${authToken._id.toString()}`
 };
-
+// must be deprecated
 export const formatUserDataForJwt = (user: ReqUser) => ({
   email: user.email
 });
