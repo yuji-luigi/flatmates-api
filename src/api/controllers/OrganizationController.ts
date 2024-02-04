@@ -10,7 +10,8 @@ import User from '../../models/User';
 import { _MSG } from '../../utils/messages';
 import { deleteEmptyFields } from '../../utils/functions';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
-import { createJWTObjectFromJWTAndSpace, formatUserDataForJwt, handleSetCookiesFromPayload, signJwt } from '../../lib/jwt/jwtUtils';
+import { createJWTObjectFromJWTAndSpace, handleSetCookiesFromPayload, signJwt } from '../../lib/jwt/jwtUtils';
+import { handleGenerateTokenByRoleAfterLogin } from '../../utils/login-instance-utils/generateTokens';
 
 export async function sendOrganizations(req: RequestCustom, res: Response) {
   try {
@@ -58,7 +59,7 @@ export async function sendOrganizationsWithPagination(req: RequestCustom, res: R
     const filteredArray = new Set(organizationIds);
     organizationIds = [...filteredArray];
     // super admin gets all organizations, other users get only their organizations
-    const query = user.isSuperAdmin() ? req.query : { ...req.query, _id: { $in: organizationIds } };
+    const query = req.user.isSuperAdmin ? req.query : { ...req.query, _id: { $in: organizationIds } };
     // TEST CODE const query = { _id: { $in: ['6444f0a8c9243bfee443c53e', '643861526aec086124b0e0e7', '6432ceb45647e578ce20f896'] } };
     delete query.space;
     const data = await aggregateWithPagination(query, 'organizations');
@@ -224,22 +225,27 @@ export async function deleteOrganizationById(req: RequestCustom, res: Response) 
 }
 
 export async function deleteOrganizationCookie(req: RequestCustom, res: Response) {
-  if (req.user.role !== 'super_admin') {
-    throw new Error(_MSG.NOT_AUTHORIZED);
+  try {
+    if (!req.user.isSuperAdmin && req.user.loggedAs === 'inhabitant') {
+      throw new Error(_MSG.NOT_AUTHORIZED);
+    }
+    const payloadUser = handleGenerateTokenByRoleAfterLogin(req.user);
+    const upDatedJwt = signJwt(payloadUser);
+
+    res.clearCookie('organizationId', { domain: vars.cookieDomain });
+    // res.clearCookie('space', { domain: vars.cookieDomain });
+    // res.clearCookie('spaceName', { domain: vars.cookieDomain });
+    // res.clearCookie('organizationName', { domain: vars.cookieDomain });
+
+    res.cookie('jwt', upDatedJwt, sensitiveCookieOptions);
+    console.log(sensitiveCookieOptions);
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: 'organizations',
+      data: {}
+    });
+  } catch (error) {
+    logger.error(error.message || error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message || error });
   }
-  const payloadUser = formatUserDataForJwt(req.user);
-  const upDatedJwt = signJwt(payloadUser);
-
-  // res.clearCookie('organization', { domain: vars.cookieDomain });
-  // res.clearCookie('space', { domain: vars.cookieDomain });
-  // res.clearCookie('spaceName', { domain: vars.cookieDomain });
-  // res.clearCookie('organizationName', { domain: vars.cookieDomain });
-
-  res.cookie('jwt', upDatedJwt, sensitiveCookieOptions);
-  console.log(sensitiveCookieOptions);
-  res.status(httpStatus.OK).json({
-    success: true,
-    collection: 'organizations',
-    data: {}
-  });
 }
