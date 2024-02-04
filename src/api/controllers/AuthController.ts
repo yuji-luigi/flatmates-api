@@ -4,7 +4,7 @@ import { sensitiveCookieOptions } from './../../config/vars';
 /** *********** User ************* */
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
-import User, { isSuperAdmin } from '../../models/User';
+import User from '../../models/User';
 // import { UserModel } from 'model/user';
 import vars from '../../config/vars';
 import { _MSG } from '../../utils/messages';
@@ -22,6 +22,7 @@ import { LeanMaintainer } from '../../types/mongoose-types/model-types/maintaine
 import AuthToken from '../../models/AuthToken';
 import { RoleFields } from '../../types/mongoose-types/model-types/role-interface';
 import { ObjectId } from 'mongodb';
+import { isValidLogin } from '../helpers/authHelper';
 // import { CurrentSpace } from '../../types/mongoose-types/model-types/space-interface';
 
 const { cookieDomain } = vars;
@@ -258,7 +259,7 @@ const login = async (req: Request<{ role: RoleFields }>, res: Response) => {
  * Returns jwt token if valid username and password is provided
  * @public
  */
-const loginByRole = async (req: Req<{ role: RoleFields }>, res: Response) => {
+const loginByRole = async (req: Request<{ role: RoleFields }>, res: Response) => {
   try {
     const { email, password } = req.body;
     const { role } = req.params as { role: RoleFields };
@@ -280,13 +281,16 @@ const loginByRole = async (req: Req<{ role: RoleFields }>, res: Response) => {
       throw new Error('You have no access to this entity');
     }
 
+    if (!isValidLogin({ role: user.role, loggedAs: role })) {
+      throw new Error('You do not have access to this role. Please contact the administrator');
+    }
     const payload = await handleGenerateTokenByRole({ selectedRole: role, user });
     const token = signLoginInstanceJwt(payload);
     //clear all spaceCookies
     resetSpaceCookies(res);
 
     res.cookie('jwt', token, sensitiveCookieOptions);
-    res.cookie('loggedAs', role, { ...sensitiveCookieOptions, httpOnly: false });
+    res.cookie('loggedAs', role, { ...sensitiveCookieOptions, httpOnly: false, sameSite: false });
 
     res.send({
       success: true,
