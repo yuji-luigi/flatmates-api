@@ -5,6 +5,7 @@ import { JwtSignPayload } from '../../lib/jwt/jwtUtils-types';
 import { RoleFields } from '../../types/mongoose-types/model-types/role-interface';
 import { ObjectId } from 'mongodb';
 import { Document } from 'mongoose';
+import { ReqUser } from '../../lib/jwt/jwtTypings';
 
 // const { jwtSecret /* , jwtExpirationInterval  */ } = vars;
 // !deprecating
@@ -17,7 +18,8 @@ export function handleGenerateToken({ maintainer, user }: { maintainer?: Maintai
   }
   throw new Error('Login instance not recognized');
 }
-export async function handleGenerateTokenByRole({
+
+export async function handleGenerateTokenByRoleAtLogin({
   selectedRole,
   user
 }: {
@@ -40,6 +42,15 @@ export async function handleGenerateTokenByRole({
     loggedAs: selectedRole,
     email: user.email,
     ...(user.role.isSuperAdmin ? {} : { organizationId: user.role[selectedRole].organizations[0].toString() })
+  };
+}
+export function handleGenerateTokenByRoleAfterLogin(user: ReqUser): JwtSignPayload {
+  // if (user.role[selectedRole].populated()()
+
+  return {
+    loggedAs: user.loggedAs,
+    email: user.email
+    // ...(user.role.isSuperAdmin ? {} : { organizationId: user.role[selectedRole].organizations[0].toString() })
   };
 }
 
