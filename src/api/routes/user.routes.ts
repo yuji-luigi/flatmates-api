@@ -1,5 +1,5 @@
 import express, { NextFunction, Request, Response } from 'express';
-import { ADMIN, stringifyObjectIds, SUPER_ADMIN } from '../../middlewares/auth-middlewares';
+import { stringifyObjectIds } from '../../middlewares/auth-middlewares';
 
 import httpStatus from 'http-status';
 import {
@@ -18,7 +18,7 @@ import { isLoggedIn } from '../../middlewares/isLoggedIn';
 const router = express.Router();
 
 router.use((req: RequestCustom, response: Response, next: NextFunction) => {
-  if (req.user.role !== 'super_admin') {
+  if (!req.user.isSuperAdmin && req.user.loggedAs === 'inhabitant') {
     if (!req.user.spaceId) {
       return response.status(httpStatus.FORBIDDEN).send('something went wrong');
     }
@@ -39,23 +39,23 @@ router.use((req: RequestCustom, response: Response, next: NextFunction) => {
  * ORGANIZATION
  */
 
-router.get('/', isLoggedIn([ADMIN, SUPER_ADMIN]), sendUsersToClient);
+router.get('/', isLoggedIn(), sendUsersToClient);
 
-router.get('/with-pagination', isLoggedIn([ADMIN, SUPER_ADMIN]), sendUsersToClient);
+router.get('/with-pagination', isLoggedIn(), sendUsersToClient);
 
-router.get('/:idMongoose/send-token-email', isLoggedIn([ADMIN, SUPER_ADMIN]), sendTokenEmail);
+router.get('/:idMongoose/send-token-email', isLoggedIn(), sendTokenEmail);
 
-router.get('/:idMongoose/auth-tokens', isLoggedIn([ADMIN, SUPER_ADMIN]), sendAuthTokenOfUserToClient);
+router.get('/:idMongoose/auth-tokens', isLoggedIn(), sendAuthTokenOfUserToClient);
 
-router.post('/with-pagination', isLoggedIn([ADMIN, SUPER_ADMIN]), createUserAndSendDataWithPagination);
-router.post('/import-excel', isLoggedIn([ADMIN, SUPER_ADMIN]), importExcelFromClient);
+router.post('/with-pagination', isLoggedIn(), createUserAndSendDataWithPagination);
+router.post('/import-excel', isLoggedIn(), importExcelFromClient);
 
 router.put('/:idMongoose', isLoggedIn(), compareTargetAndCurrentUser, updateUserById);
 
 // need to set authentication for this route. the token checker.
 router.put('/:idMongoose/on-boarding', isLoggedIn(), compareTargetAndCurrentUser, registerUserOnBoardingAndSendUserToClient);
 
-router.delete('/with-pagination/:idMongoose', isLoggedIn([ADMIN, SUPER_ADMIN]), deleteCrudObjectByIdAndSendDataWithPagination);
+router.delete('/with-pagination/:idMongoose', isLoggedIn(), deleteCrudObjectByIdAndSendDataWithPagination);
 
 router.delete('/with-pagination/linkedChildren/:idMongoose', (req: Request, res: Response) => res.status(httpStatus.FORBIDDEN).send('forbidden'));
 export default router;
@@ -63,7 +63,7 @@ export default router;
 async function compareTargetAndCurrentUser(req: RequestCustom, res: Response, next: NextFunction) {
   const { idMongoose } = req.params;
   const { user } = req;
-  const isAdmin = user.role === SUPER_ADMIN || stringifyObjectIds(req.user.spaceAdmins)?.includes(user._id.toString());
+  const isAdmin = user.isSuperAdmin || stringifyObjectIds(req.user.spaceAdmins)?.includes(user._id.toString());
   if (isAdmin) {
     return next();
   }
