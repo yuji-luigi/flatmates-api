@@ -29,7 +29,7 @@ router.get('/cookie/:organizationId', isLoggedIn(), organizationSelected);
 router.put('/:organizationId', isLoggedIn(), updateOrganizationById);
 // COOKIE
 router.delete('/cookie', isLoggedIn(), deleteOrganizationCookie);
-router.delete('/with-pagination/:organizationId', isLoggedIn([ADMIN, LOGGED_USER, SUPER_ADMIN]), deleteOrganizationByIdWithPagination);
-router.delete('/:organizationId', isLoggedIn([ADMIN, LOGGED_USER, SUPER_ADMIN]), deleteOrganizationByIdWithPagination);
+router.delete('/with-pagination/:organizationId', isLoggedIn(), deleteOrganizationByIdWithPagination);
+router.delete('/:organizationId', isLoggedIn(), deleteOrganizationByIdWithPagination);
 router.delete('/with-pagination/linkedChildren/:idMongoose', (req: Request, res: Response) => res.status(httpStatus.FORBIDDEN).send('forbidden'));
 export default router;

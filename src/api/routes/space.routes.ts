@@ -1,8 +1,6 @@
 import express, { Request, Response } from 'express';
-import { ADMIN, LOGGED_USER, SUPER_ADMIN } from '../../middlewares/auth-middlewares';
 import {
   // createHeadSpace,
-
   createHeadSpaceWithPagination,
   deleteHeadSpaceWithPagination,
   sendSingleSpaceByIdToClient,
@@ -44,19 +42,15 @@ router.get('/settings/:slug', isLoggedIn(), sendSpaceSettingPageDataToClient);
 // !deprecated moved to auth route
 
 router.post('/with-pagination/linkedChildren/:parentId', isLoggedIn(), createLinkedChild);
-router.post('/with-pagination', isLoggedIn([ADMIN, LOGGED_USER, SUPER_ADMIN]), createHeadSpaceWithPagination);
-router.post('/', isLoggedIn([ADMIN, LOGGED_USER, SUPER_ADMIN]), (req: Request, res: Response) => res.status(httpStatus.FORBIDDEN).send('forbidden'));
+router.post('/with-pagination', isLoggedIn(), createHeadSpaceWithPagination);
+router.post('/', isLoggedIn(), (req: Request, res: Response) => res.status(httpStatus.FORBIDDEN).send('forbidden'));
 
 router.put('/:idMongoose', isLoggedIn(), updateSpaceAndSendToClient);
 
-router.delete('/with-pagination/:spaceId', isLoggedIn([ADMIN, LOGGED_USER, SUPER_ADMIN]), deleteHeadSpaceWithPagination);
+router.delete('/with-pagination/:spaceId', isLoggedIn(), deleteHeadSpaceWithPagination);
 
-router.delete('/:spaceId', isLoggedIn([ADMIN, LOGGED_USER, SUPER_ADMIN]), deleteHeadSpaceWithPagination);
-router.delete(
-  '/with-pagination/linkedChildren/:idMongoose',
-  isLoggedIn([ADMIN, LOGGED_USER, SUPER_ADMIN]),
-  dataTableCtrl.deleteLinkedChildByIdWithPagination
-);
+router.delete('/:spaceId', isLoggedIn(), deleteHeadSpaceWithPagination);
+router.delete('/with-pagination/linkedChildren/:idMongoose', isLoggedIn(), dataTableCtrl.deleteLinkedChildByIdWithPagination);
 
 // for static site generation
 
