@@ -17,7 +17,7 @@ import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { userHasSpace } from '../helpers/spaceHelper';
 import { createJWTObjectFromJWTAndSpace, resetSpaceCookies, handleSetCookiesFromPayload, signLoginInstanceJwt } from '../../lib/jwt/jwtUtils';
 import Maintainer from '../../models/Maintainer';
-import { generatePayloadMaintainer, handleGenerateToken, handleGenerateTokenByRole } from '../../utils/login-instance-utils/generateTokens';
+import { generatePayloadMaintainer, handleGenerateToken, handleGenerateTokenByRoleAtLogin } from '../../utils/login-instance-utils/generateTokens';
 import { LeanMaintainer } from '../../types/mongoose-types/model-types/maintainer-interface';
 import AuthToken from '../../models/AuthToken';
 import { RoleFields } from '../../types/mongoose-types/model-types/role-interface';
@@ -284,7 +284,7 @@ const loginByRole = async (req: Request<{ role: RoleFields }>, res: Response) =>
     if (!isValidLogin({ role: user.role, loggedAs: role })) {
       throw new Error('You do not have access to this role. Please contact the administrator');
     }
-    const payload = await handleGenerateTokenByRole({ selectedRole: role, user });
+    const payload = await handleGenerateTokenByRoleAtLogin({ selectedRole: role, user });
     const token = signLoginInstanceJwt(payload);
     //clear all spaceCookies
     resetSpaceCookies(res);
