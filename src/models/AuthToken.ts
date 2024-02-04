@@ -21,18 +21,20 @@ export const authTokenSchema = new Schema<AuthTokenInterface>(
       type: Boolean,
       default: true
     },
-    space: {
-      type: ObjectId,
-      ref: 'spaces',
+    userSpaceConjunction: {
+      ref: 'userSpaceConjunctions',
+      type: Schema.Types.ObjectId,
+      autopopulate: true,
       required: true
-    },
-    docHolder: {
-      ref: {
-        type: String,
-        enum: loginInstanceEntities
-      },
-      instanceId: Schema.Types.ObjectId
     }
+
+    // docHolder: {
+    //   ref: {
+    //     type: String,
+    //     enum: loginInstanceEntities
+    //   },
+    //   instanceId: Schema.Types.ObjectId
+    // },
   },
   {
     versionKey: false,
