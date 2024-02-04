@@ -8,8 +8,8 @@ import { isLoggedIn } from '../../middlewares/isLoggedIn';
 const router = express.Router();
 
 // ! Todo: create users routes user can't be created by themselves with generic crud routes
-// router.post('/users', checkEntity, isLoggedIn([ADMIN, SUPER_ADMIN]), CrudController.createCrudObject);
-// router.put('/users/:idMongoose', checkEntity, isLoggedIn([ADMIN, SUPER_ADMIN]), CrudController.updateCrudObjectById);
+// router.post('/users', checkEntity, isLoggedIn(), CrudController.createCrudObject);
+// router.put('/users/:idMongoose', checkEntity, isLoggedIn(), CrudController.updateCrudObjectById);
 
 // /**
 //  * CUSTOMERS
@@ -26,7 +26,7 @@ router.get('/home', isLoggedIn(), sendDataForHomeDashboard);
 // DATA TABLE
 router.get('/:entity/with-pagination/linkedChildren/:parentId', checkEntity, isLoggedIn(), getLinkedChildren);
 // DATA TABLE
-router.post('/:entity/with-pagination/linkedChildren/:parentId', checkEntity, isLoggedIn([ADMIN, SUPER_ADMIN]), createLinkedChild);
+router.post('/:entity/with-pagination/linkedChildren/:parentId', checkEntity, isLoggedIn(), createLinkedChild);
 
 //DATA TABLE
 router.delete('/:entity/with-pagination/linkedChildren/:id', checkEntity, isLoggedIn(), deleteLinkedChild);

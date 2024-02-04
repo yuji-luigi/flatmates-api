@@ -43,11 +43,11 @@ router.get('/settings/:slug', isLoggedIn(), sendSpaceSettingPageDataToClient);
 // CUSTOM crud ROUTES
 // !deprecated moved to auth route
 
-router.post('/with-pagination/linkedChildren/:parentId', isLoggedIn([ADMIN, SUPER_ADMIN]), createLinkedChild);
+router.post('/with-pagination/linkedChildren/:parentId', isLoggedIn(), createLinkedChild);
 router.post('/with-pagination', isLoggedIn([ADMIN, LOGGED_USER, SUPER_ADMIN]), createHeadSpaceWithPagination);
 router.post('/', isLoggedIn([ADMIN, LOGGED_USER, SUPER_ADMIN]), (req: Request, res: Response) => res.status(httpStatus.FORBIDDEN).send('forbidden'));
 
-router.put('/:idMongoose', isLoggedIn([ADMIN, SUPER_ADMIN]), updateSpaceAndSendToClient);
+router.put('/:idMongoose', isLoggedIn(), updateSpaceAndSendToClient);
 
 router.delete('/with-pagination/:spaceId', isLoggedIn([ADMIN, LOGGED_USER, SUPER_ADMIN]), deleteHeadSpaceWithPagination);
 
