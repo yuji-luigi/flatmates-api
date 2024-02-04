@@ -7,9 +7,10 @@ export interface AuthTokenInterface extends MongooseBaseModel {
   nonce: number;
   linkId: string;
   active: boolean;
-  space: ObjectId | ISpace;
-  docHolder: {
-    ref: LoginInstanceEntities;
-    instanceId: ObjectId | string;
-  };
+  userSpaceConjunction: ObjectId;
+  // space: ObjectId | ISpace;
+  // docHolder: {
+  //   ref: LoginInstanceEntities;
+  //   instanceId: ObjectId | string;
+  // };
 }
