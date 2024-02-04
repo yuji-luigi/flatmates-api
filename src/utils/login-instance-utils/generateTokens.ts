@@ -36,19 +36,10 @@ export async function handleGenerateTokenByRole({
   if (user.role instanceof ObjectId) {
     throw new Error('Role not populated');
   }
-
-  if (selectedRole !== 'inhabitant') {
-    // const profile = await BusinessProfile.findById(user.role[selectedRole].profile);
-    return {
-      loggedAs: selectedRole,
-      email: user.email,
-      organizationId: user.role[selectedRole].organizations[0].toString()
-    };
-  }
   return {
     loggedAs: selectedRole,
     email: user.email,
-    organizationId: user.organizations[0]?._id.toString()
+    ...(user.role.isSuperAdmin ? {} : { organizationId: user.role[selectedRole].organizations[0].toString() })
   };
 }
 
