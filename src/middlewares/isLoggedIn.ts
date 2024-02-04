@@ -2,27 +2,30 @@ import { NextFunction, Response } from 'express';
 import httpStatus from 'http-status';
 import { RequestCustom } from '../types/custom-express/express-custom';
 import { _MSG } from '../utils/messages';
+import { USER_ROLES } from '../types/enum/enum';
 
-export const isLoggedIn = (/* roles: USER_ROLES[] = USER_ROLES */) => async (req: RequestCustom, res: Response, next: NextFunction) => {
-  const { user } = req;
-  if (user) {
-    if (user.isSuperAdmin) {
+export const isLoggedIn =
+  (roles: USER_ROLES[] = USER_ROLES) =>
+  async (req: RequestCustom, res: Response, next: NextFunction) => {
+    const { user } = req;
+    if (user) {
+      if (user.isSuperAdmin) {
+        return next();
+      }
+      // const isAdminMainSpace = stringifyObjectIds(req.user.spaceAdmins)?.includes(user._id.toString());
+      // if (roles.includes(ADMIN) && req.user.isAdminOfSpace) {
+      //   return next();
+      // }
+      // if (roles.includes(user.role)) {
+      //   return next();
+      // }
+
       return next();
     }
-    // const isAdminMainSpace = stringifyObjectIds(req.user.spaceAdmins)?.includes(user._id.toString());
-    // if (roles.includes(ADMIN) && req.user.isAdminOfSpace) {
-    //   return next();
-    // }
-    // if (roles.includes(user.role)) {
-    //   return next();
-    // }
-
-    return next();
-  }
-  return res.status(httpStatus.UNAUTHORIZED).json({
-    success: false,
-    message: _MSG.NOT_AUTHORIZED,
-    user: null
-  });
-  // throw Error('user not authorized');
-};
+    return res.status(httpStatus.UNAUTHORIZED).json({
+      success: false,
+      message: _MSG.NOT_AUTHORIZED,
+      user: null
+    });
+    // throw Error('user not authorized');
+  };
