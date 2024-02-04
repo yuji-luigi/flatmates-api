@@ -333,7 +333,8 @@ const me = async (req: RequestCustom, res: Response) => {
 
     return res.send({
       success: true,
-      user
+      user,
+      loggedAs: req.user.loggedAs
     });
   } catch (error) {
     logger.error(error.message || error);
