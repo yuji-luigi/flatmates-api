@@ -26,8 +26,8 @@ const lookupSpaces: PipelineStage.FacetPipelineStage = {
 };
 export const createUserAndSendDataWithPagination = async (req: RequestCustom, res: Response) => {
   try {
-    if (!req.user.spaceId) {
-      throw new Error('space is not set.');
+    if (!req.user.spaceId && !req.body.rootSpaces.length) {
+      throw new Error('space is not set. Please select the space.');
     }
     if (!req.user.organizationId) {
       throw new Error('organization is not set.');
