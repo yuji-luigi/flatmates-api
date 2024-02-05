@@ -3,17 +3,17 @@ import Space from '../../models/Space';
 import logger from '../../config/logger';
 import { _MSG } from '../../utils/messages';
 import { CurrentSpace, ISpace } from '../../types/mongoose-types/model-types/space-interface';
-import { IUser } from '../../types/mongoose-types/model-types/user-interface';
+import { ReqUser } from '../../lib/jwt/jwtTypings';
 
 /**  searches only root spaces of user */
-export async function userHasSpace(user: IUser | Jwt, selectedSpace: string): Promise<boolean> {
+export async function userHasSpace(user: ReqUser, selectedSpace: string): Promise<boolean> {
   // return user.rootSpaces.includes(selectedSpace._id.toString());
   const rootSpaces = user.rootSpaces.map((rootSpace) => rootSpace.toString());
 
   return rootSpaces.some((rootSpace) => rootSpace.toString() === selectedSpace.toString());
 }
 /**  depth-first search (DFS) */
-export async function userHasSpaceDFS(user: IUser, selectedSpace: ISpace): Promise<boolean> {
+export async function userHasSpaceDFS(user: ReqUser, selectedSpace: ISpace): Promise<boolean> {
   // return user.rootSpaces.includes(selectedSpace._id.toString());
   const rootSpaces = user.rootSpaces.map((rootSpace) => rootSpace.toString());
 
@@ -34,7 +34,7 @@ export async function userHasSpaceDFS(user: IUser, selectedSpace: ISpace): Promi
   return false;
 }
 
-async function searchDescendants(spaceId: string, targetId: string, user: IUser): Promise<boolean> {
+async function searchDescendants(spaceId: string, targetId: string, user: ReqUser): Promise<boolean> {
   const descendants = await aggregateDescendantIds(spaceId, user);
   const hasSpaceAsDescendant = descendants.some((descendant) => descendant.toString() === targetId);
   if (hasSpaceAsDescendant) {
@@ -50,7 +50,7 @@ async function searchDescendants(spaceId: string, targetId: string, user: IUser)
 }
 
 /** breadth-first search */
-export async function userHasSpaceBFS(user: IUser, selectedSpace: ISpace): Promise<boolean> {
+export async function userHasSpaceBFS(user: ReqUser, selectedSpace: ISpace): Promise<boolean> {
   const rootSpaces = user.rootSpaces.map((rootSpace) => rootSpace.toString());
 
   // Initialize a queue with the root spaces
@@ -72,12 +72,13 @@ export async function userHasSpaceBFS(user: IUser, selectedSpace: ISpace): Promi
   return false;
 }
 
-export async function aggregateDescendantIds(spaceId: string, user: IUser): Promise<string[]> {
+export async function aggregateDescendantIds(spaceId: string, user: ReqUser): Promise<string[]> {
   try {
     const space = await Space.findById(spaceId);
-    if (!(await user.isAdminOrganization(space._id)) && !(await userHasSpaceBFS(user, space))) {
+    if (!user.isSuperAdmin && !(await userHasSpaceBFS(user, space))) {
       throw new Error(_MSG.NOT_ALLOWED);
     }
+    // todo: can
     const selectedId = new ObjectId(spaceId);
 
     const pipeline = [
@@ -128,10 +129,10 @@ export async function aggregateDescendantIds(spaceId: string, user: IUser): Prom
   }
 }
 
-export async function aggregateHeadToTail(spaceId: string, user: IUser): Promise<string[]> {
+export async function aggregateHeadToTail(spaceId: string, user: ReqUser): Promise<string[]> {
   try {
     const space = await Space.findById(spaceId);
-    if (!(await user.isAdminOrganization(space._id)) || !(await userHasSpaceBFS(user, space))) {
+    if (!user.isSuperAdmin || !(await userHasSpaceBFS(user, space))) {
       throw new Error(_MSG.NOT_ALLOWED);
     }
     return [];
