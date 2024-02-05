@@ -1,11 +1,10 @@
 import { IUser, IUserStatics } from '../../types/mongoose-types/model-types/user-interface';
 import { MaintainerInterface } from '../../types/mongoose-types/model-types/maintainer-interface';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
-import { JwtSignPayload } from '../../lib/jwt/jwtUtils-types';
 import { RoleFields } from '../../types/mongoose-types/model-types/role-interface';
 import { ObjectId } from 'mongodb';
 import { Document } from 'mongoose';
-import { ReqUser } from '../../lib/jwt/jwtTypings';
+import { JwtSignPayload, ReqUser } from '../../lib/jwt/jwtTypings';
 
 // const { jwtSecret /* , jwtExpirationInterval  */ } = vars;
 // !deprecating
