@@ -8,14 +8,12 @@ import { deleteEmptyFields } from '../../utils/functions';
 import { aggregateWithPagination } from '../helpers/mongoose.helper';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import vars, { sensitiveCookieOptions } from '../../config/vars';
-import User from '../../models/User';
 import { aggregateDescendantIds, userHasSpace } from '../helpers/spaceHelper';
 import { _MSG } from '../../utils/messages';
 import Thread from '../../models/Thread';
 import Maintenance from '../../models/Maintenance';
 import Maintainer from '../../models/Maintainer';
 import { ObjectId } from 'mongodb';
-import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { LOOKUP_PIPELINE_STAGES } from '../aggregation-helpers/lookups';
 import { createJWTObjectFromJWTAndSpace, handleSetCookiesFromPayload, signJwt } from '../../lib/jwt/jwtUtils';
 import { checkAdminOfSpace } from '../../middlewares/auth-middlewares';
@@ -30,13 +28,12 @@ const entity = 'spaces';
 
 export const sendSpacesToClient = async (req: RequestCustom, res: Response) => {
   try {
-    throw new Error('GET /spaces is called! check the usage. why currentSpaceId is needed?');
+    // throw new Error('GET /spaces is called! check the usage. why currentSpaceId is needed?');
     if (!req.user) {
       throw new Error(_MSG.NOT_AUTHORIZED);
     }
     const currentSpaceId = req.user.spaceId?.toString();
-    const user = await User.findById(req.user._id);
-    const spaceIds = currentSpaceId ? await aggregateDescendantIds(currentSpaceId, user) : null;
+    const spaceIds = currentSpaceId ? await aggregateDescendantIds(currentSpaceId, req.user) : null;
     delete req.query.space;
     let { query } = req;
     query = currentSpaceId ? { ...query, _id: { $in: [...spaceIds, currentSpaceId] } } : query;
@@ -61,7 +58,7 @@ export const sendSpacesToClient = async (req: RequestCustom, res: Response) => {
 export const createHeadSpaceWithPagination = async (req: RequestCustom, res: Response) => {
   try {
     let isMain = false;
-    if (req.user.role === 'super_admin') {
+    if (req.user.isSuperAdmin) {
       isMain = true;
     }
     const newSpace = new Space({
@@ -96,7 +93,7 @@ export const sendMainSpacesWithPaginationToClient = async (req: RequestCustom, r
     req.query.isMain = true;
     const lookups = LOOKUP_PIPELINE_STAGES.spaces;
 
-    if (req.user.role !== 'super_admin' || req.query.space) {
+    if (!req.user.isSuperAdmin || req.query.space) {
       req.query._id = req.query.space;
     }
 
@@ -483,9 +480,7 @@ export const deleteHeadSpaceWithPagination = async (req: Request, res: Response)
 
 export const addSpaceToJWTAndSendToClient = async (req: RequestCustom, res: Response) => {
   try {
-    const user = await User.findById(req.user._id);
-
-    if (!user.isSuperAdmin() && !userHasSpace(user as IUser, req.params.spaceId)) {
+    if (!req.user.isSuperAdmin && !userHasSpace(req.user, req.params.spaceId)) {
       throw new Error(_MSG.NOT_ALLOWED);
     }
     // user is super admin or has the root space.
@@ -568,8 +563,7 @@ export function deleteSpaceCookies(res: Response) {
 
 export async function sendDescendantIdsToClient(req: RequestCustom, res: Response) {
   try {
-    const user = (await User.findById(req.user._id)) as IUser;
-    const spaceIds = await aggregateDescendantIds(req.params.spaceId, user);
+    const spaceIds = await aggregateDescendantIds(req.params.spaceId, req.user);
     res.status(httpStatus.OK).json({
       success: true,
       collection: 'spaces',
@@ -586,8 +580,7 @@ export async function sendDescendantIdsToClient(req: RequestCustom, res: Respons
 
 export async function sendHeadToTailToClient(req: RequestCustom, res: Response) {
   try {
-    const user = (await User.findById(req.user._id)) as IUser;
-    const spaceIds = await aggregateDescendantIds(req.params.spaceId, user);
+    const spaceIds = await aggregateDescendantIds(req.params.spaceId, req.user);
     // const spaces = await Space.find({ _id: { $in: spaceIds } }).lean();
     // const headToTail = buildHierarchy({spaces, rootSpace: });
     res.status(httpStatus.OK).json({
