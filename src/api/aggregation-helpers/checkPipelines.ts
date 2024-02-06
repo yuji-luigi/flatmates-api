@@ -80,7 +80,7 @@ export async function sumUpChecksByMonth(query: Record<string, any>) {
     },
     {
       $sort: {
-        month: -1
+        month: 1
       }
     }
   ]);
