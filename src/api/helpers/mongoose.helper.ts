@@ -1,6 +1,6 @@
 import mongoose, { Document, Model, PipelineStage, SortOrder } from 'mongoose';
 import Thread from '../../models/Thread';
-import logger from '../../config/logger';
+import logger from '../../lib/logger';
 import { ObjectId } from 'mongodb';
 import { generateWord, replaceSpecialCharsWith } from '../../utils/functions';
 import { MongooseBaseModel } from '../../types/mongoose-types/model-types/base-types/base-model-interface';

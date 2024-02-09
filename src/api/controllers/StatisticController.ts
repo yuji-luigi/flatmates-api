@@ -1,4 +1,4 @@
-import logger from '../../config/logger';
+import logger from '../../lib/logger';
 import httpStatus from 'http-status';
 import { sumUpChecksByMonth } from '../aggregation-helpers/checkPipelines';
 import { RequestCustom } from '../../types/custom-express/express-custom';

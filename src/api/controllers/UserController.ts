@@ -1,10 +1,10 @@
 import httpStatus from 'http-status';
 import { Response } from 'express';
-import logger from '../../config/logger';
+import logger from '../../lib/logger';
 import Space from '../../models/Space';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { aggregateWithPagination, checkDuplicateEmail, convert_idToMongooseId } from '../helpers/mongoose.helper';
-import vars from '../../config/vars';
+import vars from '../../utils/globalVariables';
 import User from '../../models/User';
 import { _MSG } from '../../utils/messages';
 import { chunkArray, deleteEmptyFields, emptyFieldsToUndefined } from '../../utils/functions';
@@ -418,7 +418,7 @@ async function findAndModifyUserFields(req: RequestCustom) {
   const { email, password, name, surname, phone, rootSpaces, role } = reqBody;
   foundUser.set({ email, name, surname, phone, role: 'user' });
   password && foundUser.set({ password });
-  if (req.user.role === 'super_admin') {
+  if (req.user.isSuperAdmin) {
     rootSpaces && foundUser.set({ rootSpaces });
     role && foundUser.set({ role });
   }

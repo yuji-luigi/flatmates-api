@@ -1,7 +1,7 @@
 import mongoose, { CallbackWithoutResultAndOptionalError, Document, Model } from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
 import { getPrivateUrlOfSpace } from '../api/helpers/uploadFileHelper';
-import logger from '../config/logger';
+import logger from '../lib/logger';
 import { formatDateAndTimev3 } from '../utils/functions';
 import { MAINTAINER_TYPES } from '../types/enum/enum';
 import { IMaintenance, IMaintenanceMethods, MAINTENANCE_STATUS } from '../types/mongoose-types/model-types/maintenance-interface';

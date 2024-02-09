@@ -1,6 +1,6 @@
 import { NextFunction, Response } from 'express';
 import httpStatus from 'http-status';
-import logger from '../config/logger';
+import logger from '../lib/logger';
 import { RequestCustom } from '../types/custom-express/express-custom';
 import { _MSG } from '../utils/messages';
 

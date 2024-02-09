@@ -1,6 +1,6 @@
 import Mail from 'nodemailer/lib/mailer';
-import logger from '../../config/logger';
-import vars from '../../config/vars';
+import logger from '../../lib/logger';
+import vars from '../../utils/globalVariables';
 import Space from '../../models/Space';
 import { IMaintenance } from '../../types/mongoose-types/model-types/maintenance-interface';
 import Maintainer from '../../models/Maintainer';

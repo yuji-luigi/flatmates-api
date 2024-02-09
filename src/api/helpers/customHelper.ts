@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import logger from '../../config/logger';
+import logger from '../../lib/logger';
 import { Entities } from '../../types/mongoose-types/model-types/Entities';
 import { IOrganization } from '../../types/mongoose-types/model-types/organization-interface';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';

@@ -5,7 +5,7 @@ import { formatDateAndTimev3 } from '../utils/functions';
 
 import { CheckInterface, checkTypes } from '../types/mongoose-types/model-types/check-interface';
 import Maintenance from './Maintenance';
-import logger from '../config/logger';
+import logger from '../lib/logger';
 
 type CheckModel = Model<CheckInterface, object, object>;
 export const checkSchema = new Schema<CheckInterface, CheckModel, unknown>(

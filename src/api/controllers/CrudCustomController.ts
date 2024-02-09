@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import logger from '../../config/logger';
+import logger from '../../lib/logger';
 
 import httpStatus from 'http-status';
 import mongoose from 'mongoose';

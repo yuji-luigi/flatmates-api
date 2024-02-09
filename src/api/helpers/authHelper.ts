@@ -1,4 +1,7 @@
+import { Document } from 'mongoose';
 import { RoleFields, RoleInterface } from '../../types/mongoose-types/model-types/role-interface';
+import { IUser } from '../../types/mongoose-types/model-types/user-interface';
+import AccessController from '../../models/AccessController';
 type RoleTypeMap = {
   inhabitant: RoleInterface['inhabitant'];
   maintainer: RoleInterface['maintainer'];
@@ -8,9 +11,10 @@ type RoleTypeMap = {
 /**
  * @description check the organizations and rootSpaces length of the role to see if the user can login
  */
-export const isValidLogin = <T extends RoleFields>({ role, loggedAs }: { role: RoleInterface; loggedAs: T }): boolean => {
-  if (role.isSuperAdmin) return true;
+export const isValidLogin = async <T extends RoleFields>({ user, loggedAs }: { user: Document & IUser; loggedAs: T }): Promise<boolean> => {
+  if (user.isSuperAdmin) return true;
   const roleType = role[loggedAs] as RoleTypeMap[T];
+  const accessController = await AccessController.findOne({ user: user._id, role: roleType._id });
   return accessChecksByRole[loggedAs](roleType);
 };
 

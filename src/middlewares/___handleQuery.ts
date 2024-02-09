@@ -7,7 +7,7 @@ type RequestWithOrganization = RequestCustom<unknown, unknown, { organization: s
 // export const handleQueryOld = async (req: RequestWithOrganization, res: Response, next: NextFunction): Promise<void> => {
 //   const { user } = req;
 
-//   if (user.role === 'super_admin') {
+//   if (user.isSuperAdmin) {
 //     return next();
 //   }
 //   if (!user.organization) {
@@ -21,7 +21,7 @@ type RequestWithOrganization = RequestCustom<unknown, unknown, { organization: s
 
 // const setBody = async (req: RequestWithOrganization, res: Response, next: NextFunction) => {
 //   const { user } = req;
-//   if (user.role === 'super_admin') {
+//   if (user.isSuperAdmin) {
 //     return next();
 //   }
 //   if (!user.organization) {

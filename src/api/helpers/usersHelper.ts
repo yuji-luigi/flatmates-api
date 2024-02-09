@@ -1,6 +1,6 @@
 import Mail from 'nodemailer/lib/mailer';
-import logger from '../../config/logger';
-import vars from '../../config/vars';
+import logger from '../../lib/logger';
+import vars from '../../utils/globalVariables';
 import AuthToken from '../../models/AuthToken';
 import User from '../../models/User';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';

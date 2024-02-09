@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import httpStatus from 'http-status';
-import logger from '../../config/logger';
+import logger from '../../lib/logger';
 
 import { deleteEmptyFields } from '../../utils/functions';
 import { RequestCustom } from '../../types/custom-express/express-custom';

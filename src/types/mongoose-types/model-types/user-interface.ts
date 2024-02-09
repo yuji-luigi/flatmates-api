@@ -15,7 +15,7 @@ export type UserError = {
   message?: string;
 };
 
-export interface IUser extends LeanUser, LoginInstance<IUser>, MongooseBaseModel {
+export interface IUser extends UserFields, LoginInstance<IUser>, MongooseBaseModel {
   // tailSpace: ISpace | string;
   passwordMatches: (password: string) => Promise<boolean>;
 
@@ -25,7 +25,7 @@ export interface IUser extends LeanUser, LoginInstance<IUser>, MongooseBaseModel
   getOrganizations: () => Promise<IOrganization[]>;
   isAdminOrganization: (organizationId: ObjectId) => Promise<boolean>;
 }
-export interface LeanUser {
+export interface UserFields {
   _id: ObjectId;
   name: string | undefined;
   surname?: string | undefined;
@@ -33,6 +33,7 @@ export interface LeanUser {
   password: string;
   avatar?: IUpload;
   phone?: string | undefined;
+  isSuperAdmin: boolean;
   /** will be only super_admin and user. will use adminOf field to check if user is admin of an space.
    */
   role: ObjectId | RoleInterface;

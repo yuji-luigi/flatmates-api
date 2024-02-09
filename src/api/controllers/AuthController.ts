@@ -1,4 +1,4 @@
-import { sensitiveCookieOptions } from './../../config/vars';
+import { sensitiveCookieOptions } from '../../utils/globalVariables';
 // import { IUser } from './../../types/model/user.d';
 // import { RegisterData } from './../../types/auth/formdata.d';
 /** *********** User ************* */
@@ -6,9 +6,9 @@ import { Request, Response } from 'express';
 import httpStatus from 'http-status';
 import User from '../../models/User';
 // import { UserModel } from 'model/user';
-import vars from '../../config/vars';
+import vars from '../../utils/globalVariables';
 import { _MSG } from '../../utils/messages';
-import logger from '../../config/logger';
+import logger from '../../lib/logger';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import Space from '../../models/Space';
 import Organization from '../../models/Organization';
@@ -265,20 +265,12 @@ const loginByRole = async (req: Request<{ role: RoleFields }>, res: Response) =>
     const { role } = req.params as { role: RoleFields };
     // const { user, accessToken: token } = await User.findAndGenerateToken(req.body);
     // const { user, maintainer } = await authLoginInstances({ email, password });
-    const user = await User.findOne({ email }).populate({
-      path: 'role',
-      populate: [{ path: 'maintainer.profile' }, { path: 'administrator.profile' }]
-    });
+    const user = await User.findOne({ email });
     if (!(await user.passwordMatches(password))) {
       throw new Error('Password non corrispondenti');
     }
     if (user.role instanceof ObjectId) {
       return;
-    }
-    const userRoleField = user.role?.[role];
-
-    if (!user.role.isSuperAdmin && !userRoleField.hasAccess) {
-      throw new Error('You have no access to this entity');
     }
 
     if (!isValidLogin({ role: user.role, loggedAs: role })) {

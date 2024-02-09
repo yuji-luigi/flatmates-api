@@ -1,7 +1,7 @@
 import { NextFunction, Response } from 'express';
 import passport from 'passport';
 import { RequestCustom } from '../types/custom-express/express-custom';
-import logger from '../config/logger';
+import logger from '../lib/logger';
 import httpStatus from 'http-status';
 import { ReqUser } from '../lib/jwt/jwtTypings';
 

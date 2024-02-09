@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import httpStatus from 'http-status';
-import logger from '../../config/logger';
+import logger from '../../lib/logger';
 
 import { deleteEmptyFields } from '../../utils/functions';
 import { RequestCustom, RequestWithFiles } from '../../types/custom-express/express-custom';
@@ -11,7 +11,7 @@ import Upload from '../../models/Upload';
 import { getOCRSpaceText } from '../../lib/ocr-space/initOcr';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { assetsDir } from '../../config/vars';
+import { assetsDir } from '../../utils/globalVariables';
 import { UploadedFile } from 'express-fileupload';
 const entity = 'checks';
 

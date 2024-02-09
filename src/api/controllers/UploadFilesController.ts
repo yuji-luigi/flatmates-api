@@ -37,13 +37,13 @@ import {
 
 import httpStatus from 'http-status';
 import Upload from '../../models/Upload';
-import logger from '../../config/logger';
+import logger from '../../lib/logger';
 // import vars from '../../config/vars';
 import { Request, Response } from 'express';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import mongoose from 'mongoose';
 import { UploadResponseObject } from '../helpers/types-uploadFileHelper';
-import vars from '../../config/vars';
+import vars from '../../utils/globalVariables';
 // const { storageBucketName } = vars;
 
 export async function getResourceFromStorage(req: Request, res: Response) {

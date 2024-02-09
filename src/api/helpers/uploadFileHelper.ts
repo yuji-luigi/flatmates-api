@@ -3,8 +3,8 @@
 import { S3, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, ObjectCannedACL, PutObjectCommandInput } from '@aws-sdk/client-s3';
 
 // import { uuid } from 'uuidv4';
-import logger from '../../config/logger';
-import vars from '../../config/vars';
+import logger from '../../lib/logger';
+import vars from '../../utils/globalVariables';
 import { formatDateASCII2, replaceHyphens, replaceSpecialChars } from '../../utils/functions';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Readable } from 'stream';

@@ -1,6 +1,6 @@
 import Maintainer from '../../models/Maintainer';
 import httpStatus from 'http-status';
-import logger from '../../config/logger';
+import logger from '../../lib/logger';
 import { Response } from 'express';
 import { deleteEmptyFields } from '../../utils/functions';
 import { RequestCustom } from '../../types/custom-express/express-custom';

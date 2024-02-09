@@ -1,4 +1,4 @@
-import logger from '../../config/logger';
+import logger from '../../lib/logger';
 import { IMaintenance } from '../../types/mongoose-types/model-types/maintenance-interface';
 import { IThread } from '../../types/mongoose-types/model-types/thread-interface';
 import { ObjectId } from 'bson';

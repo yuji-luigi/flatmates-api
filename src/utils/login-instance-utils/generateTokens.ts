@@ -40,7 +40,7 @@ export async function handleGenerateTokenByRoleAtLogin({
   return {
     loggedAs: selectedRole,
     email: user.email,
-    ...(user.role.isSuperAdmin ? {} : { organizationId: user.role[selectedRole].organizations[0].toString() })
+    ...(user.isSuperAdmin ? {} : { organizationId: user.role[selectedRole].organizations[0].toString() })
   };
 }
 export function handleGenerateTokenByRoleAfterLogin(user: ReqUser): JwtSignPayload {
@@ -49,7 +49,7 @@ export function handleGenerateTokenByRoleAfterLogin(user: ReqUser): JwtSignPaylo
   return {
     loggedAs: user.loggedAs,
     email: user.email
-    // ...(user.role.isSuperAdmin ? {} : { organizationId: user.role[selectedRole].organizations[0].toString() })
+    // ...(user.isSuperAdmin ? {} : { organizationId: user.role[selectedRole].organizations[0].toString() })
   };
 }
 

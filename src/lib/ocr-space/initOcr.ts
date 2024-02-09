@@ -1,5 +1,5 @@
 import { OcrSpaceOptions, ocrSpace } from 'ocr-space-api-wrapper';
-import vars, { rootDir } from '../../config/vars';
+import vars, { rootDir } from '../../utils/globalVariables';
 
 import path from 'path';
 const { ocrSpaceSecret } = vars;

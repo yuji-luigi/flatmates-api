@@ -1,7 +1,7 @@
 import { SUPER_ADMIN } from '../../middlewares/auth-middlewares';
 import Thread from '../../models/Thread';
 import httpStatus from 'http-status';
-import logger from '../../config/logger';
+import logger from '../../lib/logger';
 import { Request, Response } from 'express';
 import { deleteEmptyFields, getEntity } from '../../utils/functions';
 import { getFileDirName, saveInStorage, separateFiles } from '../helpers/uploadFileHelper';

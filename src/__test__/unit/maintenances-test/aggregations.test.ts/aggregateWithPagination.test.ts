@@ -1,5 +1,5 @@
 import { describe } from 'node:test';
-import mongoose from '../../../../config/mongoose';
+import mongoose from '../../../../lib/mongoose/mongoose';
 import { createOptionsForMaintenance } from '../../../../api/helpers/maintenanceHelper';
 import { IMaintenance } from '../../../../types/mongoose-types/model-types/maintenance-interface';
 

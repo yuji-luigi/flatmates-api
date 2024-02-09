@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import vars, { basicCookieOptions, sensitiveCookieOptions } from '../../config/vars';
+import vars, { basicCookieOptions, sensitiveCookieOptions } from '../../utils/globalVariables';
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
 import { Response } from 'express';
 import { JsonObjPayload, JwtSignPayload, SpaceDataInCookieFull, SpaceDetails } from './jwtUtils-types';

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import logger from '../../config/logger';
+import logger from '../../lib/logger';
 
 import httpStatus from 'http-status';
 import mongoose from 'mongoose';
@@ -7,7 +7,7 @@ import Space from '../../models/Space';
 import { deleteEmptyFields } from '../../utils/functions';
 import { aggregateWithPagination } from '../helpers/mongoose.helper';
 import { RequestCustom } from '../../types/custom-express/express-custom';
-import vars, { sensitiveCookieOptions } from '../../config/vars';
+import vars, { sensitiveCookieOptions } from '../../utils/globalVariables';
 import { aggregateDescendantIds, userHasSpace } from '../helpers/spaceHelper';
 import { _MSG } from '../../utils/messages';
 import Thread from '../../models/Thread';

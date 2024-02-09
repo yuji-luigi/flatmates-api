@@ -1,6 +1,6 @@
 import passport from 'passport-jwt';
 import { Request } from 'express';
-import vars from '../../config/vars';
+import vars from '../../utils/globalVariables';
 import User from '../../models/User';
 import Space from '../../models/Space';
 import { LeanUser } from '../../types/mongoose-types/model-types/user-interface';

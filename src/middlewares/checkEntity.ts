@@ -1,7 +1,7 @@
 import httpStatus from 'http-status';
 import { NextFunction, Request, Response } from 'express';
 import { getEntity } from '../utils/functions';
-import logger from '../config/logger';
+import logger from '../lib/logger';
 import { Entities } from '../types/mongoose-types/model-types/Entities';
 import { entities } from '../types/mongoose-types/model-types/Entities';
 

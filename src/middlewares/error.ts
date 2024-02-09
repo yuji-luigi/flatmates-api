@@ -5,7 +5,7 @@ import { ErrorType, ApiErrorConstructor } from '../errors/api.error';
 import httpStatus from 'http-status';
 import expressValidation from 'express-validation';
 import APIError from '../errors/api.error';
-import vars from '../config/vars';
+import vars from '../utils/globalVariables';
 
 const { env } = vars;
 

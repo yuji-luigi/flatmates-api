@@ -1,7 +1,7 @@
 import { SUPER_ADMIN } from '../../middlewares/auth-middlewares';
 import Maintenance from '../../models/Maintenance';
 import httpStatus from 'http-status';
-import logger from '../../config/logger';
+import logger from '../../lib/logger';
 import { Request, Response } from 'express';
 import { deleteEmptyFields } from '../../utils/functions';
 import { getFileDirName, saveInStorage, separateFiles } from '../helpers/uploadFileHelper';
@@ -11,7 +11,7 @@ import { sendEmail } from '../helpers/nodemailerHelper';
 import { IMaintenance } from '../../types/mongoose-types/model-types/maintenance-interface';
 import { createOptionsForMaintenance } from '../helpers/maintenanceHelper';
 import { IUpload } from '../../types/mongoose-types/model-types/upload-interface';
-import { sensitiveCookieOptions } from '../../config/vars';
+import { sensitiveCookieOptions } from '../../utils/globalVariables';
 import { _MSG } from '../../utils/messages';
 import { aggregateWithPagination } from '../helpers/mongoose.helper';
 import AuthToken from '../../models/AuthToken';

@@ -6,7 +6,7 @@ import winston, { transports } from 'winston';
 require('winston-mail');
 import SlackHook from 'winston-slack-webhook-transport';
 import path from 'path';
-import vars from './vars';
+import vars from '../utils/globalVariables';
 
 const PROJECT_ROOT = path.join(__dirname, '..');
 

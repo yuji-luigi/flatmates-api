@@ -1,5 +1,5 @@
 import Mail from 'nodemailer/lib/mailer';
-import vars from '../../config/vars';
+import vars from '../../utils/globalVariables';
 
 import nodemailer from 'nodemailer';
 

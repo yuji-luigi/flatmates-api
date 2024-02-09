@@ -1,6 +1,6 @@
 import Maintenance from '../../models/Maintenance';
 import httpStatus from 'http-status';
-import logger from '../../config/logger';
+import logger from '../../lib/logger';
 import { Response } from 'express';
 import { deleteEmptyFields } from '../../utils/functions';
 import Upload from '../../models/Upload';

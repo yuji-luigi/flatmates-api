@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
-import logger from '../../config/logger';
+import logger from '../../lib/logger';
 
 import MSG from '../../utils/messages';
 import { deleteEmptyFields, getEntity, getEntityFromOriginalUrl } from '../../utils/functions';

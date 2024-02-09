@@ -10,6 +10,8 @@ import { handleUserFromRequest } from '../../middlewares/handleUserFromRequest';
 import { isLoggedIn } from '../../middlewares/isLoggedIn';
 import { deleteSpaceCookie } from '../controllers/SpaceController';
 
+export const cache = new Map();
+
 router.get('/', (req: Request, res: Response) => {
   res.send('auth routes');
 });

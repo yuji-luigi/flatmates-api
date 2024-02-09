@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
 import Space from '../../models/Space';
-import logger from '../../config/logger';
+import logger from '../../lib/logger';
 import { _MSG } from '../../utils/messages';
 import { CurrentSpace, ISpace } from '../../types/mongoose-types/model-types/space-interface';
 import { ReqUser } from '../../lib/jwt/jwtTypings';

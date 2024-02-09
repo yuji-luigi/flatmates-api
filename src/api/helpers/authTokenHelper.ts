@@ -4,7 +4,7 @@ import { RequestCustom } from '../../types/custom-express/express-custom';
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { _MSG } from '../../utils/messages';
-import logger from '../../config/logger';
+import logger from '../../lib/logger';
 import { ObjectId } from 'bson';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 import { IOrganization } from '../../types/mongoose-types/model-types/organization-interface';

@@ -1,11 +1,11 @@
 import httpStatus from 'http-status';
 import { Response } from 'express';
-import logger from '../../config/logger';
+import logger from '../../lib/logger';
 import Space from '../../models/Space';
 import Organization from '../../models/Organization';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { aggregateWithPagination } from '../helpers/mongoose.helper';
-import vars, { sensitiveCookieOptions } from '../../config/vars';
+import vars, { sensitiveCookieOptions } from '../../utils/globalVariables';
 import User from '../../models/User';
 import { _MSG } from '../../utils/messages';
 import { deleteEmptyFields } from '../../utils/functions';

@@ -1,7 +1,7 @@
 import { urlSlug } from 'mongoose-slug-generator';
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
-import logger from '../../config/logger';
+import logger from '../../lib/logger';
 
 import { _MSG } from '../../utils/messages';
 import AuthToken from '../../models/AuthToken';
@@ -9,7 +9,7 @@ import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-
 import { stringifyAuthToken, typeGuardAuthTokenSpaceOrg, verifyPinFromRequest } from '../helpers/authTokenHelper';
 import User from '../../models/User';
 import { RequestCustom } from '../../types/custom-express/express-custom';
-import { sensitiveCookieOptions } from '../../config/vars';
+import { sensitiveCookieOptions } from '../../utils/globalVariables';
 import { signJwt } from '../../lib/jwt/jwtUtils';
 import { JwtSignPayload } from '../../lib/jwt/jwtUtils-types';
 import Space from '../../models/Space';

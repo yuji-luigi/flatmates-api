@@ -1,7 +1,7 @@
 import mongoose, { Model } from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
 import { getPrivateUrlOfSpace } from '../api/helpers/uploadFileHelper';
-import logger from '../config/logger';
+import logger from '../lib/logger';
 import { formatDateAndTimev3 } from '../utils/functions';
 import { IThread, IThreadMethods } from '../types/mongoose-types/model-types/thread-interface';
 

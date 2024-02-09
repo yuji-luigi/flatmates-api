@@ -1,6 +1,6 @@
 import APIError from '../../errors/api.error';
 import { _MSG } from '../messages';
-import logger from '../../config/logger';
+import logger from '../../lib/logger';
 import User from '../../models/User';
 import Maintainer from '../../models/Maintainer';
 import { passwordMatches } from './passwordMatches';

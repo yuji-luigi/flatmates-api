@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
 import bcrypt from 'bcrypt';
 import Space from './Space';
-import logger from '../config/logger';
+import logger from '../lib/logger';
 import { generateWord, replaceSpecialCharsWith } from '../utils/functions';
 import { MAINTAINER_TYPES } from '../types/enum/enum';
 import { MaintainerInterface } from '../types/mongoose-types/model-types/maintainer-interface';

@@ -5,15 +5,15 @@ import httpStatus from 'http-status';
 import moment from 'moment-timezone';
 import jwt from 'jsonwebtoken';
 import APIError from '../errors/api.error';
-import vars from '../config/vars';
+import vars from '../utils/globalVariables';
 import autopopulate from 'mongoose-autopopulate';
-import logger from '../config/logger';
+import logger from '../lib/logger';
 import Space from './Space';
 import Organization from './Organization';
 import { ISpace } from '../types/mongoose-types/model-types/space-interface';
-import { IUser, LeanUser, UserError, UserModel } from '../types/mongoose-types/model-types/user-interface';
+import { IUser, UserError, UserModel } from '../types/mongoose-types/model-types/user-interface';
 import { _MSG } from '../utils/messages';
-import Role from './Role';
+import Role from './AccessController';
 
 export type modules = {
   [key: string]: boolean;
@@ -46,9 +46,13 @@ export const userSchema = new Schema<IUser, UserModel>(
       ref: 'uploads',
       autopopulate: true
     },
-    role: {
-      type: Schema.Types.ObjectId,
-      ref: 'roles'
+    // role: {
+    //   type: Schema.Types.ObjectId,
+    //   ref: 'roles'
+    // },
+    isSuperAdmin: {
+      type: Boolean,
+      default: false
     },
     // roleNew: {
     //   type: Schema.Types.ObjectId,
@@ -175,7 +179,7 @@ userSchema.method({
   },
   async getOrganizations() {
     try {
-      // const query = this.role === 'super_admin' ? {} : { _id: { $in: this.rootSpaces } };
+      // const query = this.isSuperAdmin ? {} : { _id: { $in: this.rootSpaces } };
       const spaces: ISpace[] = await Space.find({ _id: { $in: this.rootSpaces } }).lean();
       return spaces.map((space) => space.organization);
     } catch (error) {
@@ -183,18 +187,16 @@ userSchema.method({
       throw new Error('User.ts: UserSchema getOrganizations error');
     }
   },
-  isSuperAdmin() {
-    return this.role === 'super_admin';
-  },
+
   async hasOrganization(organizationId: string): Promise<boolean> {
-    if (this.isSuperAdmin()) {
+    if (this.isSuperAdmin) {
       return true;
     }
     const usersOrganizations = await this.getOrganizations();
     return usersOrganizations.includes(organizationId);
   },
   async isAdminOrganization(organizationId: string): Promise<boolean> {
-    if (this.role === 'super_admin') return true;
+    if (this.isSuperAdmin) return true;
     const organization = await Organization.findOne({ _id: organizationId, admins: { $in: this._id } }).lean();
     return !!organization;
   }
@@ -336,8 +338,3 @@ userSchema.plugin(autopopulate);
 const User = model<IUser, UserModel>('users', userSchema);
 export default User;
 // export default UserSchema as UserModel<Model<IUserDocument>>;
-
-export const isSuperAdmin = async (user: LeanUser) => {
-  const role = await Role.findById(user.role);
-  return role.isSuperAdmin;
-};
