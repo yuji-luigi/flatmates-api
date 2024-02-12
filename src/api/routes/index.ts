@@ -13,6 +13,7 @@ import notificationRoutes from './notification.routes';
 import authTokenRoutes from './auth-token.routes';
 import organizationRoutes from './organization.routes';
 import maintainerRoutes from './maintainer.routes';
+import accessControllerRoutes from './access-controller.routes';
 // import dataTableRoutes from './data-table.routes';
 import maintenanceRoutes from './maintenance.routes';
 import spaceAuthRoutes from './space-auth.routes';
@@ -34,14 +35,8 @@ router.use('/statistics', statisticRoutes);
 // set user in req.user
 router.use(handleUserFromRequest);
 router.use(queryHandler);
-// router.use(parseSpaceJwt);
 
-// set space in req.user.spaceId
-// and set queries in req.query
-// req.query.organizationId, req.query.rootSpaceId
-//= ===============================================================================
-// CUSTOM ROUTES
-//= ===============================================================================
+router.use('/accessControllers', accessControllerRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/maintenances', maintenanceRoutes);
 router.use('/threads', threadRoutes);

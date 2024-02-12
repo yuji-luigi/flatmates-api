@@ -273,7 +273,7 @@ const loginByRole = async (req: Request<{ role: RoleFields }>, res: Response) =>
       return;
     }
 
-    if (!isValidLogin({ role: user.role, loggedAs: role })) {
+    if (!isValidLogin({ user, loggedAs: role })) {
       throw new Error('You do not have access to this role. Please contact the administrator');
     }
     const payload = await handleGenerateTokenByRoleAtLogin({ selectedRole: role, user });
@@ -321,7 +321,6 @@ const me = async (req: RequestCustom, res: Response) => {
     const user = await User.findOne({ _id: req.user._id.toString() });
     user.lastLogin = new Date(Date.now());
     await user.save();
-    await user.populate('role');
 
     return res.send({
       success: true,
@@ -334,7 +333,7 @@ const me = async (req: RequestCustom, res: Response) => {
   }
 };
 
-export const sendMainSpaceSelectionsToClient = async (req: RequestCustom, res: Response) => {
+export const sendRootSpaceSelectionsToClient = async (req: RequestCustom, res: Response) => {
   try {
     // case user show user.rootSpaces
     //!todo think about structure of the maintainers. do they have to have root spaces? role must be maintainers
@@ -342,20 +341,19 @@ export const sendMainSpaceSelectionsToClient = async (req: RequestCustom, res: R
     // let mainSpaces = await Space.find({ isMain: true, _id: { $in: req.user.rootSpaces } });
     // case admin show all main spaces of his organizations
     if (req.user.loggedAs === 'administrator') {
-      query = { isMain: true, organization: { $in: req.user.organizations } };
+      query = { isMain: true /* , organization: { $in: req.user.organizations } */ };
     }
     if (req.user.isSuperAdmin) {
-      query = { isMain: true, organization: req.user.organizationId };
-      // mainSpaces = await Space.find({ isMain: true, organization: req.user.organizationId });
+      query = { isMain: true /* , organization: req.user.organizationId */ };
     }
 
-    const mainSpaces = await Space.find(query).populate({ path: 'cover', select: 'url' }).lean();
+    const rootSpaces = await Space.find(query).populate({ path: 'cover', select: 'url' }).lean();
 
     res.status(httpStatus.OK).json({
       collection: 'spaces',
-      totalDocuments: mainSpaces.length,
+      totalDocuments: rootSpaces.length,
       success: true,
-      data: mainSpaces
+      data: rootSpaces
     });
   } catch (error) {
     logger.error(error.message || error);

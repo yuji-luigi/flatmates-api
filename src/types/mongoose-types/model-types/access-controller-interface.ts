@@ -3,7 +3,16 @@ import { MongooseBaseModel } from './base-types/base-model-interface';
 import { ISpace } from './space-interface';
 import { IUser } from './user-interface';
 import { RoleInterface } from './role-interface';
-export const permissions = ['canDeleteMaintenance', 'canNotifyMaintainer', 'canDeleteComments', 'canDeleteThreads'];
+// enities
+// threads, maintenances, comments, users, spaces, roles
+export const permissions = [
+  'canDeleteMaintenance',
+  'canNotifyMaintainer',
+  'canDeleteComment',
+  'canDeleteThread',
+  'canCreateThread',
+  'canCreateMaintenance'
+];
 export type Permission = (typeof permissions)[number];
 export interface PermissionInterface {
   name: string;

@@ -2,7 +2,6 @@
 
 // eslint-disable-next-line no-undef
 // import app from './config/express';
-import mongoose from './lib/mongoose/mongoose';
 import vars from './utils/globalVariables';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
@@ -14,6 +13,8 @@ import morgan from 'morgan';
 import passport from 'passport';
 import routes from './api/routes';
 import strategies from './lib/jwt/resolveUserJwt';
+import mongooseConnector from './lib/mongoose/initMongoose';
+// import { seedRoles } from './lib/mongoose/seed/mongoose-seeder';
 
 const { port, env } = vars;
 const app = express();
@@ -46,7 +47,7 @@ passport.use('jwt', strategies.jwt);
 // mount api v1 routes
 app.use('/api/v1', routes);
 // open mongoose connection
-mongoose.connect();
+mongooseConnector.init();
 
 app.listen(port, async () => {
   console.log(`server started on port ${port} (${env})`);

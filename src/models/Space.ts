@@ -78,8 +78,8 @@ export const spacesSchema = new Schema<ISpace, SpaceModel, ISpaceMethods>(
     // ],
     organization: {
       type: Schema.Types.ObjectId,
-      ref: 'organizations',
-      required: true
+      ref: 'organizations'
+      // required: true
       // autopopulate: true
     },
 

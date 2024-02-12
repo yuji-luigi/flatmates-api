@@ -6,7 +6,7 @@ import express from 'express';
 //   sendMainSpacesSlug,
 //   sendDataForHomeDashboard
 // } from '../controllers/SpaceController';
-import { sendMainSpaceSelectionsToClient, setSpaceAndOrgInJwt } from '../controllers/AuthController';
+import { sendRootSpaceSelectionsToClient, setSpaceAndOrgInJwt } from '../controllers/AuthController';
 import { handleUserFromRequest } from '../../middlewares/handleUserFromRequest';
 import { isLoggedIn } from '../../middlewares/isLoggedIn';
 
@@ -15,7 +15,7 @@ const router = express.Router();
 // router.get('/ssg-paths', checkSSGSecret, sendMainSpacesSlug);
 
 router.use(handleUserFromRequest);
-router.get('/space-selections', isLoggedIn(), sendMainSpaceSelectionsToClient);
+router.get('/space-selections', isLoggedIn(), sendRootSpaceSelectionsToClient);
 // ! set space object + organization id as jwt cookie
 router.get('/space-selected/:idMongoose', isLoggedIn(), setSpaceAndOrgInJwt);
 

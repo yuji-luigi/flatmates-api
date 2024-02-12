@@ -3,7 +3,7 @@ import express, { Request, Response } from 'express';
 const router = express.Router();
 import authCtrl, {
   sendMainOrganizationSelectionsToClient,
-  sendMainSpaceSelectionsToClient,
+  sendRootSpaceSelectionsToClient,
   setSpaceAndOrgInJwt
 } from '../controllers/AuthController';
 import { handleUserFromRequest } from '../../middlewares/handleUserFromRequest';
@@ -31,7 +31,7 @@ router.get('/logout', authCtrl.logout);
 // router.get('/ssg-paths', checkSSGSecret, sendMainSpacesSlug);
 
 router.use(handleUserFromRequest);
-router.get('/space-selections', isLoggedIn(), sendMainSpaceSelectionsToClient);
+router.get('/space-selections', isLoggedIn(), sendRootSpaceSelectionsToClient);
 router.get('/organization-selections', isLoggedIn(), sendMainOrganizationSelectionsToClient);
 // set jwt and send space
 router.get('/space-selected/:idMongoose', isLoggedIn(), setSpaceAndOrgInJwt);

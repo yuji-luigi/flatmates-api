@@ -1,4 +1,3 @@
-export const loginInstanceEntities = ['users', 'maintainers', 'maintenances'] as const;
 export const entities = [
   'bookmarks',
   'comments',
@@ -17,13 +16,14 @@ export const entities = [
   'checks',
   'auth-tokens',
   'spaceTags',
-  'role',
-  ...loginInstanceEntities
+  'roles',
+  'users',
+  'maintenances'
+  // ...loginInstanceEntities
   // 'users',
   // 'maintainers'
 ] as const;
 export type Entities = (typeof entities)[number];
-export type LoginInstanceEntities = (typeof loginInstanceEntities)[number];
 
 export const ENTITIES = entities.reduce<Partial<Record<Entities, Entities>>>((acc, entity) => {
   acc[entity] = entity;

@@ -24,6 +24,7 @@ const permissionSchema = new Schema<PermissionInterface>({
 });
 type AccessControllerModel = Model<AccessControllerInterface, unknown, AccessControllerMethods>;
 type AccessControllerDocument = Document & AccessControllerInterface;
+
 export const accessControllerSchema = new Schema<AccessControllerInterface, AccessControllerModel, AccessControllerMethods>(
   {
     user: {

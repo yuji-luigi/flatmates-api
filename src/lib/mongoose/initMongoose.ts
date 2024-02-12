@@ -1,6 +1,5 @@
-import { mongoose } from 'mongoose';
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import mongoose from 'mongoose';
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import logger from '../logger';
 import Bookmark from '../../models/Bookmark';
 import Comment from '../../models/Comment';
@@ -55,6 +54,7 @@ Maintainer;
 Check;
 AuthToken;
 BusinessProfile;
+Role;
 // Exit Applicatioin on Error
 mongoose.connection.on('error', (err: object | string) => {
   logger.error(`Mongoose connection error: ${err}`);
@@ -66,25 +66,12 @@ if (process.env.NODE_ENV === 'dev') {
   // mongoose.set('debug', true)
 }
 const cachedRoles = new Map<string, string>();
-const roles = [
-  {
-    name: 'inhabitant'
-  },
-  {
-    name: 'maintainer'
-  },
-  {
-    name: 'administrator'
-  }
-];
+
 const mongooseConnector = {
-  connect: async () => {
+  init: async () => {
     await mongoose
       .connect(vars.mongo.uri)
       .catch((err: object | string) => logger.error(`ERROR CONNECTING TO MONGO\n${err}. mongoURI: ${vars.mongo.uri}`));
-    console.log('Connected to DB! Uri:' + vars.mongo.uri);
-    const superAdmin = await User.findOne({ isSuperAdmin: true });
-    console.log('roles', roles);
   },
   close: () => mongoose.connection.close()
 };

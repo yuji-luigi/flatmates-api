@@ -35,7 +35,7 @@ export interface ISpace extends MongooseBaseModel {
   password: string;
   // threads?: string[] | IThread[] | undefined;
   /** reference id to query. users can't see other organizations data.(space fund users... etc) */
-  organization: string | IOrganization | null;
+  organization?: string | IOrganization | null;
   /** decides if everyone in the world can see or only under the organization. */
   isPublic: boolean;
   slug: string;
