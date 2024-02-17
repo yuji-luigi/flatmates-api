@@ -18,6 +18,7 @@ import AuthToken from '../../models/AuthToken';
 import ErrorEx from '../../errors/extendable.error';
 import { deleteCrudObjectByIdAndSendDataWithPagination } from './DataTableController';
 import UserSpaceConjunction from '../../models/UserSpaceConjunction';
+import AccessController from '../../models/AccessController';
 
 const entity = 'users';
 
@@ -26,19 +27,17 @@ const lookupSpaces: PipelineStage.FacetPipelineStage = {
 };
 export const createUserAndSendDataWithPagination = async (req: RequestCustom, res: Response) => {
   try {
-    if (!req.user.spaceId && !req.body.rootSpaces.length) {
-      throw new Error('space is not set. Please select the space.');
-    }
-    if (!req.user.organizationId) {
-      throw new Error('organization is not set.');
-    }
-    // get req.params.entity
-    const entity = 'users';
+    // if (!req.user.spaceId && !req.body.rootSpaces.length) {
+    //   throw new Error('space is not set. Please select the space.');
+    // }
+    // if (!req.user.organizationId) {
+    //   throw new Error('organization is not set.');
+    // }
     req.body = deleteEmptyFields(req.body);
-    req.body.user = req.user._id;
-    req.body.organization = req.user.organizationId;
-    req.body.space = req.user.spaceId;
-    req.body.rootSpaces = [req.user.spaceId];
+    // req.body.user = req.user._id;
+    // req.body.organization = req.user.organizationId;
+    // req.body.space = req.user.spaceId;
+    // req.body.rootSpaces = [req.user.spaceId];
 
     if (!req.body.password) {
       throw new Error('Password is required. Please provide password.');
@@ -48,12 +47,16 @@ export const createUserAndSendDataWithPagination = async (req: RequestCustom, re
       throw new Error('Email is already in use. Please check the email.');
     }
 
-    req.body.organizations = [req.user.organizationId];
-    const newModel = new User(req.body);
-
-    await newModel.save();
+    const newUser = new User(req.body);
+    await newUser.save();
+    // case accessController is sent from the client, create and attach the user
+    if (req.body.accessController) {
+      await AccessController.createOrUpdateFromDashboardDto(req.body.accessController, newUser._id, req.user).catch((error) => {
+        logger.error(error, 'Error in creating access controller: userController.createUserAndSendDataWithPagination');
+      });
+    }
     // modify query for user model.
-    req.query.rootSpaces = req.user.spaceId ? { $in: [req.user.spaceId] } : null;
+    // req.query.rootSpaces = req.user.spaceId ? { $in: [req.user.spaceId] } : null;
     delete req.query.space;
 
     req.query = convert_idToMongooseId(req.query);

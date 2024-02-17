@@ -25,6 +25,8 @@ import UserSpaceConjunction from '../../models/UserSpaceConjunction';
 
 import vars from '../../utils/globalVariables';
 import Role from '../../models/Role';
+import { RoleInterface } from '../../types/mongoose-types/model-types/role-interface';
+import { initCacheRole } from './mongoose-cache/role-cache';
 
 // Set mongoose Promise to Bluebird
 // eslint-disable-next-line no-undef
@@ -65,13 +67,14 @@ mongoose.connection.on('error', (err: object | string) => {
 if (process.env.NODE_ENV === 'dev') {
   // mongoose.set('debug', true)
 }
-const cachedRoles = new Map<string, string>();
 
 const mongooseConnector = {
   init: async () => {
     await mongoose
       .connect(vars.mongo.uri)
       .catch((err: object | string) => logger.error(`ERROR CONNECTING TO MONGO\n${err}. mongoURI: ${vars.mongo.uri}`));
+    console.log('Connected to MongoDB');
+    initCacheRole();
   },
   close: () => mongoose.connection.close()
 };

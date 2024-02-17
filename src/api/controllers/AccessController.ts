@@ -1,6 +1,3 @@
-// import { IUser } from './../../types/model/user.d';
-// import { RegisterData } from './../../types/auth/formdata.d';
-/** *********** User ************* */
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
 // import { UserModel } from 'model/user';
@@ -16,10 +13,25 @@ export const createAccessControllerAndSendToClient = async (req: Request, res: R
   try {
     const { user, rootSpace, role, ...other } = req.body;
     const roles = await Role.find().lean();
-    const roleNames = roles.map((r) => r.name);
-    for (const role of roleNames) {
-      if (other[role]) {
-        console.log(other[role]);
+
+    for (const role of roles) {
+      if (other[role.name]) {
+        console.log(other[role.name]);
+        const permissions = Object.entries(other[role.name]).map(([name, value]: [string, boolean]) => ({ name, allowed: value }));
+        const accessController =
+          (await AccessController.findOne({
+            user,
+            rootSpace,
+            role
+          })) ||
+          new AccessController({
+            user,
+            rootSpace,
+            role
+          });
+        accessController.set({ permissions });
+        console.log(accessController);
+        await accessController.save();
       }
     }
     res.status(httpStatus.CREATED).send({

@@ -1,5 +1,5 @@
 import { ObjectId } from 'bson';
-import { LeanUser } from '../../types/mongoose-types/model-types/user-interface';
+import { IUser, LeanUser, UserModel } from '../../types/mongoose-types/model-types/user-interface';
 import { RoleFields } from '../../types/mongoose-types/model-types/role-interface';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 
@@ -13,7 +13,7 @@ export type CurrentSpace = {
 };
 
 // now payload must have entity string
-export type ReqUser = Omit<LeanUser, 'rootSpaces' | 'organizations'> & {
+export type ReqUser = Omit<IUser, 'rootSpaces' | 'organizations'> & {
   loggedAs: RoleFields;
   rootSpaces?: ObjectId[];
   organizations?: ObjectId[];

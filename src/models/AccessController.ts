@@ -1,12 +1,18 @@
-import mongoose, { Document, Model } from 'mongoose';
+import mongoose, { Document, Model, ObjectId } from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
 import {
+  ACtrlDtoDashboard,
   AccessControllerInterface,
   AccessControllerMethods,
+  AccessControllerStatics,
+  Permission,
   PermissionInterface,
   permissions
 } from '../types/mongoose-types/model-types/access-controller-interface';
-
+import { RoleFields, isRoleField, roles } from '../types/mongoose-types/model-types/role-interface';
+import { roleCache } from '../lib/mongoose/mongoose-cache/role-cache';
+import { IUser } from '../types/mongoose-types/model-types/user-interface';
+import { ReqUser } from '../lib/jwt/jwtTypings';
 const { Schema } = mongoose;
 
 export const accessControllerCache = new Map<string, boolean>();
@@ -22,10 +28,10 @@ const permissionSchema = new Schema<PermissionInterface>({
     required: true
   }
 });
-type AccessControllerModel = Model<AccessControllerInterface, unknown, AccessControllerMethods>;
 type AccessControllerDocument = Document & AccessControllerInterface;
+type AccessControllerModel = Model<AccessControllerDocument, unknown, AccessControllerMethods> & AccessControllerStatics;
 
-export const accessControllerSchema = new Schema<AccessControllerInterface, AccessControllerModel, AccessControllerMethods>(
+export const accessControllerSchema = new Schema<AccessControllerDocument, AccessControllerModel, AccessControllerMethods>(
   {
     user: {
       type: Schema.Types.ObjectId,
@@ -46,6 +52,41 @@ export const accessControllerSchema = new Schema<AccessControllerInterface, Acce
   {
     versionKey: false,
     timestamps: true,
+    statics: {
+      buildPermissionFields: function (dto) {
+        return permissions.map((permission) => {
+          return {
+            name: permission,
+            allowed: dto[permission]
+          };
+        });
+      },
+
+      createOrUpdateFromDashboardDto: async function (dtoFromClient: ACtrlDtoDashboard[], targetUserId: ObjectId, operatingUser: ReqUser) {
+        for (const dto of dtoFromClient) {
+          // todo can create acCtrl check logic here
+          if (!operatingUser.isSuperAdmin) {
+            throw new Error('You are not allowed to create access controller');
+          }
+          const role = roleCache.get(dto.roleName);
+
+          const accessController =
+            (await this.findOne({
+              user: targetUserId,
+              role,
+              rootSpace: dto.rootSpace
+            })) || new this();
+          const permissions = this.buildPermissionFields(dto);
+          accessController.set({
+            ...dto,
+            user: targetUserId,
+            permissions,
+            role
+          });
+          await accessController.save();
+        }
+      }
+    },
     methods: {
       getCacheKey: function (this: AccessControllerDocument) {
         return `${this.user}-${this.role}-${this.rootSpace}`;
@@ -67,6 +108,5 @@ export const accessControllerSchema = new Schema<AccessControllerInterface, Acce
   }
 );
 
-accessControllerSchema.statics = {};
 accessControllerSchema.plugin(autoPopulate);
-export default mongoose.model('accessControllers', accessControllerSchema);
+export default mongoose.model<AccessControllerDocument, AccessControllerModel>('accessControllers', accessControllerSchema);

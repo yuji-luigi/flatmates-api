@@ -2,21 +2,39 @@ import { ObjectId } from 'bson';
 import { MongooseBaseModel } from './base-types/base-model-interface';
 import { ISpace } from './space-interface';
 import { IUser } from './user-interface';
-import { RoleInterface } from './role-interface';
+import { RoleFields, RoleInterface } from './role-interface';
+import { ReqUser } from '../../../lib/jwt/jwtTypings';
 // enities
 // threads, maintenances, comments, users, spaces, roles
 export const permissions = [
-  'canDeleteMaintenance',
+  'canCreatePost',
+  'canCreateMaintenance',
   'canNotifyMaintainer',
-  'canDeleteComment',
-  'canDeleteThread',
-  'canCreateThread',
-  'canCreateMaintenance'
-];
+  'canDeletePost',
+  'canDeleteMaintenance',
+  'canDeleteComment'
+] as const;
+
 export type Permission = (typeof permissions)[number];
+
+export type RolePermissions = {
+  [key in Permission]: boolean;
+};
 export interface PermissionInterface {
   name: string;
   allowed: boolean;
+}
+
+export type ACtrlDtoDashboard = {
+  rootSpace: string;
+  roleName: RoleFields;
+  user: string;
+} & {
+  [key in Permission]: boolean;
+};
+
+export interface AccessControllerStatics {
+  createOrUpdateFromDashboardDto: (dtoFromClient: ACtrlDtoDashboard, targetUser: ObjectId, operatingUser: ReqUser) => Promise<void>;
 }
 
 export interface AccessControllerInterface extends MongooseBaseModel, AccessControllerMethods {
