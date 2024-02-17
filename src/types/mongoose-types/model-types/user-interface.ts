@@ -53,6 +53,7 @@ export interface UserFields {
 }
 
 export interface IUserStatics {
+  testType: (notExist: string) => Error;
   findAndGenerateToken: (body: tokenGeneratePayload) => Promise<{
     user: IUser;
     // user: IUser;
