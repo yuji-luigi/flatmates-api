@@ -34,6 +34,7 @@ export const accessControllerSchema = new Schema<AccessControllerInterface, Acce
     },
     role: {
       type: Schema.Types.ObjectId,
+      ref: 'roles',
       required: true
     },
     rootSpace: {
@@ -107,5 +108,11 @@ export const accessControllerSchema = new Schema<AccessControllerInterface, Acce
   }
 );
 
+accessControllerSchema.pre('find', function () {
+  this.populate('role');
+});
+accessControllerSchema.pre('findOne', function () {
+  this.populate('role');
+});
 accessControllerSchema.plugin(autoPopulate);
 export default mongoose.model<AccessControllerInterface, AccessControllerModel>('accessControllers', accessControllerSchema);

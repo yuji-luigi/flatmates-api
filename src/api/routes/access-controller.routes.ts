@@ -5,7 +5,7 @@ const router = express.Router();
 
 export const cache = new Map();
 
-router.get('/', (req: Request, res: Response) => {
+router.get('/test', (req: Request, res: Response) => {
   res.send('accessController routes');
 });
 router.post('/', onlySuperAdmin, createAccessControllerAndSendToClient);

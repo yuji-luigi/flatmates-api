@@ -18,7 +18,8 @@ export const entities = [
   'spaceTags',
   'roles',
   'users',
-  'maintenances'
+  'maintenances',
+  'accessControllers'
   // ...loginInstanceEntities
   // 'users',
   // 'maintainers'
