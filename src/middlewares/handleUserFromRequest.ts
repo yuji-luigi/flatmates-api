@@ -23,19 +23,7 @@ const setUserInRequest = (req: RequestCustom, res: Response, next: NextFunction)
     if (!reqUser) {
       throw new Error('user not found');
     }
-    // if (user.role === 'admin' && !user.organizationId) {
-    //   throw new Error('organization not found');
-    // }
-    // if (user.role === 'user' && !user.spaceId) {
-    //   throw new Error('space not found');
-    // }
 
-    // if (user.spaceId) {
-    //   req.query.space = user.spaceId;
-    // }
-    // if (user.organizationId) {
-    //   req.query.organization = user.organizationId;
-    // }
     req.user = reqUser;
     return next();
   } catch (error) {

@@ -11,8 +11,6 @@ import { roleCache } from '../lib/mongoose/mongoose-cache/role-cache';
 import { ReqUser } from '../lib/jwt/jwtTypings';
 const { Schema } = mongoose;
 
-export const accessControllerCache = new Map<string, boolean>();
-
 const permissionSchema = new Schema<PermissionInterface>({
   name: {
     type: String,

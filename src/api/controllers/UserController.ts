@@ -348,7 +348,7 @@ export async function sendAuthTokenOfUserToClient(req: RequestCustom, res: Respo
 
 export const updateUserById = async (req: RequestCustom, res: Response) => {
   try {
-    const modifiedModel = await findAndModifyUserFields(req);
+    const modifiedModel = await findAndModifyUserBase(req);
     await modifiedModel.save();
     await modifiedModel.populate({ path: 'rootSpaces', select: 'name' });
     res.status(httpStatus.OK).json({
@@ -383,7 +383,7 @@ export const registerUserOnBoardingAndSendUserToClient = async (req: RequestCust
     // throws error if token is not valid
     checkAuthTokenForError(authToken);
 
-    const modifiedUser = await findAndModifyUserFields(req);
+    const modifiedUser = await findAndModifyUserBase(req);
     modifiedUser.set({ active: true });
     await modifiedUser.save();
 
@@ -409,7 +409,7 @@ export const registerUserOnBoardingAndSendUserToClient = async (req: RequestCust
  * @description find user by req.params.idMongoose and modify the fields of the user. but does not save the user. Also checks duplicate mail(breaks single responsibility principle)=> 1 find, 2 modify, 3 check duplicate mail. there are 3 responsibilities.
  * @returns modified user
  */
-async function findAndModifyUserFields(req: RequestCustom) {
+async function findAndModifyUserBase(req: RequestCustom) {
   const { idMongoose } = req.params;
   const foundUser = await User.findById(idMongoose);
 

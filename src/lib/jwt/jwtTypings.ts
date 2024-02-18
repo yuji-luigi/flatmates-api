@@ -1,7 +1,8 @@
 import { ObjectId } from 'bson';
-import { IUser, LeanUser, UserModel } from '../../types/mongoose-types/model-types/user-interface';
+import { UserBase } from '../../types/mongoose-types/model-types/user-interface';
 import { RoleFields } from '../../types/mongoose-types/model-types/role-interface';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
+import { AccessControllerInterface } from '../../types/mongoose-types/model-types/access-controller-interface';
 
 export type CurrentSpace = {
   spaceName?: string;
@@ -12,12 +13,10 @@ export type CurrentSpace = {
   spaceAdmins: ObjectId[] | [];
 };
 
-// now payload must have entity string
-export type ReqUser = Omit<IUser, 'rootSpaces' | 'organizations'> & {
+// not jwt this is type of the req.user
+export type ReqUser = UserBase & {
   loggedAs: RoleFields;
-  rootSpaces?: ObjectId[];
-  organizations?: ObjectId[];
-  isSuperAdmin: boolean;
+  accessControllers?: AccessControllerInterface[];
 } & CurrentSpace;
 
 export type JsonObjPayload = {
@@ -34,7 +33,20 @@ export type SpaceDataInCookieFull = {
   spaceImage?: string;
 };
 
-export type JwtSignPayload =
+export type JwtSignPayload = {
+  email: string;
+  loggedAs: RoleFields;
+};
+
+export type JwtSignPayloadWithAccessCtrl =
+  | SpaceDetails & {
+      email: string;
+      loggedAs: RoleFields;
+      spaceId?: string;
+      accessControllerId?: string; // superAdmin does not need this
+    };
+
+export type __JwtSignPayload =
   | (SpaceDetails & {
       email: string;
       loggedAs: RoleFields;

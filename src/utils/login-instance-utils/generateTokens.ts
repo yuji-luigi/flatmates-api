@@ -33,14 +33,9 @@ export async function handleGenerateTokenByRoleAtLogin({
     > &
     IUserStatics;
 }): Promise<JwtSignPayload> {
-  // if (user.role[selectedRole].populated()()
-  if (user.role instanceof ObjectId) {
-    throw new Error('Role not populated');
-  }
   return {
     loggedAs: selectedRole,
-    email: user.email,
-    ...(user.isSuperAdmin ? {} : { organizationId: user.role[selectedRole].organizations[0].toString() })
+    email: user.email
   };
 }
 export function handleGenerateTokenByRoleAfterLogin(user: ReqUser): JwtSignPayload {

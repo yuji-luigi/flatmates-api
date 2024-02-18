@@ -4,7 +4,23 @@ import httpStatus from 'http-status';
 import { _MSG } from '../../utils/messages';
 import AccessController from '../../models/AccessController';
 import Role from '../../models/Role';
+import { RequestCustom } from '../../types/custom-express/express-custom';
+import { roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
 // import { CurrentSpace } from '../../types/mongoose-types/model-types/space-interface';
+
+export async function sendAccessControllersToClient(req: RequestCustom, res: Response) {
+  try {
+    const accessControllers = await AccessController.find({ user: req.user._id, role: roleCache.get(req.user.loggedAs) })
+      .populate('role', 'name')
+      .lean();
+    res.status(httpStatus.OK).json({
+      success: true,
+      data: accessControllers
+    });
+  } catch (error) {
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message || error });
+  }
+}
 
 export const createAccessControllerAndSendToClient = async (req: Request, res: Response) => {
   try {

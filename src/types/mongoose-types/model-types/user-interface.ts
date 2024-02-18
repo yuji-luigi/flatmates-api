@@ -15,7 +15,7 @@ export type UserError = {
   message?: string;
 };
 
-export interface IUser extends UserFields, LoginInstance<IUser>, MongooseBaseModel {
+export interface IUser extends UserBase, LoginInstance<IUser>, MongooseBaseModel {
   // tailSpace: ISpace | string;
   passwordMatches: (password: string) => Promise<boolean>;
 
@@ -25,7 +25,7 @@ export interface IUser extends UserFields, LoginInstance<IUser>, MongooseBaseMod
   getOrganizations: () => Promise<IOrganization[]>;
   isAdminOrganization: (organizationId: ObjectId) => Promise<boolean>;
 }
-export interface UserFields {
+export interface UserBase {
   _id: ObjectId;
   name: string | undefined;
   surname?: string | undefined;

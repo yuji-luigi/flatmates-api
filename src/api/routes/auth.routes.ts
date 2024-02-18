@@ -19,7 +19,6 @@ router.get('/', (req: Request, res: Response) => {
 // ALL ROUTES IS ALLOWED WHEN THE USER IS LOGGED IN
 // USER CREATE ROUTE IS ALLOWED ONLY FOR ADMIN
 
-router.post('/login', authCtrl.login);
 router.post('/login/:role', authCtrl.loginByRole);
 
 router.post('/register', authCtrl.register);

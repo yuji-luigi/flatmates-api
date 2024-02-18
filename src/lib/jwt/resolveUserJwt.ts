@@ -3,11 +3,15 @@ import { Request } from 'express';
 import vars from '../../utils/globalVariables';
 import User from '../../models/User';
 import Space from '../../models/Space';
-import { LeanUser } from '../../types/mongoose-types/model-types/user-interface';
+import { LeanUser, UserBase } from '../../types/mongoose-types/model-types/user-interface';
 import { ObjectId } from 'bson';
 import { stringifyObjectIds } from '../../middlewares/auth-middlewares';
 import { reqUserBuilder } from './reqUserBuilder';
 import { CurrentSpace, DecodedJwtPayload, ReqUser } from './jwtTypings';
+import { accessControllersCache } from '../mongoose/mongoose-cache/access-controller-cache';
+import { a } from '../../api/aggregation-helpers/spacePipelines';
+import { roleCache } from '../mongoose/mongoose-cache/role-cache';
+import AccessController from '../../models/AccessController';
 
 const { jwtSecret } = vars;
 const JwtStrategy = passport.Strategy;
@@ -53,11 +57,17 @@ type UserResolverReturnType = (err: any, user: ReqUser | boolean, info?: any) =>
 
 const resolveUserJwt = async (payload: DecodedJwtPayload, done: UserResolverReturnType) => {
   try {
-    const leanUser: LeanUser = await User.findOne({ email: payload.email }).lean();
+    const leanUser: UserBase = await User.findOne({ email: payload.email }).lean();
     delete leanUser.password;
     if (!leanUser) {
       return done(null, false);
     }
+
+    if (!accessControllersCache.get(leanUser._id.toString())) {
+      const accessControllers = await AccessController.find({ user: leanUser._id, role: roleCache.get(payload.loggedAs) });
+      accessControllersCache.set(leanUser._id.toString(), accessControllers);
+    }
+    const accessControllers = accessControllersCache.get(leanUser._id.toString());
 
     // Fetch space and organization if they're in the payload
     const currentSpace: CurrentSpace = {
@@ -75,11 +85,8 @@ const resolveUserJwt = async (payload: DecodedJwtPayload, done: UserResolverRetu
       // if yes then set the user is admin of the space
       currentSpace.isAdminOfSpace = stringifyObjectIds(space.admins).includes(leanUser._id.toString());
     }
-    if (payload.organizationId) {
-      // set sected organization id in to currentSpace data
-      currentSpace.organizationId = new ObjectId(payload.organizationId);
-    }
-    const reqUser = await reqUserBuilder(leanUser, currentSpace, payload.loggedAs);
+
+    const reqUser = await reqUserBuilder({ user: leanUser, currentSpace, loggedAs: payload.loggedAs, accessControllers });
 
     // You can attach space and organization to the user object if you like
     return done(null, reqUser);
