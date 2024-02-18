@@ -1,17 +1,14 @@
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
 // import { UserModel } from 'model/user';
-import vars from '../../utils/globalVariables';
 import { _MSG } from '../../utils/messages';
 import AccessController from '../../models/AccessController';
 import Role from '../../models/Role';
 // import { CurrentSpace } from '../../types/mongoose-types/model-types/space-interface';
 
-const { cookieDomain } = vars;
-
 export const createAccessControllerAndSendToClient = async (req: Request, res: Response) => {
   try {
-    const { user, rootSpace, role, ...other } = req.body;
+    const { user, rootSpace, ...other } = req.body;
     const roles = await Role.find().lean();
 
     for (const role of roles) {

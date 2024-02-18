@@ -14,6 +14,7 @@ import { ISpace } from '../types/mongoose-types/model-types/space-interface';
 import { IUser, UserError, UserModel } from '../types/mongoose-types/model-types/user-interface';
 import { _MSG } from '../utils/messages';
 import Role from './AccessController';
+import AccessController from './AccessController';
 
 export type modules = {
   [key: string]: boolean;
@@ -333,6 +334,27 @@ userSchema.set('toJSON', {
   virtuals: true
 });
 userSchema.plugin(autopopulate);
+userSchema.pre('deleteMany', async function (next) {
+  try {
+    const users = await this.model.find(this.getFilter());
+    for (const user of users) {
+      await AccessController.findOneAndDelete({ user: user._id });
+    }
+    return next();
+  } catch (error) {
+    return next(error);
+  }
+});
+
+userSchema.pre('deleteOne', async function (next) {
+  try {
+    const query = this.getQuery();
+    await AccessController.deleteMany({ user: query._id });
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 
 // const UserSchema = mongoose.model('users', userSchema) as unknown;
 const User = model<IUser, UserModel>('users', userSchema);
