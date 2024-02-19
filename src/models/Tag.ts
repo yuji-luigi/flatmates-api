@@ -9,7 +9,7 @@ export const tagSchema = new Schema<ITag>(
     name: String,
     description: String,
     color: String,
-    mainSpace: {
+    space: {
       type: Schema.Types.ObjectId,
       ref: 'spaces'
     },

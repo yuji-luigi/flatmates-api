@@ -35,8 +35,8 @@ export async function checkAdminOfSpace({ space, currentUser }: { space: ISpace;
   if (currentUser.isSuperAdmin) {
     return true;
   }
-  const mainSpace = await space.getMainSpace();
-  if (stringifyObjectIds(mainSpace.admins).includes(currentUser._id.toString())) {
+  const space = await space.getMainSpace();
+  if (stringifyObjectIds(space.admins).includes(currentUser._id.toString())) {
     return true;
   }
   return false;

@@ -5,7 +5,7 @@ export const belongsToFields = {
     type: Boolean,
     default: false
   },
-  rootSpaces: [
+  spaces: [
     {
       type: Schema.Types.ObjectId,
       ref: 'spaces'

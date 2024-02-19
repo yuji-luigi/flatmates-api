@@ -6,6 +6,6 @@ export interface ITag extends MongooseBaseModel {
   name: string;
   description?: string;
   color?: string;
-  mainSpace: ISpace;
+  space: ISpace;
   organization?: string | IOrganization;
 }

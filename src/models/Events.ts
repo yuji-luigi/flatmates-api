@@ -9,7 +9,7 @@ const Events = new Schema<IEvent>(
   {
     title: String,
     subtitle: String,
-    mainSpace: {
+    space: {
       type: Schema.Types.ObjectId,
       ref: 'spaces'
     },

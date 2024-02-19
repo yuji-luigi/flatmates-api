@@ -9,7 +9,7 @@ const bookmarkSchema = new Schema<IBookmark>(
     refId: Schema.Types.ObjectId,
     /** saving thread or */
     note: String,
-    mainSpace: {
+    space: {
       type: Schema.Types.ObjectId,
       ref: 'spaces',
       autopopulate: true

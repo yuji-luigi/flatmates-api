@@ -84,9 +84,9 @@ export const userSchema = new Schema<IUser, UserModel>(
       type: Date
     },
 
-    // rootSpaces refer to mainSpaces.
+    // spaces refer to mainSpaces.
     ...belongsToFields
-    // rootSpaces: [
+    // spaces: [
     //   {
     //     type: Schema.Types.ObjectId,
     //     ref: 'spaces',
@@ -180,8 +180,8 @@ userSchema.method({
   },
   async getOrganizations() {
     try {
-      // const query = this.isSuperAdmin ? {} : { _id: { $in: this.rootSpaces } };
-      const spaces: ISpace[] = await Space.find({ _id: { $in: this.rootSpaces } }).lean();
+      // const query = this.isSuperAdmin ? {} : { _id: { $in: this.spaces } };
+      const spaces: ISpace[] = await Space.find({ _id: { $in: this.spaces } }).lean();
       return spaces.map((space) => space.organization);
     } catch (error) {
       logger.error(error.message, error);

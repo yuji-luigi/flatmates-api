@@ -7,6 +7,6 @@ export interface IBookmark extends MongooseBaseModel {
   entity: string | undefined;
   refId: string;
   note?: string | undefined;
-  mainSpace?: ISpace;
+  space?: ISpace;
   organization: IOrganization;
 }

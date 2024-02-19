@@ -23,11 +23,11 @@ import AccessController from '../../models/AccessController';
 const entity = 'users';
 
 const lookupSpaces: PipelineStage.FacetPipelineStage = {
-  $lookup: { from: 'spaces', localField: 'rootSpaces', foreignField: '_id', as: 'rootSpaces' }
+  $lookup: { from: 'spaces', localField: 'spaces', foreignField: '_id', as: 'spaces' }
 };
 export const createUserAndSendDataWithPagination = async (req: RequestCustom, res: Response) => {
   try {
-    // if (!req.user.spaceId && !req.body.rootSpaces.length) {
+    // if (!req.user.spaceId && !req.body.spaces.length) {
     //   throw new Error('space is not set. Please select the space.');
     // }
     // if (!req.user.organizationId) {
@@ -37,7 +37,7 @@ export const createUserAndSendDataWithPagination = async (req: RequestCustom, re
     // req.body.user = req.user._id;
     // req.body.organization = req.user.organizationId;
     // req.body.space = req.user.spaceId;
-    // req.body.rootSpaces = [req.user.spaceId];
+    // req.body.spaces = [req.user.spaceId];
 
     if (!req.body.password) {
       throw new Error('Password is required. Please provide password.');
@@ -56,7 +56,7 @@ export const createUserAndSendDataWithPagination = async (req: RequestCustom, re
       });
     }
     // modify query for user model.
-    // req.query.rootSpaces = req.user.spaceId ? { $in: [req.user.spaceId] } : null;
+    // req.query.spaces = req.user.spaceId ? { $in: [req.user.spaceId] } : null;
     delete req.query.space;
 
     req.query = convert_idToMongooseId(req.query);
@@ -235,9 +235,9 @@ export async function importExcelFromClient(req: RequestCustom, res: Response) {
     const fileFromClient = req.files.file;
     // Parse the file based on its type
     const data = convertExcelToJson<userExcelData>(fileFromClient);
-    const mainSpace = req.user.spaceId;
-    const organization = req.user.organizationId;
-    if (!mainSpace)
+    const space = req.user.currentSpace.spaceId;
+    const organization = req.user.currentSpace.organizationId;
+    if (!space)
       throw new ErrorEx({
         status: httpStatus.INTERNAL_SERVER_ERROR,
         message: 'Please set the select input value in some building/space',
@@ -246,7 +246,7 @@ export async function importExcelFromClient(req: RequestCustom, res: Response) {
       });
 
     // SECOND IMPLEMENTATION: PROMISE.ALL
-    const promises = createUserExcelPromises({ excelData: data, mainSpace, organization });
+    const promises = createUserExcelPromises({ excelData: data, space, organization });
     const CHUNK_SIZE = 100;
     const chunks = chunkArray(promises, CHUNK_SIZE);
     for (const chunk of chunks) {
@@ -258,7 +258,7 @@ export async function importExcelFromClient(req: RequestCustom, res: Response) {
       return {
         name: excelData.name,
         surname: excelData.surname,
-        rootSpaces: { $in: [mainSpace] }
+        spaces: { $in: [space] }
       };
     });
     const foundUsers = await User.find({ $or: userQueries }, '_id');
@@ -350,7 +350,7 @@ export const updateUserById = async (req: RequestCustom, res: Response) => {
   try {
     const modifiedModel = await findAndModifyUserBase(req);
     await modifiedModel.save();
-    await modifiedModel.populate({ path: 'rootSpaces', select: 'name' });
+    await modifiedModel.populate({ path: 'spaces', select: 'name' });
     res.status(httpStatus.OK).json({
       success: true,
       message: _MSG.OBJ_UPDATED,
@@ -418,11 +418,11 @@ async function findAndModifyUserBase(req: RequestCustom) {
   if (emailDuplicates) {
     throw new Error('Email is already in use. Please check the email.');
   }
-  const { email, password, name, surname, phone, rootSpaces, role } = reqBody;
+  const { email, password, name, surname, phone, spaces, role } = reqBody;
   foundUser.set({ email, name, surname, phone, role: 'user' });
   password && foundUser.set({ password });
   if (req.user.isSuperAdmin) {
-    rootSpaces && foundUser.set({ rootSpaces });
+    spaces && foundUser.set({ spaces });
     role && foundUser.set({ role });
   }
 

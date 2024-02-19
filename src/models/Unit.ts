@@ -22,7 +22,7 @@ export const unitSchema = new Schema<UnitInterface>(
       type: Schema.Types.ObjectId,
       ref: 'spaces'
     },
-    mainSpace: {
+    space: {
       type: Schema.Types.ObjectId,
       ref: 'spaces'
     },

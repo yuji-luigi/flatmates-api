@@ -22,7 +22,7 @@ const createThread = async (req: RequestCustom, res: Response) => {
     reqBody.user = req.user;
     await Thread.create(reqBody);
     delete req.query.organizations;
-    delete req.query.rootSpaces;
+    delete req.query.spaces;
     const threadsToSend = await getThreadsForPlatForm({ entity: 'threads', query: req.query, sortQuery: { isImportant: -1, createdAt: -1 } });
     res.status(httpStatus.CREATED).json({
       success: true,

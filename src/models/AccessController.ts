@@ -35,7 +35,7 @@ export const accessControllerSchema = new Schema<AccessControllerInterface, Acce
       ref: 'roles',
       required: true
     },
-    rootSpace: {
+    space: {
       type: Schema.Types.ObjectId,
       ref: 'spaces',
       required: true
@@ -71,7 +71,7 @@ export const accessControllerSchema = new Schema<AccessControllerInterface, Acce
             (await this.findOne({
               user: targetUserId,
               role,
-              rootSpace: dto.rootSpace
+              space: dto.space
             })) || new this();
           const permissions = this.buildPermissionFields(dto);
           accessController.set({
@@ -86,7 +86,7 @@ export const accessControllerSchema = new Schema<AccessControllerInterface, Acce
     },
     methods: {
       getCacheKey: function () {
-        return `${this.user}-${this.role}-${this.rootSpace}`;
+        return `${this.user}-${this.role}-${this.space}`;
       },
 
       getCachedPermission: function () {

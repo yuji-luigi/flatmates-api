@@ -16,7 +16,7 @@ import { handleGenerateTokenByRoleAfterLogin } from '../../utils/login-instance-
 export async function sendOrganizations(req: RequestCustom, res: Response) {
   try {
     const user = await User.findById<IUser>(req.user._id);
-    const userSpaces = await Space.find({ _id: { $in: user.rootSpaces } }).lean();
+    const userSpaces = await Space.find({ _id: { $in: user.spaces } }).lean();
 
     let organizationIds = userSpaces.map((space) => {
       if (typeof space.organization === 'string') {
@@ -32,7 +32,7 @@ export async function sendOrganizations(req: RequestCustom, res: Response) {
     delete query.space;
     delete query.organization;
     delete query.organizations;
-    delete query.rootSpaces;
+    delete query.spaces;
     const data = await Organization.find(query).lean();
 
     res.status(httpStatus.OK).json({
@@ -48,7 +48,7 @@ export async function sendOrganizations(req: RequestCustom, res: Response) {
 export async function sendOrganizationsWithPagination(req: RequestCustom, res: Response) {
   try {
     const user = await User.findById<IUser>(req.user._id);
-    const userSpaces = await Space.find({ _id: { $in: user.rootSpaces } }).lean();
+    const userSpaces = await Space.find({ _id: { $in: user.spaces } }).lean();
 
     let organizationIds = userSpaces.map((space) => {
       if (typeof space.organization === 'string') {

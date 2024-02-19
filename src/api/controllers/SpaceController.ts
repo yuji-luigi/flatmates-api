@@ -25,7 +25,7 @@ const entity = 'spaces';
 //================================================================================
 // CUSTOM CONTROLLER...
 //================================================================================
-
+///todo: separate the function in to send spaces or direct children spaces to client
 export const sendSpacesToClient = async (req: RequestCustom, res: Response) => {
   try {
     // throw new Error('GET /spaces is called! check the usage. why currentSpaceId is needed?');
@@ -394,7 +394,7 @@ export const sendSpaceSelectionToClient = async (req: RequestCustom, res: Respon
   try {
     const entity = 'spaces';
 
-    const data = await Space.find({ _id: { $in: req.user.rootSpaces } });
+    const data = await Space.find({ _id: { $in: req.user.spaces } });
 
     res.status(httpStatus.OK).json({
       success: true,
@@ -581,8 +581,6 @@ export async function sendDescendantIdsToClient(req: RequestCustom, res: Respons
 export async function sendHeadToTailToClient(req: RequestCustom, res: Response) {
   try {
     const spaceIds = await aggregateDescendantIds(req.params.spaceId, req.user);
-    // const spaces = await Space.find({ _id: { $in: spaceIds } }).lean();
-    // const headToTail = buildHierarchy({spaces, rootSpace: });
     res.status(httpStatus.OK).json({
       success: true,
       collection: 'spaces',

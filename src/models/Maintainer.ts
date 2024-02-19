@@ -54,7 +54,7 @@ export const maintainerSchema = new Schema<MaintainerInterface>(
       type: String
     },
     ...belongsToFields,
-    // rootSpaces: [
+    // spaces: [
     //   {
     //     type: Schema.Types.ObjectId,
     //     ref: 'spaces'
@@ -132,10 +132,10 @@ maintainerSchema.pre('save', async function save(next) {
     }
     if (this.isModified('spaces')) {
       console.log('spaces are modified: Maintainer.ts');
-      const stringifiedSpaces = this.rootSpaces.map((space) => space.toString());
+      const stringifiedSpaces = this.spaces.map((space) => space.toString());
       const setSpaces = [...new Set(stringifiedSpaces)];
       const spaces = await Space.find({ _id: { $in: setSpaces } }).lean();
-      this.rootSpaces = spaces.map((space) => space._id);
+      this.spaces = spaces.map((space) => space._id);
     }
     return next();
   } catch (error) {

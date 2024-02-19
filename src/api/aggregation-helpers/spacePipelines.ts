@@ -76,18 +76,18 @@ export const a = (spaceId: ObjectId) => [
   {
     $group: {
       _id: '$_id',
-      rootSpace: { $first: '$$ROOT' },
+      space: { $first: '$$ROOT' },
       children: { $addToSet: '$children' }
     }
   },
   {
     $addFields: {
-      'rootSpace.children': '$children'
+      'space.children': '$children'
     }
   },
   {
     $replaceRoot: {
-      newRoot: '$rootSpace'
+      newRoot: '$space'
     }
   }
 ];

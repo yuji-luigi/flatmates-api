@@ -3,15 +3,14 @@ import { Request } from 'express';
 import vars from '../../utils/globalVariables';
 import User from '../../models/User';
 import Space from '../../models/Space';
-import { LeanUser, UserBase } from '../../types/mongoose-types/model-types/user-interface';
-import { ObjectId } from 'bson';
+import { UserBase } from '../../types/mongoose-types/model-types/user-interface';
 import { stringifyObjectIds } from '../../middlewares/auth-middlewares';
 import { reqUserBuilder } from './reqUserBuilder';
 import { CurrentSpace, DecodedJwtPayload, ReqUser } from './jwtTypings';
 import { accessControllersCache } from '../mongoose/mongoose-cache/access-controller-cache';
-import { a } from '../../api/aggregation-helpers/spacePipelines';
 import { roleCache } from '../mongoose/mongoose-cache/role-cache';
 import AccessController from '../../models/AccessController';
+import { spaceCache } from '../mongoose/mongoose-cache/space-cache';
 
 const { jwtSecret } = vars;
 const JwtStrategy = passport.Strategy;
@@ -64,11 +63,21 @@ const resolveUserJwt = async (payload: DecodedJwtPayload, done: UserResolverRetu
     }
 
     if (!accessControllersCache.get(leanUser._id.toString())) {
-      const accessControllers = await AccessController.find({ user: leanUser._id, role: roleCache.get(payload.loggedAs) });
-      accessControllersCache.set(leanUser._id.toString(), accessControllers);
+      const _accessControllers = await AccessController.find({ user: leanUser._id, role: roleCache.get(payload.loggedAs) });
+      accessControllersCache.set(leanUser._id.toString(), _accessControllers);
     }
+
     const accessControllers = accessControllersCache.get(leanUser._id.toString());
 
+    for (const aCtrl of accessControllers) {
+      if (!spaceCache.get(aCtrl.space.toString())) {
+        const space = await Space.findById(aCtrl.space).lean();
+        spaceCache.set(aCtrl.space.toString(), space);
+      }
+    }
+
+    //Todo: set SpaceId[] in req.user and use it for querying. when selected one space from frontend (AppBar) then only one space array.
+    //! Actually use directly the accessControllers array for querying.
     // Fetch space and organization if they're in the payload
     const currentSpace: CurrentSpace = {
       isAdminOfSpace: false,

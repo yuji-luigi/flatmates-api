@@ -14,7 +14,7 @@ export const fundRuleSchema = new Schema<IFundRule>(
       type: Schema.Types.ObjectId,
       ref: 'spaces'
     },
-    mainSpace: {
+    space: {
       type: Schema.Types.ObjectId,
       ref: 'spaces'
     },

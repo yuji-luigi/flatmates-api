@@ -24,7 +24,7 @@ export async function sendAccessControllersToClient(req: RequestCustom, res: Res
 
 export const createAccessControllerAndSendToClient = async (req: Request, res: Response) => {
   try {
-    const { user, rootSpace, ...other } = req.body;
+    const { user, space, ...other } = req.body;
     const roles = await Role.find().lean();
 
     for (const role of roles) {
@@ -34,12 +34,12 @@ export const createAccessControllerAndSendToClient = async (req: Request, res: R
         const accessController =
           (await AccessController.findOne({
             user,
-            rootSpace,
+            space,
             role
           })) ||
           new AccessController({
             user,
-            rootSpace,
+            space,
             role
           });
         accessController.set({ permissions });

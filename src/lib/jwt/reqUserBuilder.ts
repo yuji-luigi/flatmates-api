@@ -18,7 +18,7 @@ export const reqUserBuilder = async ({
 
   const jwtReturnObject: ReqUser = {
     ...user,
-    ...currentSpace,
+    currentSpace,
     accessControllers,
     loggedAs
   };

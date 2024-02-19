@@ -17,7 +17,7 @@ export type CurrentSpace = {
 export type ReqUser = UserBase & {
   loggedAs: RoleFields;
   accessControllers?: AccessControllerInterface[];
-} & CurrentSpace;
+} & { currentSpace?: CurrentSpace };
 
 export type JsonObjPayload = {
   space?: Partial<ISpace> | null;

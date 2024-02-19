@@ -42,7 +42,7 @@ export interface UserBase {
   adminOf: ISpace[];
   // wallet?: string;
   // userSetting: string | boolean;
-  rootSpaces?: ObjectId[];
+  spaces?: ObjectId[];
   active: boolean;
   // organization?: IOrganization | null | undefined;
   organizations?: ObjectId[];

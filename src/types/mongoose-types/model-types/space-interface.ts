@@ -13,7 +13,7 @@ export interface ISpace extends MongooseBaseModel {
   // TODO: DEPRECATE THIS. USE SPACETYPE
   isMain: boolean;
   type: SpaceTypes;
-  /** only for rootSpace(head) determines how many users can be registered to the space. */
+  /** only for space(head) determines how many users can be registered to the space. */
   maxUsers: number;
   /** same order as condoAdmin, companyAdmin, flatAdmin following values. */
   typeOfSpace: TypeOfSpace;

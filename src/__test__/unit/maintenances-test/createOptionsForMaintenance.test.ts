@@ -9,15 +9,11 @@ import AuthToken from '../../../models/AuthToken';
 
 describe('test for createMailOptionsForMaintenance', () => {
   let options;
-  // let mainSpace = {} as ISpace;
-  // let maintainer = {} as MaintainerInterface;
   let authToken = {} as AuthTokenInterface;
 
   let maintenance = {} as IMaintenance;
   beforeAll(async () => {
     mongoose.connect();
-    // mainSpace = await Space.findOne({ isMain: true });
-    // maintainer = await Maintainer.findOne();
     maintenance = await Maintenance.findOne();
     authToken = await AuthToken.findOne({
       'docHolder.instanceId': maintenance._id

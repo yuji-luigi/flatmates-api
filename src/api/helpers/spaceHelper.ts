@@ -7,25 +7,25 @@ import { ReqUser } from '../../lib/jwt/jwtTypings';
 
 /**  searches only root spaces of user */
 export async function userHasSpace(user: ReqUser, selectedSpace: string): Promise<boolean> {
-  // return user.rootSpaces.includes(selectedSpace._id.toString());
-  const rootSpaces = user.rootSpaces.map((rootSpace) => rootSpace.toString());
+  // return user.spaces.includes(selectedSpace._id.toString());
+  const spaces = user.spaces.map((space) => space.toString());
 
-  return rootSpaces.some((rootSpace) => rootSpace.toString() === selectedSpace.toString());
+  return spaces.some((space) => space.toString() === selectedSpace.toString());
 }
 /**  depth-first search (DFS) */
 export async function userHasSpaceDFS(user: ReqUser, selectedSpace: ISpace): Promise<boolean> {
-  // return user.rootSpaces.includes(selectedSpace._id.toString());
-  const rootSpaces = user.rootSpaces.map((rootSpace) => rootSpace.toString());
+  // return user.spaces.includes(selectedSpace._id.toString());
+  const spaces = user.spaces.map((space) => space.toString());
 
-  const hasSpaceAsRootSpace = rootSpaces.some((rootSpace) => rootSpace.toString() === selectedSpace._id.toString());
+  const hasSpaceAsRootSpace = spaces.some((space) => space.toString() === selectedSpace._id.toString());
   if (hasSpaceAsRootSpace) {
     return hasSpaceAsRootSpace;
   }
 
   // need to search in all
-  for (const rootSpace of rootSpaces) {
-    // const descendants = await aggregateDescendantIds(rootSpace, user);
-    const hasSpaceAsDescendant = await searchDescendants(rootSpace, selectedSpace._id.toString(), user);
+  for (const space of spaces) {
+    // const descendants = await aggregateDescendantIds(space, user);
+    const hasSpaceAsDescendant = await searchDescendants(space, selectedSpace._id.toString(), user);
     if (hasSpaceAsDescendant) {
       return true;
     }
@@ -51,10 +51,10 @@ async function searchDescendants(spaceId: string, targetId: string, user: ReqUse
 
 /** breadth-first search */
 export async function userHasSpaceBFS(user: ReqUser, selectedSpace: ISpace): Promise<boolean> {
-  const rootSpaces = user.rootSpaces.map((rootSpace) => rootSpace.toString());
+  const spaces = user.spaces.map((space) => space.toString());
 
   // Initialize a queue with the root spaces
-  const queue = [...rootSpaces];
+  const queue = [...spaces];
 
   while (queue.length > 0) {
     const currentSpaceId = queue.shift();
@@ -171,7 +171,7 @@ export function formatCurrentSpaceToJSON(space: ISpace): string {
   return JSON.stringify(currentSpace);
 }
 
-// export async function buildHierarchy({ spaces, rootSpace }: { spaces: ISpace[]; rootSpaceId: string }) {
+// export async function buildHierarchy({ spaces, space }: { spaces: ISpace[]; rootSpaceId: string }) {
 //   // Fetch all spaces from the DB
 
 //   function findChildren(parentId: ObjectId) {
@@ -183,7 +183,7 @@ export function formatCurrentSpaceToJSON(space: ISpace): string {
 //     if (children.length > 0) {
 //       currentSpace.children = children.map((child) => constructSpaceTree(child));
 //     }
-//     const rootSpace = await Space.findById(rootSpaceId);
-//     return constructSpaceTree(rootSpace);
+//     const space = await Space.findById(rootSpaceId);
+//     return constructSpaceTree(space);
 //   }
 // }

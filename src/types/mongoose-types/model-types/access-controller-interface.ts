@@ -28,7 +28,7 @@ export interface PermissionInterface {
 }
 
 export type ACtrlDtoDashboard = {
-  rootSpace: string;
+  space: string;
   roleName: RoleFields;
   user: string;
 } & {
@@ -37,7 +37,7 @@ export type ACtrlDtoDashboard = {
 
 export interface AccessControllerBase extends MongooseBaseModel {
   user: ObjectId | IUser;
-  rootSpace: ObjectId | ISpace;
+  space: ObjectId | ISpace;
   role: ObjectId | RoleInterface;
   permissions: PermissionInterface[];
 }

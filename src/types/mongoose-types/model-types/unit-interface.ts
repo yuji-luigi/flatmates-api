@@ -9,7 +9,7 @@ export interface UnitInterface extends MongooseBaseModel {
   surname: string;
   email?: string;
   authToken: AuthTokenInterface;
-  mainSpace: ISpace;
+  space: ISpace;
   tailSpace: ISpace | string;
   organization?: string | IOrganization;
   user: IUser;

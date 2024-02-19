@@ -22,13 +22,13 @@ router.use((req: RequestCustom, response: Response, next: NextFunction) => {
     if (!req.user.spaceId) {
       return response.status(httpStatus.FORBIDDEN).send('something went wrong');
     }
-    req.query.rootSpaces = { $in: [req.user.spaceId] };
+    req.query.spaces = { $in: [req.user.spaceId] };
   }
   if (req.query.organization) {
     req.query.organizations = { $in: [req.query.organization] };
   }
   if (req.query.space) {
-    req.query.rootSpaces = { $in: [req.user.spaceId] };
+    req.query.spaces = { $in: [req.user.spaceId] };
   }
   delete req.query.organization;
   delete req.query.space;

@@ -83,7 +83,7 @@ const register = async (req: Request, res: Response) => {
     // const spaceCookie = formatCurrentSpaceToJSON(newRootSpace);
     await newOrganization.save();
 
-    newUser.rootSpaces.push(newRootSpace);
+    newUser.spaces.push(newRootSpace);
     newUser.organizations.push(newOrganization);
     await newUser.save();
 
@@ -109,23 +109,8 @@ const register = async (req: Request, res: Response) => {
 };
 const completeRegisterMaintainer = async (req: RequestCustom, res: Response) => {
   try {
-    const {
-      email,
-      password,
-      password2,
-      name,
-      surname,
-      rootSpace,
-      organization,
-      _id,
-      maintenanceId,
-      description,
-      tel,
-      address,
-      homepage,
-      company,
-      type
-    } = req.body;
+    const { email, password, password2, name, surname, space, organization, _id, maintenanceId, description, tel, address, homepage, company, type } =
+      req.body;
 
     if (password !== password2) {
       throw new Error('Password non corrispondenti');
@@ -139,7 +124,7 @@ const completeRegisterMaintainer = async (req: RequestCustom, res: Response) => 
 
     if (!authToken) throw new Error('invalid access');
     // find a space for jwt generation
-    const space = await Space.findById(rootSpace);
+    const space = await Space.findById(space);
     const maintainer = await Maintainer.findById(_id);
     // set all the values passed from the client
     maintainer.name = name;
@@ -154,8 +139,8 @@ const completeRegisterMaintainer = async (req: RequestCustom, res: Response) => 
     maintainer.company = company;
     maintainer.type = type;
 
-    const rootSpaceIds = maintainer.rootSpaces.map((space) => space.toString());
-    maintainer.rootSpaces = [...new Set([...rootSpaceIds, rootSpace])];
+    const rootSpaceIds = maintainer.spaces.map((space) => space.toString());
+    maintainer.spaces = [...new Set([...rootSpaceIds, space])];
     const organizationIds = maintainer.organizations.map((org) => org.toString());
     maintainer.organizations = [...new Set([...organizationIds, organization])];
 
@@ -294,10 +279,9 @@ const me = async (req: RequestCustom, res: Response) => {
 
 export const sendRootSpaceSelectionsToClient = async (req: RequestCustom, res: Response) => {
   try {
-    // case user show user.rootSpaces
+    // case user show user.spaces
     //!todo think about structure of the maintainers. do they have to have root spaces? role must be maintainers
-    let query: Record<string, string | any> = { isMain: true, _id: { $in: req.user.rootSpaces } };
-    // let mainSpaces = await Space.find({ isMain: true, _id: { $in: req.user.rootSpaces } });
+    let query: Record<string, string | any> = { isMain: true, _id: { $in: req.user.spaces } };
     // case admin show all main spaces of his organizations
     if (req.user.loggedAs === 'Administrator') {
       query = { isMain: true /* , organization: { $in: req.user.organizations } */ };
@@ -306,13 +290,13 @@ export const sendRootSpaceSelectionsToClient = async (req: RequestCustom, res: R
       query = { isMain: true /* , organization: req.user.organizationId */ };
     }
 
-    const rootSpaces = await Space.find(query).populate({ path: 'cover', select: 'url' }).lean();
+    const spaces = await Space.find(query).populate({ path: 'cover', select: 'url' }).lean();
 
     res.status(httpStatus.OK).json({
       collection: 'spaces',
-      totalDocuments: rootSpaces.length,
+      totalDocuments: spaces.length,
       success: true,
-      data: rootSpaces
+      data: spaces
     });
   } catch (error) {
     logger.error(error.message || error);

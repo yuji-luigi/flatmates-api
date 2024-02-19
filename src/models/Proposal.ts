@@ -11,7 +11,7 @@ export const proposalSchema = new Schema<IProposal>(
       type: Schema.Types.ObjectId,
       ref: 'fundRules'
     },
-    mainSpace: {
+    space: {
       type: Schema.Types.ObjectId,
       ref: 'spaces'
     },

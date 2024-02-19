@@ -6,7 +6,7 @@ import { IUser } from './user-interface';
 export interface IProposal /* extends Document */ {
   _id?: string;
   amount?: number | undefined;
-  mainSpace: ISpace;
+  space: ISpace;
   description?: string | undefined;
   fundRule?: string | IFundRule | undefined;
   proposals?: string[] | IProposal[] | undefined;

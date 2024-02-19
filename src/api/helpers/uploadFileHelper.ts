@@ -248,7 +248,7 @@ export async function makeAllPublic(req: Request, res: Response) {
 }
 
 export const getFolderName = (body: any) => {
-  const { organizationName, mainSpace, entity } = body;
-  const folderName = `${replaceSpecialChars(organizationName)}/${replaceSpecialChars(mainSpace)}/${entity}`;
+  const { organizationName, space, entity } = body;
+  const folderName = `${replaceSpecialChars(organizationName)}/${replaceSpecialChars(space)}/${entity}`;
   return folderName;
 };

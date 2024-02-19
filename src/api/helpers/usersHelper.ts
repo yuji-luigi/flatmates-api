@@ -30,11 +30,11 @@ export async function deleteDuplicateEmailField(excelData: userExcelData) {
 
 export async function handleConstructUpdateUser({
   excelData,
-  mainSpace,
+  space,
   organization
 }: {
   excelData: userExcelData;
-  mainSpace: ObjectId;
+  space: ObjectId;
   organization: ObjectId;
 }) {
   try {
@@ -45,7 +45,7 @@ export async function handleConstructUpdateUser({
     let user = await User.findOne({
       name: excelData.name,
       surname: excelData.surname,
-      rootSpaces: { $in: [mainSpace] },
+      spaces: { $in: [space] },
       organizations: { $in: [organization] }
     });
     // case already imported once. update the user
@@ -54,7 +54,7 @@ export async function handleConstructUpdateUser({
         name: excelData.name,
         surname: excelData.surname,
         email: excelData.email,
-        rootSpaces: [mainSpace],
+        spaces: [space],
         role: 'user'
       });
     }
@@ -64,7 +64,7 @@ export async function handleConstructUpdateUser({
         name: excelData.name,
         surname: excelData.surname,
         email: excelData.email,
-        rootSpaces: [mainSpace],
+        spaces: [space],
         role: 'user',
         organizations: [organization]
       });
@@ -75,88 +75,6 @@ export async function handleConstructUpdateUser({
     throw new Error(error.message || error);
   }
 }
-
-// // not using now
-// export async function handleCreateSpaceByUserUnit({ excelData, mainSpace }: { excelData: userExcelData[]; mainSpace: ISpace }) {
-//   try {
-//     const buildings = excelData.map((user) => user.building);
-//     const uniqueBuildings = [...new Set(buildings)];
-//     for (const building of uniqueBuildings) {
-//       let buildingObj = await Space.findOne({ name: building, parentId: mainSpace._id });
-//       if (!buildingObj) {
-//         buildingObj = new Space({
-//           name: building,
-//           parentId: mainSpace._id,
-//           organization: mainSpace.organization,
-//           isHead: false,
-//           type: 'building'
-//         });
-//         await buildingObj.save();
-//       }
-//       const floors = excelData.filter((user) => user.building === building).map((user) => user.floor);
-//       const uniqueFloors = [...new Set(floors)];
-//       for (const floor of uniqueFloors) {
-//         let floorObj = await Space.findOne({ name: floor.toString(), parentId: buildingObj._id });
-//         if (!floorObj) {
-//           floorObj = new Space({
-//             name: floor.toString(),
-//             parentId: buildingObj._id,
-//             organization: mainSpace.organization,
-//             isHead: false,
-//             type: 'floor'
-//           });
-//           await floorObj.save();
-//         }
-
-//         const tailSpaces = excelData
-//           .filter((document) => document.building === building && document.floor === floor)
-//           .map((document) => document.room);
-//         const uniqueTailSpaces = [...new Set(tailSpaces)];
-
-//         for (const tailSpace of uniqueTailSpaces) {
-//           // search in DB to control if to save or not
-//           let tailSpaceToSave = await Space.findOne({ name: tailSpace.toString(), parentId: floorObj._id });
-//           // case does not found. create new
-//           if (!tailSpaceToSave) {
-//             tailSpaceToSave = new Space({
-//               name: tailSpace.toString(),
-//               parentId: floorObj._id,
-//               organization: mainSpace.organization,
-//               isHead: false,
-//               isTail: true,
-//               spaceType: 'unit'
-//             });
-//             await tailSpaceToSave.save();
-//           }
-//           const currentDocument = excelData.find(
-//             (document) => document.building === building && document.floor === floor && document.room === tailSpace
-//           );
-//           const authToken = await AuthToken.create({});
-//           const { name, surname, email } = currentDocument;
-//           const foundUser = await User.findOne({ name, surname, tailSpace: tailSpaceToSave._id });
-//           if (foundUser) continue;
-
-//           const newUser = await User.create({
-//             name,
-//             surname,
-//             email,
-//             rootSpaces: [mainSpace],
-//             active: false,
-//             organization: mainSpace.organization,
-//             authToken,
-//             role: 'user'
-//           });
-//           tailSpaceToSave.user = newUser as IUser;
-//           await tailSpaceToSave.save();
-//         }
-//       }
-//     }
-//     return;
-//   } catch (error) {
-//     logger.error(error.message || error);
-//     throw new Error('Error creating spaces from excel data');
-//   }
-// }
 
 export async function createMailOptionsForUserToken({ userId }: { userId: string }): Promise<Mail.Options> {
   try {
@@ -191,18 +109,10 @@ function createTokenMailBodyByUser(user: IUser, authToken: AuthTokenInterface) {
   return html;
 }
 
-export function createUserExcelPromises({
-  excelData,
-  mainSpace,
-  organization
-}: {
-  excelData: userExcelData[];
-  mainSpace: ObjectId;
-  organization: ObjectId;
-}) {
+export function createUserExcelPromises({ excelData, space, organization }: { excelData: userExcelData[]; space: ObjectId; organization: ObjectId }) {
   const promises = excelData.map((current) => async () => {
     current = await deleteDuplicateEmailField(current); // Await some async operation
-    const newUser = await handleConstructUpdateUser({ excelData: current, mainSpace, organization }); // Await another async operation
+    const newUser = await handleConstructUpdateUser({ excelData: current, space, organization }); // Await another async operation
 
     // await handleCreateAuthTokenForUser(newUser); // Another one
     await newUser.save(); // And another one

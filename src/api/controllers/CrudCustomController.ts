@@ -253,19 +253,13 @@ export const sendDataForHomeDashboard = async (req: RequestCustom, res: Response
 
     //  TODO: use req.query for querying in find method and paginating. maybe need to delete field to query in find method
     let { query } = req;
-    let maintainerQuery = {};
+    const maintainerQuery = {};
 
     let space: Partial<ISpace> = {};
 
-    if (req.user?.spaceId) {
-      space = await Space.findById(req.user.spaceId);
-      query = { space: req.user.spaceId };
-      maintainerQuery = { spaces: { $in: [req.user._id] } };
-    }
-    // case only for super_admin. selected only organization.
-    if (req.user?.organizationId && !req.user?.spaceId) {
-      const spaces = await Space.find({ organization: req.user.organizationId, isMain: true });
-      maintainerQuery = { spaces: { $in: spaces.map((s) => s._id) } };
+    if (req.user?.currentSpace?.spaceId) {
+      space = await Space.findById(req.user.currentSpace.spaceId);
+      query = { space: req.user.currentSpace.spaceId };
     }
 
     const threads = await Thread.find(query).limit(10);

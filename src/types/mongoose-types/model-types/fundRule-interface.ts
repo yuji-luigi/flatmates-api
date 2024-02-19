@@ -6,7 +6,7 @@ export interface IFundRule /* extends Document */ {
   _id?: string;
   executeCondition?: 'every' | 'majority';
   space?: string | ISpace | undefined;
-  mainSpace?: string | ISpace | undefined;
+  space?: string | ISpace | undefined;
   /** decides if everyone in the world can see or only under the organization. */
   isPublic: boolean;
   organization: IOrganization;

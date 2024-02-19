@@ -8,7 +8,7 @@ export interface IComment {
   body?: string;
   private: boolean;
   anonymous: boolean;
-  mainSpace: ISpace;
+  space: ISpace;
   parentEntity: Entities;
   space: string | ISpace;
   organization: string | IOrganization | undefined;

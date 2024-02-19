@@ -21,7 +21,7 @@ export interface LeanMaintainer {
   description: string;
   address: string;
   isIndividual: boolean;
-  rootSpaces: ObjectId[];
+  spaces: ObjectId[];
   password: string;
   // isInSpace: boolean; // todo: Why I added this?
   slug: string;
