@@ -59,7 +59,7 @@ export const maintenanceSchema = new Schema<IMaintenanceDoc, MaintenanceModel, I
     ],
     maintainer: {
       type: Schema.Types.ObjectId,
-      ref: 'maintainers',
+      // ref: 'maintainers',
       autopopulate: true
     },
     isImportant: {

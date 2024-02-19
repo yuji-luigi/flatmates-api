@@ -15,8 +15,8 @@ export const organizationSchema = new Schema<IOrganization>(
     logoSquare: String,
     maintainers: [
       {
-        type: Schema.Types.ObjectId,
-        ref: 'maintainers'
+        type: Schema.Types.ObjectId
+        // ref: 'maintainers'
       }
     ],
     admins: [

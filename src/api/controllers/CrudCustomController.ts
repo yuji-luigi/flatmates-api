@@ -13,7 +13,7 @@ import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 import { _MSG } from '../../utils/messages';
 import { sumUpChecksByMonth } from '../aggregation-helpers/checkPipelines';
 import { handleCreateStatistics } from '../helpers/customHelper';
-import { Maintainer } from './MaintainerController';
+// import { Maintainer } from './MaintainerController';
 // import MSG from '../../utils/messages';
 // import { runInNewContext } from 'vm';
 // import { deleteEmptyFields, getEntity } from '../../utils/functions';
@@ -252,7 +252,7 @@ export const sendDataForHomeDashboard = async (req: RequestCustom, res: Response
 
     //  TODO: use req.query for querying in find method and paginating. maybe need to delete field to query in find method
     let { query } = req;
-    const maintainerQuery = {};
+    // const maintainerQuery = {};
 
     let space: Partial<ISpace> = {};
 
@@ -265,7 +265,7 @@ export const sendDataForHomeDashboard = async (req: RequestCustom, res: Response
     const maintenances = await Maintenance.find(query);
     // const checksByDate = await sumUpChecksByDate(query);
     const checksByMonth = await sumUpChecksByMonth(query);
-    const maintainers = await Maintainer.find(maintainerQuery);
+    // const maintainers = await Maintainer.find(maintainerQuery);
 
     // space?.avatar && (await space.cover.setUrl());
     space.cover && (await space.cover.setUrl());
@@ -277,7 +277,7 @@ export const sendDataForHomeDashboard = async (req: RequestCustom, res: Response
         space,
         threads,
         maintenances,
-        maintainers,
+        // maintainers,
         statistics: handleCreateStatistics({ checksByMonth })
         // checksByDate,
       },

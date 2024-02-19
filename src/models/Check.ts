@@ -39,8 +39,8 @@ export const checkSchema = new Schema<CheckInterface, CheckModel, unknown>(
     },
     // deprecate this
     maintainer: {
-      type: Schema.Types.ObjectId,
-      ref: 'maintainers'
+      type: Schema.Types.ObjectId
+      // ref: 'maintainers'
       // autopopulate: true
     },
     // deprecate this
