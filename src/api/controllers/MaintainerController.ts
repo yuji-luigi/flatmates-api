@@ -1,4 +1,3 @@
-import Maintainer from '../../models/Maintainer';
 import httpStatus from 'http-status';
 import logger from '../../lib/logger';
 import { Response } from 'express';
@@ -9,7 +8,16 @@ import Organization from '../../models/Organization';
 import Space from '../../models/Space';
 import { MaintainerInterface } from '../../types/mongoose-types/model-types/maintainer-interface';
 import { IUpload } from '../../types/mongoose-types/model-types/upload-interface';
+import { Model } from 'mongoose';
 
+// placeholder for the deprecated mongoose model
+export class Maintainer extends Model {
+  // public static findOne()
+  constructor(_: any) {
+    super(_);
+    throw new Error('do not instantiate this class');
+  }
+}
 const entity = 'maintainers';
 
 export const createMaintainer = async (req: RequestCustom, res: Response) => {

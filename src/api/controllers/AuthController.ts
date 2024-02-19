@@ -16,7 +16,7 @@ import { IOrganization } from '../../types/mongoose-types/model-types/organizati
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { userHasSpace } from '../helpers/spaceHelper';
 import { createJWTObjectFromJWTAndSpace, resetSpaceCookies, handleSetCookiesFromPayload, signLoginInstanceJwt } from '../../lib/jwt/jwtUtils';
-import Maintainer from '../../models/Maintainer';
+import { Maintainer } from './MaintainerController';
 import { generatePayloadMaintainer, handleGenerateTokenByRoleAtLogin } from '../../utils/login-instance-utils/generateTokens';
 import { LeanMaintainer } from '../../types/mongoose-types/model-types/maintainer-interface';
 import AuthToken from '../../models/AuthToken';
@@ -109,8 +109,23 @@ const register = async (req: Request, res: Response) => {
 };
 const completeRegisterMaintainer = async (req: RequestCustom, res: Response) => {
   try {
-    const { email, password, password2, name, surname, space, organization, _id, maintenanceId, description, tel, address, homepage, company, type } =
-      req.body;
+    const {
+      email,
+      password,
+      password2,
+      name,
+      surname,
+      space: spaceId,
+      organization,
+      _id,
+      maintenanceId,
+      description,
+      tel,
+      address,
+      homepage,
+      company,
+      type
+    } = req.body;
 
     if (password !== password2) {
       throw new Error('Password non corrispondenti');
@@ -124,7 +139,7 @@ const completeRegisterMaintainer = async (req: RequestCustom, res: Response) => 
 
     if (!authToken) throw new Error('invalid access');
     // find a space for jwt generation
-    const space = await Space.findById(space);
+    const space = await Space.findById(spaceId);
     const maintainer = await Maintainer.findById(_id);
     // set all the values passed from the client
     maintainer.name = name;

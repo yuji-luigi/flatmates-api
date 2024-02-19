@@ -3,10 +3,10 @@ import logger from '../../lib/logger';
 import vars from '../../utils/globalVariables';
 import Space from '../../models/Space';
 import { IMaintenance } from '../../types/mongoose-types/model-types/maintenance-interface';
-import Maintainer from '../../models/Maintainer';
 import { MaintainerInterface } from '../../types/mongoose-types/model-types/maintainer-interface';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
+import { Maintainer } from '../controllers/MaintainerController';
 
 export async function createOptionsForMaintenance({
   maintenance,

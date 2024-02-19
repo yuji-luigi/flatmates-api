@@ -7,14 +7,13 @@ import Space from '../../models/Space';
 import { cutQuery, deleteEmptyFields, getEntity, getEntityFromOriginalUrl } from '../../utils/functions';
 import { aggregateWithPagination } from '../helpers/mongoose.helper';
 import { RequestCustom } from '../../types/custom-express/express-custom';
-import Maintainer from '../../models/Maintainer';
 import Maintenance from '../../models/Maintenance';
 import Thread from '../../models/Thread';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 import { _MSG } from '../../utils/messages';
 import { sumUpChecksByMonth } from '../aggregation-helpers/checkPipelines';
 import { handleCreateStatistics } from '../helpers/customHelper';
-
+import { Maintainer } from './MaintainerController';
 // import MSG from '../../utils/messages';
 // import { runInNewContext } from 'vm';
 // import { deleteEmptyFields, getEntity } from '../../utils/functions';

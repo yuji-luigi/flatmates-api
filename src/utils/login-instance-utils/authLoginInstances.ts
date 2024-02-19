@@ -2,8 +2,8 @@ import APIError from '../../errors/api.error';
 import { _MSG } from '../messages';
 import logger from '../../lib/logger';
 import User from '../../models/User';
-import Maintainer from '../../models/Maintainer';
 import { passwordMatches } from './passwordMatches';
+import { Maintainer } from '../../api/controllers/MaintainerController';
 
 // authenticate user and maintainer at once
 export async function authLoginInstances({ email, password }: { email?: string; password?: string }) {

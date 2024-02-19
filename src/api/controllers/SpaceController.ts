@@ -12,11 +12,11 @@ import { aggregateDescendantIds, userHasSpace } from '../helpers/spaceHelper';
 import { _MSG } from '../../utils/messages';
 import Thread from '../../models/Thread';
 import Maintenance from '../../models/Maintenance';
-import Maintainer from '../../models/Maintainer';
 import { ObjectId } from 'mongodb';
 import { LOOKUP_PIPELINE_STAGES } from '../aggregation-helpers/lookups';
 import { createJWTObjectFromJWTAndSpace, handleSetCookiesFromPayload, signJwt } from '../../lib/jwt/jwtUtils';
 import { checkAdminOfSpace } from '../../middlewares/auth-middlewares';
+import { Maintainer } from './MaintainerController';
 const entity = 'spaces';
 // import MSG from '../../utils/messages';
 // import { runInNewContext } from 'vm';
@@ -32,7 +32,7 @@ export const sendSpacesToClient = async (req: RequestCustom, res: Response) => {
     if (!req.user) {
       throw new Error(_MSG.NOT_AUTHORIZED);
     }
-    const currentSpaceId = req.user.spaceId?.toString();
+    const currentSpaceId = req.user.currentSpace.spaceId?.toString();
     const spaceIds = currentSpaceId ? await aggregateDescendantIds(currentSpaceId, req.user) : null;
     delete req.query.space;
     let { query } = req;

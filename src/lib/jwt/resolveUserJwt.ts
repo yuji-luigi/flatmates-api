@@ -10,7 +10,9 @@ import { CurrentSpace, DecodedJwtPayload, ReqUser } from './jwtTypings';
 import { accessControllersCache } from '../mongoose/mongoose-cache/access-controller-cache';
 import { roleCache } from '../mongoose/mongoose-cache/role-cache';
 import AccessController from '../../models/AccessController';
+import logger from '../logger';
 import { spaceCache } from '../mongoose/mongoose-cache/space-cache';
+import { UserResolverReturnType } from '../../middlewares/handleUserFromRequest';
 
 const { jwtSecret } = vars;
 const JwtStrategy = passport.Strategy;
@@ -51,8 +53,6 @@ const jwtOptions = {
   jwtFromRequest: cookieExtractor
   // jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('Bearer'),
 };
-
-type UserResolverReturnType = (err: any, user: ReqUser | boolean, info?: any) => void;
 
 const resolveUserJwt = async (payload: DecodedJwtPayload, done: UserResolverReturnType) => {
   try {
@@ -100,7 +100,8 @@ const resolveUserJwt = async (payload: DecodedJwtPayload, done: UserResolverRetu
     // You can attach space and organization to the user object if you like
     return done(null, reqUser);
   } catch (error) {
-    return done(error, false);
+    logger.error(error.message || error);
+    return done(error, null); // todo: find out why user parameter is undefined in handleUserFromRequest function after this
   }
 };
 

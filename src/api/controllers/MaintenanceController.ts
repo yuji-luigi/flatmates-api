@@ -16,10 +16,10 @@ import { _MSG } from '../../utils/messages';
 import { aggregateWithPagination } from '../helpers/mongoose.helper';
 import AuthToken from '../../models/AuthToken';
 import Check from '../../models/Check';
-import Maintainer from '../../models/Maintainer';
 import { generatePayloadMaintainer } from '../../utils/login-instance-utils/generateTokens';
 import { getIdString } from '../../utils/type-guard/mongoose/stringOrMongooseObject';
 import { handleSetCookiesFromSpace, signLoginInstanceJwt } from '../../lib/jwt/jwtUtils';
+import { Maintainer } from './MaintainerController';
 /**
  * POST CONTROLLERS
  */
