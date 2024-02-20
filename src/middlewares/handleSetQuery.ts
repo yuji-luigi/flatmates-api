@@ -8,6 +8,13 @@ import { _MSG } from '../utils/messages';
 export function queryHandler(req: RequestCustom, res: Response, next: NextFunction) {
   try {
     // todo: set the query to req.query
+    if (!req.user.isSuperAdmin && !req.user.accessControllers.length) {
+      throw new Error('User without accessController.');
+    }
+    if (req.user.isSuperAdmin && !req.user.accessControllers.length) {
+      return next();
+    }
+    req.query = { ...req.query, space: { $in: req.user.accessControllers.map((ac) => ac.space) } };
 
     return next();
   } catch (error) {
