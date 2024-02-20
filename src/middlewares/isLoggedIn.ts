@@ -12,14 +12,6 @@ export const isLoggedIn =
       if (user.isSuperAdmin) {
         return next();
       }
-      // const isAdminMainSpace = stringifyObjectIds(req.user.spaceAdmins)?.includes(user._id.toString());
-      // if (roles.includes(ADMIN) && req.user.isAdminOfSpace) {
-      //   return next();
-      // }
-      // if (roles.includes(user.role)) {
-      //   return next();
-      // }
-
       return next();
     }
     return res.status(httpStatus.UNAUTHORIZED).json({

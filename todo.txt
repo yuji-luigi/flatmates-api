@@ -1,3 +1,14 @@
 1. make jwt payload for all the roles(admin, inhab, maintainer...)
 2. think about permissions per root space level.
-3
+3 now maintainer model is gone. how to associate to checks maintenances and other stuff.
+When associate maintainer to maintenance the email address for notification must be the businessProfile.email
+I assume that the default values of the businessProfile are the same as the user. In that way we can use the user email for notifications without maintainer filling all the fields.
+
+case maintainer already has account®
+
+FRONTEND:
+getServerSideProps in choose-root-space needs to be configured.
+Also LoginForm after login function
+router.push url needs to be considered carefully 
+ - use 2 different url?
+ - or use one url(choose-root-space) and handle final destination in getServerSideProps function?

@@ -80,8 +80,7 @@ const resolveUserJwt = async (payload: DecodedJwtPayload, done: UserResolverRetu
     //! Actually use directly the accessControllers array for querying.
     // Fetch space and organization if they're in the payload
     const currentSpace: CurrentSpace = {
-      isAdminOfSpace: false,
-      spaceAdmins: []
+      isAdminOfSpace: false
     };
     // if spaceId key in payload
     if ('spaceId' in payload) {
@@ -89,7 +88,6 @@ const resolveUserJwt = async (payload: DecodedJwtPayload, done: UserResolverRetu
       const space = await Space.findById(payload.spaceId).lean();
       currentSpace.spaceName = space.name;
       currentSpace.spaceId = space._id;
-      currentSpace.spaceAdmins = space.admins;
       // from selectedSpace extract admins Array then check the requiesting user is in the array.
       // if yes then set the user is admin of the space
       currentSpace.isAdminOfSpace = stringifyObjectIds(space.admins).includes(leanUser._id.toString());
@@ -105,60 +103,6 @@ const resolveUserJwt = async (payload: DecodedJwtPayload, done: UserResolverRetu
   }
 };
 
-// const handleSpaceJwt = async (payload: any, done: any) => {
-//   try {
-//     // const user = await User.findById(payload.id);
-//     const space = await Space.findById(payload._id).lean();
-//     // .populate({ path: 'organization', select: 'name' });
-//     if (space) return done(null, space);
-//     return done(null, false);
-//   } catch (error) {
-//     return done(error, false);
-//   }
-// };
-
-// const handleOrganizationJwt = async (payload: any, done: any) => {
-//   try {
-//     // const user = await User.findById(payload.id);
-//     const organization = await Organization.findById(payload).lean();
-//     // .populate({ path: 'organization', select: 'name' });
-//     if (organization) return done(null, organization);
-//     return done(null, false);
-//   } catch (error) {
-//     return done(error, false);
-//   }
-// };
-
-// const spaceJwtOptions = {
-//   secretOrKey: jwtSecret,
-//   jwtFromRequest: (req: Request) => cookieExtractorEx(req)('space')
-// };
-// const organizationJwtOptions = {
-//   secretOrKey: jwtSecret,
-//   jwtFromRequest: (req: Request) => cookieExtractorEx(req)('organization')
-// };
-
-// const queryJwtOptions = {
-//   secretOrKey: jwtSecret,
-//   jwtFromRequest: (req: Request) => spaceOrgCookieExtractor(req)
-// };
-// /** created for other than user auth cookie  * */
-// const spaceOrgCookieExtractor = (req: Request) => {
-//   const space = req.cookies['space'] || req.headers['space'];
-//   const organization = req.cookies['organization'] || req.headers['organization'];
-//   const cookies: { space: ISpace | null; organization: string | null } = {
-//     space,
-//     organization
-//   };
-//   return cookies;
-// }
-// async function handleQueryJwt(payload, done) {
-// return done(null, payload);
-// }
-
 export default {
   jwt: new JwtStrategy(jwtOptions, resolveUserJwt)
-  // handleSpaceJwt: new JwtStrategy(spaceJwtOptions, handleSpaceJwt),
-  // handleOrganizationJwt: new JwtStrategy(organizationJwtOptions, handleOrganizationJwt)
-  // handleQueryJwt: new JwtStrategy(queryJwtOptions, handleQueryJwt)
 };

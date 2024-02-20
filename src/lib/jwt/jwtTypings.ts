@@ -10,7 +10,6 @@ export type CurrentSpace = {
   organizationId?: ObjectId;
   /** check from selected space.admins and requesting user id */
   isAdminOfSpace: boolean;
-  spaceAdmins: ObjectId[] | [];
 };
 
 // not jwt this is type of the req.user
