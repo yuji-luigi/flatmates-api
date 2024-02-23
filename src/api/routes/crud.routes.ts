@@ -1,15 +1,13 @@
-import { SUPER_ADMIN } from '../../middlewares/auth-middlewares';
 import express, { Request, Response } from 'express';
-
-const router = express.Router();
 import crudCtrl from '../controllers/CrudController';
 import dataTableCtrl, {
   createCrudObjectAndSendDataWithPagination,
   deleteCrudObjectByIdAndSendDataWithPagination
 } from '../controllers/DataTableController';
-import { ADMIN, LOGGED_USER } from '../../middlewares/auth-middlewares';
 import { checkEntity } from '../../middlewares/checkEntity';
 import { isLoggedIn } from '../../middlewares/isLoggedIn';
+
+const router = express.Router();
 // import { createLinkedChild } from '../controllers/CrudCustomController';
 
 router.get('/', (req: Request, res: Response) => {

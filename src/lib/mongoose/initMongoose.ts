@@ -26,6 +26,7 @@ import vars from '../../utils/globalVariables';
 import Role from '../../models/Role';
 import { RoleInterface } from '../../types/mongoose-types/model-types/role-interface';
 import { initCacheRole } from './mongoose-cache/role-cache';
+import { seedRoles } from './seed/mongoose-seeder';
 
 // Set mongoose Promise to Bluebird
 // eslint-disable-next-line no-undef
@@ -72,6 +73,7 @@ const mongooseConnector = {
       .connect(vars.mongo.uri)
       .catch((err: object | string) => logger.error(`ERROR CONNECTING TO MONGO\n${err}. mongoURI: ${vars.mongo.uri}`));
     console.log('Connected to MongoDB');
+    // seedRoles();
     initCacheRole();
   },
   close: () => mongoose.connection.close()
