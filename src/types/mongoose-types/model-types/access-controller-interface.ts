@@ -50,7 +50,6 @@ export interface AccessControllerInterface extends AccessControllerBase {
 }
 
 export interface AccessControllerStatics {
-  createOrUpdateFromDashboardDto: (dtoFromClient: ACtrlDtoDashboard, targetUser: ObjectId, operatingUser: ReqUser) => Promise<void>;
   buildPermissionFields: (dto: ACtrlDtoDashboard) => PermissionInterface[];
 }
 export type AccessControllerModel = Model<AccessControllerInterface, object, AccessControllerStatics> & AccessControllerStatics;

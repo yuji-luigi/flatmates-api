@@ -53,35 +53,6 @@ export const accessControllerSchema = new Schema<AccessControllerInterface, Acce
             allowed: dto[permission]
           };
         });
-      },
-
-      createOrUpdateFromDashboardDto: async function (
-        this: AccessControllerModel,
-        dtoFromClient: ACtrlDtoDashboard[],
-        targetUserId: ObjectId,
-        operatingUser: ReqUser
-      ) {
-        for (const dto of dtoFromClient) {
-          // todo can create acCtrl check logic here
-          if (!operatingUser.isSuperAdmin) {
-            throw new Error('You are not allowed to create access controller');
-          }
-          const role = roleCache.get(dto.roleName);
-          const accessController =
-            (await this.findOne({
-              user: targetUserId,
-              role,
-              space: dto.space
-            })) || new this();
-          const permissions = this.buildPermissionFields(dto);
-          accessController.set({
-            ...dto,
-            user: targetUserId,
-            permissions,
-            role
-          });
-          await accessController.save();
-        }
       }
     },
     methods: {
@@ -100,7 +71,6 @@ export const accessControllerSchema = new Schema<AccessControllerInterface, Acce
         if (cached) {
           return cached;
         }
-        // const hasPermission = this.permissions.some((permission) => permission.allowed);
       }
     }
   }

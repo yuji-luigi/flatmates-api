@@ -27,6 +27,11 @@ const lookupSpaces: PipelineStage.FacetPipelineStage = {
 };
 export const createUserAndSendDataWithPagination = async (req: RequestCustom, res: Response) => {
   try {
+    // todo: control for user accessController.
+    if (!req.user.isSuperAdmin) {
+      throw new Error('You are not allowed to create access controller');
+    }
+
     // if (!req.user.spaceId && !req.body.spaces.length) {
     //   throw new Error('space is not set. Please select the space.');
     // }
@@ -34,6 +39,7 @@ export const createUserAndSendDataWithPagination = async (req: RequestCustom, re
     //   throw new Error('organization is not set.');
     // }
     req.body = deleteEmptyFields(req.body);
+    const { accessControllers } = req.body;
     // req.body.user = req.user._id;
     // req.body.organization = req.user.organizationId;
     // req.body.space = req.user.spaceId;
@@ -46,15 +52,15 @@ export const createUserAndSendDataWithPagination = async (req: RequestCustom, re
     if (foundUser) {
       throw new Error('Email is already in use. Please check the email.');
     }
-
     const newUser = new User(req.body);
+
     await newUser.save();
-    // case accessController is sent from the client, create and attach the user
-    if (req.body.accessController) {
-      await AccessController.createOrUpdateFromDashboardDto(req.body.accessController, newUser._id, req.user).catch((error) => {
-        logger.error(error, 'Error in creating access controller: userController.createUserAndSendDataWithPagination');
-      });
+    for (const accessController of accessControllers) {
+      const newAccessController = new AccessController({ ...accessController, user: newUser._id });
+      await newAccessController.save();
     }
+    // case accessController is sent from the client, create and attach the user
+
     // modify query for user model.
     // req.query.spaces = req.user.spaceId ? { $in: [req.user.spaceId] } : null;
     delete req.query.space;
