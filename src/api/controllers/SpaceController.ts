@@ -63,7 +63,7 @@ export const createHeadSpaceWithPagination = async (req: RequestCustom, res: Res
     }
     const newSpace = new Space({
       ...req.body,
-      organization: req.user.organizationId,
+      // organization: req.user.organizationId,
       isHead: true,
       isMain
     });
@@ -122,13 +122,13 @@ export const sendSingleSpaceToClientByCookie = async (req: RequestCustom, res: R
     //  TODO: use req.query for querying in find method and paginating. maybe need to delete field to query in find method
     // const { query } = req;
 
-    const data = await Space.findById(req.user.spaceId);
-    data.cover && (await data.cover.setUrl(true));
+    // const data = await Space.findById(req.user.spaceId);
+    // data.cover && (await data.cover.setUrl(true));
 
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity,
-      data: data,
+      // data: data,
       totalDocuments: 1
     });
   } catch (err) {
@@ -213,22 +213,22 @@ export const sendSpaceDataForSSG = async (req: RequestCustom, res: Response) => 
     // const limit = 10;
 
     //  TODO: use req.query for querying in find method and paginating. maybe need to delete field to query in find method
-    let { query } = req;
-    let maintainerQuery = {};
+    // let { query } = req;
+    // let maintainerQuery = {};
 
-    if (req.user?.spaceId) {
-      query = { space: req.user.spaceId };
-      maintainerQuery = { spaces: { $in: [req.user._id] } };
-    }
-    // case only for super_admin. selected only organization.
-    if (req.user?.organizationId && !req.user?.spaceId) {
-      const spaces = await Space.find({ organization: req.user.organizationId, isMain: true });
-      maintainerQuery = { spaces: { $in: spaces.map((s) => s._id) } };
-    }
+    // if (req.user?.spaceId) {
+    //   query = { space: req.user.spaceId };
+    //   maintainerQuery = { spaces: { $in: [req.user._id] } };
+    // }
+    // // case only for super_admin. selected only organization.
+    // if (req.user?.organizationId && !req.user?.spaceId) {
+    //   const spaces = await Space.find({ organization: req.user.organizationId, isMain: true });
+    //   maintainerQuery = { spaces: { $in: spaces.map((s) => s._id) } };
+    // }
 
-    const threads = await Thread.find(query).limit(10);
-    const maintenances = await Maintenance.find(query).limit(10);
-    const maintainers = await Maintainer.find(maintainerQuery);
+    // const threads = await Thread.find(query).limit(10);
+    // const maintenances = await Maintenance.find(query).limit(10);
+    // const maintainers = await Maintainer.find(maintainerQuery);
 
     // space.cover && (await space.cover.setUrl());
 
@@ -236,10 +236,10 @@ export const sendSpaceDataForSSG = async (req: RequestCustom, res: Response) => 
       success: true,
       collection: entity,
       data: {
-        space: {},
-        threads,
-        maintenances,
-        maintainers
+        space: {}
+        // threads,
+        // maintenances,
+        // maintainers
       },
       totalDocuments: 1
     });
@@ -527,7 +527,7 @@ export const addSpaceToJWTAndSendToClient = async (req: RequestCustom, res: Resp
 export const deleteSpaceCookie = async (req: RequestCustom, res: Response) => {
   try {
     deleteSpaceCookies(res);
-    const payload = createJWTObjectFromJWTAndSpace({ user: req.user, organizationId: req.user.organizationId?.toString(), space: null });
+    const payload = createJWTObjectFromJWTAndSpace({ user: req.user, /* organizationId: req.user.organizationId?.toString(), */ space: null });
     const jwt = signJwt(payload);
 
     res.clearCookie('jwt', { domain: vars.cookieDomain });

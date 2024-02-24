@@ -46,8 +46,8 @@ export const createCrudObjectAndSendDataWithPagination = async (req: LoggedInReq
     req.body = deleteEmptyFields(req.body);
     req.body.user = req.user?._id;
     const Model = mongoose.model(entity);
-    req.body.organization = req.user?.organizationId;
-    req.body.space = req.user.spaceId;
+    // req.body.organization = req.user?.organizationId;
+    // req.body.space = req.user.spaceId;
     const newModel = new Model(req.body);
 
     await newModel.save();

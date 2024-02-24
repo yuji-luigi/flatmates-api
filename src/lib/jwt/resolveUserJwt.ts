@@ -6,7 +6,7 @@ import Space from '../../models/Space';
 import { UserBase } from '../../types/mongoose-types/model-types/user-interface';
 import { stringifyObjectIds } from '../../middlewares/auth-middlewares';
 import { reqUserBuilder } from './reqUserBuilder';
-import { CurrentSpace, DecodedJwtPayload, ReqUser } from './jwtTypings';
+import { CurrentSpace, DecodedJwtPayload } from './jwtTypings';
 import { accessControllersCache } from '../mongoose/mongoose-cache/access-controller-cache';
 import { roleCache } from '../mongoose/mongoose-cache/role-cache';
 import AccessController from '../../models/AccessController';

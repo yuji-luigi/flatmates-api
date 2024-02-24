@@ -12,12 +12,10 @@ import { createMailOptionsForUserToken, createUserExcelPromises, userExcelData }
 import { convertExcelToJson } from '../../utils/excelHelper';
 import { sendEmail } from '../helpers/nodemailerHelper';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
-import { checkAuthTokenForError, findAuthTokenFromCookie, handleCreateAuthTokensForUser } from '../helpers/authTokenHelper';
+import { checkAuthTokenForError, findAuthTokenFromCookie } from '../helpers/authTokenHelper';
 import { PipelineStage } from 'mongoose';
-import AuthToken from '../../models/AuthToken';
 import ErrorEx from '../../errors/extendable.error';
 import { deleteCrudObjectByIdAndSendDataWithPagination } from './DataTableController';
-import UserSpaceConjunction from '../../models/UserSpaceConjunction';
 import AccessController from '../../models/AccessController';
 
 const entity = 'users';
@@ -259,20 +257,21 @@ export async function importExcelFromClient(req: RequestCustom, res: Response) {
       // Execute each promise in the chunk so every 100 promises are executed in parallel
       await Promise.all(chunk.map((fn) => fn()));
     }
+    //todo:
+    // const userQueries = data.map((excelData) => {
+    //   return {
+    //     name: excelData.name,
+    //     surname: excelData.surname,
+    //     spaces: { $in: [space] }
+    //   };
+    // });
+    // const foundUsers = await User.find({ $or: userQueries }, '_id');
 
-    const userQueries = data.map((excelData) => {
-      return {
-        name: excelData.name,
-        surname: excelData.surname,
-        spaces: { $in: [space] }
-      };
-    });
-    const foundUsers = await User.find({ $or: userQueries }, '_id');
-
-    await handleCreateAuthTokensForUser(
-      foundUsers.map((user) => user._id),
-      req.user.spaceId
-    );
+    // todo:
+    // await handleCreateAuthTokensForUser(
+    //   foundUsers.map((user) => user._id),
+    //   req.user.spaceId
+    // );
 
     const users = await aggregateWithPagination(req.query, 'users');
 
@@ -315,33 +314,33 @@ export async function sendTokenEmail(req: RequestCustom, res: Response) {
 
 export async function sendAuthTokenOfUserToClient(req: RequestCustom, res: Response) {
   try {
-    if (!req.user.spaceId) {
-      throw new Error('space is not set. Please select the space in the header nav first to generate the qr code.');
-    }
-    let conjunctionDoc = await UserSpaceConjunction.findOne({
-      user: req.params.idMongoose,
-      space: req.user.spaceId
-    });
-    if (!conjunctionDoc) {
-      conjunctionDoc = await UserSpaceConjunction.create({
-        user: req.params.idMongoose,
-        space: req.user.spaceId
-      });
-    }
+    // if (!req.user.spaceId) {
+    //   throw new Error('space is not set. Please select the space in the header nav first to generate the qr code.');
+    // }
+    // let conjunctionDoc = await UserSpaceConjunction.findOne({
+    //   user: req.params.idMongoose,
+    //   space: req.user.spaceId
+    // });
+    // if (!conjunctionDoc) {
+    //   conjunctionDoc = await UserSpaceConjunction.create({
+    //     user: req.params.idMongoose,
+    //     space: req.user.spaceId
+    //   });
+    // }
 
-    let authToken = await AuthToken.findOne({
-      userSpaceConjunction: conjunctionDoc._id
-    });
+    // let authToken = await AuthToken.findOne({
+    //   userSpaceConjunction: conjunctionDoc._id
+    // });
 
-    if (!authToken) {
-      authToken = await AuthToken.create({
-        userSpaceConjunction: conjunctionDoc._id
-      });
-    }
+    // if (!authToken) {
+    //   authToken = await AuthToken.create({
+    //     userSpaceConjunction: conjunctionDoc._id
+    //   });
+    // }
     res.status(httpStatus.OK).json({
       success: true,
-      collection: 'users',
-      data: { _id: authToken._id, linkId: authToken._id, active: authToken.active }
+      collection: 'users'
+      // data: { _id: authToken._id, linkId: authToken._id, active: authToken.active }
     });
   } catch (error) {
     logger.error(error);

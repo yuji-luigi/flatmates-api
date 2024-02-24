@@ -1,4 +1,3 @@
-import { SUPER_ADMIN } from '../../middlewares/auth-middlewares';
 import Maintenance from '../../models/Maintenance';
 import httpStatus from 'http-status';
 import logger from '../../lib/logger';
@@ -15,11 +14,6 @@ import { sensitiveCookieOptions } from '../../utils/globalVariables';
 import { _MSG } from '../../utils/messages';
 import { aggregateWithPagination } from '../helpers/mongoose.helper';
 import AuthToken from '../../models/AuthToken';
-import Check from '../../models/Check';
-import { generatePayloadMaintainer } from '../../utils/login-instance-utils/generateTokens';
-import { getIdString } from '../../utils/type-guard/mongoose/stringOrMongooseObject';
-import { handleSetCookiesFromSpace, signLoginInstanceJwt } from '../../lib/jwt/jwtUtils';
-import { Maintainer } from './MaintainerController';
 /**
  * POST CONTROLLERS
  */
@@ -207,12 +201,12 @@ const sendSingleMaintenanceToFrondEnd = async (req: Request, res: Response) => {
 };
 const deleteThread = async (req: RequestCustom, res: Response) => {
   try {
-    const maintenance = await Maintenance.findById(req.params.maintenanceId);
+    // const maintenance = await Maintenance.findById(req.params.maintenanceId);
     // user check
-    if (req.user.role === SUPER_ADMIN || req.user._id?.toString() === maintenance?.createdBy._id.toString() || maintenance.space) {
-      await maintenance?.handleDeleteUploads();
-      await Maintenance.findByIdAndDelete(req.params.maintenanceId);
-    }
+    // if (req.user.role === SUPER_ADMIN || req.user._id?.toString() === maintenance?.createdBy._id.toString() || maintenance.space) {
+    //   await maintenance?.handleDeleteUploads();
+    //   await Maintenance.findByIdAndDelete(req.params.maintenanceId);
+    // }
 
     const maintenances = await Maintenance.find(req.query).sort({
       isImportant: -1,
@@ -246,25 +240,25 @@ export async function checkIsActiveMaintainerFromClient(req: RequestCustom, res:
     if (!authToken) throw new Error('pin is not correct');
     res.cookie('maintenanceNonce', req.body.pin, sensitiveCookieOptions);
 
-    const maintenance = await Maintenance.findById(authToken.docHolder.instanceId).populate({ path: 'space', populate: { path: 'admins' } });
-    const maintainer = await Maintainer.findById(maintenance.maintainer);
-    if (maintainer.active && maintainer.password) {
-      res.send(httpStatus.OK).json({
-        success: true,
-        collection: 'authTokens',
-        message: 'maintainer is active and password is set',
-        data: maintainer
-      });
-    }
+    // const maintenance = await Maintenance.findById(authToken.docHolder.instanceId).populate({ path: 'space', populate: { path: 'admins' } });
+    // const maintainer = await Maintainer.findById(maintenance.maintainer);
+    // if (maintainer.active && maintainer.password) {
+    //   res.send(httpStatus.OK).json({
+    //     success: true,
+    //     collection: 'authTokens',
+    //     message: 'maintainer is active and password is set',
+    //     data: maintainer
+    //   });
+    // }
 
     res.cookie('maintenanceNonce', req.body.pin, sensitiveCookieOptions);
     // not throw error but success false
     res.status(httpStatus.OK).json({
       success: false,
       collection: 'authTokens',
-      message: 'maintainer is not active or password is not set',
-      data: maintainer,
-      maintenance
+      message: 'maintainer is not active or password is not set'
+      // data: maintainer,
+      // maintenance
     });
   } catch (error) {
     logger.error(error.message || error);
@@ -282,37 +276,37 @@ export async function authUserMaintenanceFiles(req: Request, res: Response) {
 
     if (!authToken) throw new Error('pin is not correct');
     res.cookie('maintenanceNonce', req.body.pin, sensitiveCookieOptions);
-    const maintenance = await Maintenance.findById(authToken.docHolder.instanceId)
-      .populate({ path: 'organization', select: 'name' })
-      .populate({
-        path: 'space',
-        select: 'name address admins cover',
-        populate: [
-          {
-            path: 'cover',
-            select: 'url'
-          },
-          {
-            path: 'admins', // this will populate 'admins' in 'space'
-            select: 'name surname email avatar',
-            populate: 'avatar' // assuming you want to populate name and email of admins, adjust accordingly
-          }
-        ]
-      });
+    // const maintenance = await Maintenance.findById(authToken.docHolder.instanceId)
+    //   .populate({ path: 'organization', select: 'name' })
+    //   .populate({
+    //     path: 'space',
+    //     select: 'name address admins cover',
+    //     populate: [
+    //       {
+    //         path: 'cover',
+    //         select: 'url'
+    //       },
+    //       {
+    //         path: 'admins', // this will populate 'admins' in 'space'
+    //         select: 'name surname email avatar',
+    //         populate: 'avatar' // assuming you want to populate name and email of admins, adjust accordingly
+    //       }
+    //     ]
+    //   });
     // todo!!
-    const organizationId = getIdString(maintenance.organization);
-    const spaceId = getIdString(maintenance.space);
-    const maintainer = await Maintainer.findById(maintenance.maintainer);
-    const token = generatePayloadMaintainer({ maintainer, organizationId, spaceId, space: maintenance.space });
-    console.log(sensitiveCookieOptions);
-    handleSetCookiesFromSpace(res, maintenance.space);
-    res.cookie('jwt', token, sensitiveCookieOptions);
+    // const organizationId = getIdString(maintenance.organization);
+    // const spaceId = getIdString(maintenance.space);
+    // const maintainer = await Maintainer.findById(maintenance.maintainer);
+    // const token = generatePayloadMaintainer({ maintainer, organizationId, spaceId, space: maintenance.space });
+    // console.log(sensitiveCookieOptions);
+    // handleSetCookiesFromSpace(res, maintenance.space);
+    // res.cookie('jwt', token, sensitiveCookieOptions);
 
-    const checks = await Check.find({ maintenance: maintenance.space._id }).populate('organization');
+    // const checks = await Check.find({ maintenance: maintenance.space._id }).populate('organization');
     res.status(httpStatus.OK).json({
       success: true,
       collection: 'maintenances',
-      data: { message: 'pin is correct', maintenance, checks },
+      // data: { message: 'pin is correct', maintenance, checks },
       count: 1
     });
   } catch (error) {
@@ -331,37 +325,37 @@ export async function authUserMaintenanceByJWT(req: Request, res: Response) {
 
     if (!authToken) throw new Error('pin is not correct');
     res.cookie('maintenanceNonce', req.body.pin, sensitiveCookieOptions);
-    const maintenance = await Maintenance.findById(authToken.docHolder.instanceId)
-      .populate({ path: 'organization', select: 'name' })
-      .populate({
-        path: 'space',
-        select: 'name address admins cover',
-        populate: [
-          {
-            path: 'cover',
-            select: 'url'
-          },
-          {
-            path: 'admins', // this will populate 'admins' in 'space'
-            select: 'name surname email avatar',
-            populate: 'avatar' // assuming you want to populate name and email of admins, adjust accordingly
-          }
-        ]
-      });
+    // const maintenance = await Maintenance.findById(authToken.docHolder.instanceId)
+    //   .populate({ path: 'organization', select: 'name' })
+    //   .populate({
+    //     path: 'space',
+    //     select: 'name address admins cover',
+    //     populate: [
+    //       {
+    //         path: 'cover',
+    //         select: 'url'
+    //       },
+    //       {
+    //         path: 'admins', // this will populate 'admins' in 'space'
+    //         select: 'name surname email avatar',
+    //         populate: 'avatar' // assuming you want to populate name and email of admins, adjust accordingly
+    //       }
+    //     ]
+    //   });
     // todo!!
-    const organizationId = getIdString(maintenance.organization);
-    const spaceId = getIdString(maintenance.space);
-    const maintainer = await Maintainer.findById(maintenance.maintainer);
-    const payload = generatePayloadMaintainer({ maintainer, organizationId, spaceId, space: maintenance.space });
-    const token = signLoginInstanceJwt(payload);
-    handleSetCookiesFromSpace(res, maintenance.space);
-    res.cookie('jwt', token, sensitiveCookieOptions);
+    // const organizationId = getIdString(maintenance.organization);
+    // const spaceId = getIdString(maintenance.space);
+    // const maintainer = await Maintainer.findById(maintenance.maintainer);
+    // const payload = generatePayloadMaintainer({ maintainer, organizationId, spaceId, space: maintenance.space });
+    // const token = signLoginInstanceJwt(payload);
+    // handleSetCookiesFromSpace(res, maintenance.space);
+    // res.cookie('jwt', token, sensitiveCookieOptions);
 
-    const checks = await Check.find({ maintenance: maintenance.space._id }).populate('organization');
+    // const checks = await Check.find({ maintenance: maintenance.space._id }).populate('organization');
     res.status(httpStatus.OK).json({
       success: true,
       collection: 'maintenances',
-      data: { message: 'pin is correct', maintenance, checks },
+      // data: { message: 'pin is correct', maintenance, checks },
       count: 1
     });
   } catch (error) {

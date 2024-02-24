@@ -1,5 +1,5 @@
 import express, { NextFunction, Request, Response } from 'express';
-import { stringifyObjectIds } from '../../middlewares/auth-middlewares';
+// import { stringifyObjectIds } from '../../middlewares/auth-middlewares';
 
 import httpStatus from 'http-status';
 import {
@@ -18,17 +18,17 @@ import { isLoggedIn } from '../../middlewares/isLoggedIn';
 const router = express.Router();
 
 router.use((req: RequestCustom, response: Response, next: NextFunction) => {
-  if (!req.user.isSuperAdmin && req.user.loggedAs === 'inhabitant') {
-    if (!req.user.spaceId) {
-      return response.status(httpStatus.FORBIDDEN).send('something went wrong');
-    }
-    req.query.spaces = { $in: [req.user.spaceId] };
+  if (!req.user.isSuperAdmin && req.user.loggedAs === 'Inhabitant') {
+    // if (!req.user.spaceId) {
+    //   return response.status(httpStatus.FORBIDDEN).send('something went wrong');
+    // }
+    // req.query.spaces = { $in: [req.user.spaceId] };
   }
   if (req.query.organization) {
     req.query.organizations = { $in: [req.query.organization] };
   }
   if (req.query.space) {
-    req.query.spaces = { $in: [req.user.spaceId] };
+    // req.query.spaces = { $in: [req.user.spaceId] };
   }
   delete req.query.organization;
   delete req.query.space;

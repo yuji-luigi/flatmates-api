@@ -1,4 +1,3 @@
-import { SUPER_ADMIN } from '../../middlewares/auth-middlewares';
 import Thread from '../../models/Thread';
 import httpStatus from 'http-status';
 import logger from '../../lib/logger';
@@ -17,8 +16,8 @@ const createThread = async (req: RequestCustom, res: Response) => {
     req.body.createdBy = req.user;
     const reqBody = deleteEmptyFields(req.body);
 
-    reqBody.organization = req.user.organizationId;
-    reqBody.space = req.user.spaceId;
+    // reqBody.organization = req.user.organizationId;
+    // reqBody.space = req.user.spaceId;
     reqBody.user = req.user;
     await Thread.create(reqBody);
     delete req.query.organizations;
@@ -129,12 +128,12 @@ const sendSingleThreadToFrondEnd = async (req: Request, res: Response) => {
 };
 const deleteThread = async (req: RequestCustom, res: Response) => {
   try {
-    const thread = await Thread.findById(req.params.threadId);
+    // const thread = await Thread.findById(req.params.threadId);
     // user check
-    if (req.user.role === SUPER_ADMIN || req.user._id?.toString() === thread?.createdBy._id.toString() || thread.space) {
-      await thread?.handleDeleteUploads();
-      await Thread.findByIdAndDelete(req.params.threadId);
-    }
+    // if (req.user.role === SUPER_ADMIN || req.user._id?.toString() === thread?.createdBy._id.toString() || thread.space) {
+    //   await thread?.handleDeleteUploads();
+    //   await Thread.findByIdAndDelete(req.params.threadId);
+    // }
 
     const threads = await Thread.find(req.query).sort({
       isImportant: -1,

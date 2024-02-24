@@ -3,7 +3,6 @@ import { MongooseBaseModel } from './base-types/base-model-interface';
 import { ISpace } from './space-interface';
 import { IUser } from './user-interface';
 import { RoleFields, RoleInterface } from './role-interface';
-import { ReqUser } from '../../../lib/jwt/jwtTypings';
 import { Model } from 'mongoose';
 // enities
 // threads, maintenances, comments, users, spaces, roles

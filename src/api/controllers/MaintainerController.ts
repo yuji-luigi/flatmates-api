@@ -1,12 +1,8 @@
 import httpStatus from 'http-status';
 import logger from '../../lib/logger';
 import { Response } from 'express';
-import { deleteEmptyFields } from '../../utils/functions';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { _MSG } from '../../utils/messages';
-import Organization from '../../models/Organization';
-import Space from '../../models/Space';
-import { MaintainerInterface } from '../../types/mongoose-types/model-types/maintainer-interface';
 import { IUpload } from '../../types/mongoose-types/model-types/upload-interface';
 import { Model } from 'mongoose';
 
@@ -28,29 +24,29 @@ export const createMaintainer = async (req: RequestCustom, res: Response) => {
     }
 
     req.body.createdBy = req.user;
-    const reqBody = deleteEmptyFields<MaintainerInterface>(req.body);
-    const newMaintainer = new Maintainer(reqBody);
+    // const reqBody = deleteEmptyFields<MaintainerInterface>(req.body);
+    // const newMaintainer = new Maintainer(reqBody);
 
-    const organization = await Organization.findById(req.user.organizationId);
-    if (organization) {
-      organization.maintainers.push(newMaintainer);
-      await organization.save();
-    }
+    // const organization = await Organization.findById(req.user.organizationId);
+    // if (organization) {
+    //   organization.maintainers.push(newMaintainer);
+    //   await organization.save();
+    // }
 
-    const space = await Space.findById(req.user.spaceId).lean();
-    if (space) {
-      newMaintainer.spaces.push(space._id);
-      // space.maintainers.push(newMaintainer);
-      // await space.save();
-    }
-    await newMaintainer.save();
-    const data = await Maintainer.find({ _id: { $in: organization.maintainers } });
+    // const space = await Space.findById(req.user.spaceId).lean();
+    // if (space) {
+    //   newMaintainer.spaces.push(space._id);
+    //   // space.maintainers.push(newMaintainer);
+    //   // await space.save();
+    // }
+    // await newMaintainer.save();
+    // const data = await Maintainer.find({ _id: { $in: organization.maintainers } });
 
     res.status(httpStatus.CREATED).json({
       success: true,
-      collection: entity,
-      data,
-      count: data.length
+      collection: entity
+      // data,
+      // count: data.length
     });
   } catch (error) {
     logger.error(error.message || error);
@@ -94,14 +90,14 @@ export const sendMaintainersOfBuildingToClient = async (req: RequestCustom, res:
   try {
     // const queryMaintainer = req.user.spaceId?.maintainers || req.organization?.maintainers;
 
-    const maintainers = await Maintainer.find({ spaces: { $in: [req.user.spaceId] } });
+    // const maintainers = await Maintainer.find({ spaces: { $in: [req.user.spaceId] } });
     // const maintainers = await Maintainer.find({ _id: { $in: queryMaintainer } });
 
     res.status(httpStatus.OK).json({
       success: true,
-      collection: entity,
-      data: maintainers,
-      totalDocuments: maintainers.length
+      collection: entity
+      // data: maintainers,
+      // totalDocuments: maintainers.length
     });
   } catch (err) {
     res.status(err).json({
@@ -165,15 +161,15 @@ export const removeSpaceFromMaintainerById = async (req: RequestCustom, res: Res
      * save
      * send the data array to handle in redux
      */
-    const { maintainer, space } = req.query;
-    const foundMaintainer = await Maintainer.findById(maintainer);
-    const deletedSpaces = foundMaintainer.spaces.filter((_space) => _space.toString() !== space.toString()).map((_space) => _space);
-    foundMaintainer.spaces = deletedSpaces as any;
-    await foundMaintainer.save();
+    // const { maintainer, space } = req.query;
+    // const foundMaintainer = await Maintainer.findById(maintainer);
+    // const deletedSpaces = foundMaintainer.spaces.filter((_space) => _space.toString() !== space.toString()).map((_space) => _space);
+    // foundMaintainer.spaces = deletedSpaces as any;
+    // await foundMaintainer.save();
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity,
-      data: foundMaintainer,
+      // data: foundMaintainer,
       message: _MSG.OBJ_UPDATED
     });
   } catch (err) {

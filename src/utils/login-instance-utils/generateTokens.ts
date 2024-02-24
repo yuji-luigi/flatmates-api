@@ -51,9 +51,9 @@ export function handleGenerateTokenByRoleAfterLogin(user: ReqUser): JwtSignPaylo
 //users
 export function generatePayloadUser(user: IUser) {
   const payload: JwtSignPayload = {
-    loggedAs: 'inhabitant',
-    email: user.email,
-    organizationId: user.organizations[0]?._id.toString()
+    loggedAs: 'Inhabitant',
+    email: user.email
+    // organizationId: user.organizations[0]?._id.toString()
   };
   return payload;
   // return signLoginInstanceJwt(payload);
@@ -65,8 +65,8 @@ export function generatePayloadUser(user: IUser) {
 // todo to be deprecated
 export function generatePayloadMaintainer({
   maintainer,
-  organizationId,
-  spaceId,
+  // organizationId,
+  // spaceId,
   space
 }: {
   organizationId?: string;
@@ -76,17 +76,17 @@ export function generatePayloadMaintainer({
 }) {
   let payload: JwtSignPayload = {
     email: maintainer.email,
-    loggedAs: 'maintainer',
-    organizationId,
-    spaceId
+    loggedAs: 'Maintainer'
+    // organizationId,
+    // spaceId
   };
   if (space) {
     payload = {
-      ...payload,
-      spaceImage: space.cover?.url,
-      spaceName: space.name,
-      spaceSlug: space.slug,
-      spaceAddress: space.address
+      ...payload
+      // spaceImage: space.cover?.url,
+      // spaceName: space.name,
+      // spaceSlug: space.slug,
+      // spaceAddress: space.address
     };
   }
   return payload;

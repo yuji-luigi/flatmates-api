@@ -7,7 +7,6 @@ import { RequestCustom, RequestWithFiles } from '../../types/custom-express/expr
 import Check from '../../models/Check';
 import Maintenance from '../../models/Maintenance';
 import AuthToken from '../../models/AuthToken';
-import Upload from '../../models/Upload';
 import { getOCRSpaceText } from '../../lib/ocr-space/initOcr';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -135,12 +134,12 @@ export async function verifyNonceCookieSendChecksMaintenanceToClient(req: Reques
     const promises = check.files.map(async (file) => {
       await file.setUrl();
     });
-    const maintenance = await Maintenance.findById(authToken.docHolder.instanceId);
+    // const maintenance = await Maintenance.findById(authToken.docHolder.instanceId);
     await Promise.all(promises);
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity,
-      data: { check, maintenance },
+      data: { check /* maintenance */ },
       count: 1
     });
   } catch (err) {

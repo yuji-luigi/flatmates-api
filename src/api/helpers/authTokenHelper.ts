@@ -86,15 +86,15 @@ export async function handleCreateAuthTokensForUser(newUserIds: ObjectId[], spac
 
     if (foundTokens.length === newUserIds.length) return;
     // check if the token exists for each users. returns array of users that doesn't have token
-    const filteredIds = newUserIds.filter((id) => !foundTokens.some((token) => token.docHolder.instanceId.toString() === id.toString()));
-    // create docHolders array to save in AuthToken collection
-    const authTokenMap = filteredIds.map((id) => ({
-      space: spaceId,
-      docHolder: { ref: 'users', instanceId: id }
-    }));
-
-    const created = await AuthToken.insertMany(authTokenMap.map((tokenModel) => tokenModel));
-    console.log(created);
+    // const filteredIds = newUserIds.filter((id) => !foundTokens.some((token) => token.docHolder.instanceId.toString() === id.toString()));
+    // // create docHolders array to save in AuthToken collection
+    // const authTokenMap = filteredIds.map((id) => ({
+    //   space: spaceId,
+    //   docHolder: { ref: 'users', instanceId: id }
+    // }));
+    //
+    // const created = await AuthToken.insertMany(authTokenMap.map((tokenModel) => tokenModel));
+    console.log('todo');
   } catch (error) {
     logger.error('error creating auth tokens for users. function: handleCreateAuthTokensForUser in authTokenHelper.ts');
     throw new Error(error.message || error);
@@ -115,7 +115,7 @@ export function typeGuardAuthTokenSpaceOrg(
   if (!authToken) {
     throw new Error('pin not verified');
   }
-  if (!isPopulatedSpace(authToken.space)) throw new Error('space is not populated');
-  if (!isObjectIdOrganization(authToken.space.organization)) throw new Error('organization is not ObjectId');
+  // if (!isPopulatedSpace(authToken.space)) throw new Error('space is not populated');
+  // if (!isObjectIdOrganization(authToken.space.organization)) throw new Error('organization is not ObjectId');
   return true;
 }

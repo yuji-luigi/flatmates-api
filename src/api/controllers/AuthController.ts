@@ -16,10 +16,7 @@ import { IOrganization } from '../../types/mongoose-types/model-types/organizati
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { userHasSpace } from '../helpers/spaceHelper';
 import { createJWTObjectFromJWTAndSpace, resetSpaceCookies, handleSetCookiesFromPayload, signLoginInstanceJwt } from '../../lib/jwt/jwtUtils';
-import { Maintainer } from './MaintainerController';
-import { generatePayloadMaintainer, handleGenerateTokenByRoleAtLogin } from '../../utils/login-instance-utils/generateTokens';
-import { LeanMaintainer } from '../../types/mongoose-types/model-types/maintainer-interface';
-import AuthToken from '../../models/AuthToken';
+import { handleGenerateTokenByRoleAtLogin } from '../../utils/login-instance-utils/generateTokens';
 import { RoleFields } from '../../types/mongoose-types/model-types/role-interface';
 import AccessController from '../../models/AccessController';
 import { roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
@@ -107,79 +104,79 @@ const register = async (req: Request, res: Response) => {
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message || error });
   }
 };
-const completeRegisterMaintainer = async (req: RequestCustom, res: Response) => {
-  try {
-    const {
-      email,
-      password,
-      password2,
-      name,
-      surname,
-      space: spaceId,
-      organization,
-      _id,
-      maintenanceId,
-      description,
-      tel,
-      address,
-      homepage,
-      company,
-      type
-    } = req.body;
+// const completeRegisterMaintainer = async (req: RequestCustom, res: Response) => {
+//   try {
+//     const {
+//       email,
+//       password,
+//       password2,
+//       name,
+//       surname,
+//       space: spaceId,
+//       organization,
+//       _id,
+//       maintenanceId,
+//       description,
+//       tel,
+//       address,
+//       homepage,
+//       company,
+//       type
+//     } = req.body;
 
-    if (password !== password2) {
-      throw new Error('Password non corrispondenti');
-    }
+//     if (password !== password2) {
+//       throw new Error('Password non corrispondenti');
+//     }
 
-    const authToken = await AuthToken.findOne({
-      'docHolder.ref': 'maintenances',
-      'docHolder.instanceId': maintenanceId,
-      nonce: req.cookies.maintenanceNonce
-    });
+//     const authToken = await AuthToken.findOne({
+//       'docHolder.ref': 'maintenances',
+//       'docHolder.instanceId': maintenanceId,
+//       nonce: req.cookies.maintenanceNonce
+//     });
 
-    if (!authToken) throw new Error('invalid access');
-    // find a space for jwt generation
-    const space = await Space.findById(spaceId);
-    const maintainer = await Maintainer.findById(_id);
-    // set all the values passed from the client
-    maintainer.name = name;
-    maintainer.surname = surname;
-    maintainer.email = email;
-    maintainer.password = password;
-    maintainer.active = true;
-    maintainer.description = description;
-    maintainer.tel = tel;
-    maintainer.address = address;
-    maintainer.homepage = homepage;
-    maintainer.company = company;
-    maintainer.type = type;
+//     if (!authToken) throw new Error('invalid access');
+//     // find a space for jwt generation
+//     const space = await Space.findById(spaceId);
+//     const maintainer = await Maintainer.findById(_id);
+//     // set all the values passed from the client
+//     maintainer.name = name;
+//     maintainer.surname = surname;
+//     maintainer.email = email;
+//     maintainer.password = password;
+//     maintainer.active = true;
+//     maintainer.description = description;
+//     maintainer.tel = tel;
+//     maintainer.address = address;
+//     maintainer.homepage = homepage;
+//     maintainer.company = company;
+//     maintainer.type = type;
 
-    const rootSpaceIds = maintainer.spaces.map((space) => space.toString());
-    maintainer.spaces = [...new Set([...rootSpaceIds, space])];
-    const organizationIds = maintainer.organizations.map((org) => org.toString());
-    maintainer.organizations = [...new Set([...organizationIds, organization])];
+//     const rootSpaceIds = maintainer.spaces.map((space) => space.toString());
+//     maintainer.spaces = [...new Set([...rootSpaceIds, space])];
+//     const organizationIds = maintainer.organizations.map((org) => org.toString());
+//     maintainer.organizations = [...new Set([...organizationIds, organization])];
 
-    await maintainer.save();
+//     await maintainer.save();
 
-    const _leanedMaintainer = maintainer.toObject() as LeanMaintainer;
-    _leanedMaintainer.entity = 'maintainers';
-    _leanedMaintainer.role = 'maintainer';
-    const jwt = generatePayloadMaintainer({ maintainer, space });
+//     const _leanedMaintainer = maintainer.toObject() as LeanMaintainer;
+//     _leanedMaintainer.entity = 'maintainers';
+//     _leanedMaintainer.role = 'maintainer';
+//     const jwt = generatePayloadMaintainer({ maintainer, space });
 
-    handleSetCookiesFromPayload(res, jwt);
+//     handleSetCookiesFromPayload(res, jwt);
 
-    res.status(httpStatus.CREATED).send({
-      success: true,
-      message: _MSG.OBJ_CREATED,
-      user: maintainer,
-      accessToken: jwt,
-      count: 1
-    });
-    // return res.status(httpStatus.OK).redirect('/');
-  } catch (error) {
-    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message || error });
-  }
-};
+//     res.status(httpStatus.CREATED).send({
+//       success: true,
+//       message: _MSG.OBJ_CREATED,
+//       user: maintainer,
+//       accessToken: jwt,
+//       count: 1
+//     });
+//     // return res.status(httpStatus.OK).redirect('/');
+//   } catch (error) {
+//     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message || error });
+//   }
+// };
 
 async function createNewSpaceAtRegister({
   space,
@@ -381,6 +378,6 @@ export default {
   loginByRole,
   logout,
   me,
-  register,
-  completeRegisterMaintainer
+  register
+  // completeRegisterMaintainer
 };

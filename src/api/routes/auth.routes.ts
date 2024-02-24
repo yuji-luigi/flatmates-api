@@ -22,7 +22,7 @@ router.get('/', (req: Request, res: Response) => {
 router.post('/login/:role', authCtrl.loginByRole);
 
 router.post('/register', authCtrl.register);
-router.post('/complete-register/maintainer/', authCtrl.completeRegisterMaintainer);
+// router.post('/complete-register/maintainer/', authCtrl.completeRegisterMaintainer);
 
 router.get('/logout', authCtrl.logout);
 

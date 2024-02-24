@@ -226,7 +226,7 @@ export async function deleteOrganizationById(req: RequestCustom, res: Response) 
 
 export async function deleteOrganizationCookie(req: RequestCustom, res: Response) {
   try {
-    if (!req.user.isSuperAdmin && req.user.loggedAs === 'inhabitant') {
+    if (!req.user.isSuperAdmin && req.user.loggedAs === 'Inhabitant') {
       throw new Error(_MSG.NOT_AUTHORIZED);
     }
     const payloadUser = handleGenerateTokenByRoleAfterLogin(req.user);
