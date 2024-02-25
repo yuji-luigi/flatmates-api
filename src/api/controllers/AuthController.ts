@@ -240,9 +240,9 @@ const loginByRole = async (req: Request<{ role: RoleFields }>, res: Response) =>
     res.cookie('jwt', token, sensitiveCookieOptions);
     res.cookie('loggedAs', role, { ...sensitiveCookieOptions, httpOnly: false, sameSite: false }); // js in browser needs this
 
-    res.send({
+    res.status(httpStatus.OK).json({
       success: true,
-      data: { token, accessControllers }
+      data: { token, accessControllers, user }
     });
     return;
   } catch (error) {
@@ -293,16 +293,16 @@ export const sendRootSpaceSelectionsToClient = async (req: RequestCustom, res: R
   try {
     // case user show user.spaces
     //!todo think about structure of the maintainers. do they have to have root spaces? role must be maintainers
-    let query: Record<string, string | any> = { isMain: true, _id: { $in: req.user.spaces } };
+    // let query: Record<string, string | any> = { isMain: true, _id: { $in: req.user.spaces } };
     // case admin show all main spaces of his organizations
-    if (req.user.loggedAs === 'Administrator') {
-      query = { isMain: true /* , organization: { $in: req.user.organizations } */ };
-    }
-    if (req.user.isSuperAdmin) {
-      query = { isMain: true /* , organization: req.user.organizationId */ };
-    }
-
-    const spaces = await Space.find(query).populate({ path: 'cover', select: 'url' }).lean();
+    const accessControllers = accessControllersCache.get(req.user._id.toString());
+    const spaces = await Space.find({
+      _id: {
+        $in: accessControllers.map((actrl) => actrl.space)
+      }
+    })
+      .populate({ path: 'cover', select: 'url' })
+      .lean();
 
     res.status(httpStatus.OK).json({
       collection: 'spaces',

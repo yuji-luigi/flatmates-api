@@ -1,27 +1,16 @@
-# ADMIN contardo ferrini
-POST {{host}}/api/v1/auth/login HTTP/1.1
-content-type: application/json
-
-{
-  "email": "{{user}}",
-  "password": "{{password}}"
-}
-
-###SuperAdmin
-POST {{host}}/api/v1/auth/login HTTP/1.1
+### SUPER ADMIN 
+POST {{host}}/api/v1/auth/login/Inhabitant HTTP/1.1
 content-type: application/json
 
 {
   "email": "{{superAdminEmail}}",
   "password": "{{password}}"
 }
-###
-POST {{host}}/api/v1/auth/login HTTP/1.1
+### INHABITANT CONTARDO
+POST {{host}}/api/v1/auth/login/Inhabitant HTTP/1.1
 content-type: application/json
 
 {
-  "email": "contardo@admin.com",
-  "password": "{{password}}"
+  "email": "{{inhabitantEmail}}",
+  "password": "{{inhabitantPassword}}"
 }
-###
-GET {{host}}/api/v1/auth/me HTTP/1.1
