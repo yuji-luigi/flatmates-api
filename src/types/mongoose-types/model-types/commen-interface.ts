@@ -10,7 +10,6 @@ export interface IComment {
   anonymous: boolean;
   space: ISpace;
   parentEntity: Entities;
-  space: string | ISpace;
   organization: string | IOrganization | undefined;
   createdBy: string | IUser;
 }

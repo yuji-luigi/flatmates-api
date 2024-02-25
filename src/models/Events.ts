@@ -15,10 +15,7 @@ const Events = new Schema<IEvent>(
     },
     body: String,
     private: Boolean,
-    space: {
-      type: Schema.Types.ObjectId,
-      ref: 'spaces'
-    },
+
     organization: {
       type: Schema.Types.ObjectId,
       ref: 'organizations'

@@ -6,6 +6,7 @@
 	"scripts": {
 		"test": "jest",
 		"start": "npm run build && node dist/server.js",
+		"tsc": "tsc",
 		"dev1": "nodemon --experimental-modules dist/server.js",
 		"build": "rimraf ./dist && tsc",
 		"dev": "nodemon --exec ts-node --files ./src/server.ts",

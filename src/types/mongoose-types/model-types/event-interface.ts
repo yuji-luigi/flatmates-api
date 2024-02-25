@@ -4,7 +4,6 @@ import { ISpace } from './space-interface';
 
 export interface IEvent extends PostBaseInterface {
   space: ISpace;
-  space?: string | ISpace;
   organization: string | IOrganization;
   fromDate: Date;
   toDate: Date;

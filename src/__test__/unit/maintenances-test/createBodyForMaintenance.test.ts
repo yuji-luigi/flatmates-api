@@ -14,7 +14,7 @@ describe('test for creating body/html for email', () => {
 
   let options;
   beforeAll(async () => {
-    mongoose.connect();
+    mongoose.init();
 
     maintenance = await Maintenance.findOne();
     authToken = await AuthToken.findOne({

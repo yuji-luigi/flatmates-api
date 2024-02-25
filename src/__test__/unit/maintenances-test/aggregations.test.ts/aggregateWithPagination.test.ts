@@ -13,7 +13,7 @@ describe('test for creating body/html for email', () => {
   let authToken = {} as AuthTokenInterface;
   let options;
   beforeAll(async () => {
-    mongoose.connect();
+    mongoose.init();
 
     maintenance = await Maintenance.findOne();
     authToken = await AuthToken.findOne({

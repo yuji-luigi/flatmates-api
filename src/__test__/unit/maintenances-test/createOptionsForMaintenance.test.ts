@@ -13,7 +13,7 @@ describe('test for createMailOptionsForMaintenance', () => {
 
   let maintenance = {} as IMaintenance;
   beforeAll(async () => {
-    mongoose.connect();
+    mongoose.init();
     maintenance = await Maintenance.findOne();
     authToken = await AuthToken.findOne({
       'docHolder.instanceId': maintenance._id
