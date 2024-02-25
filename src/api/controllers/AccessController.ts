@@ -10,7 +10,7 @@ import { roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
 
 export async function sendAccessControllersToClient(req: RequestCustom, res: Response) {
   try {
-    const accessControllers = await AccessController.find({ user: req.user._id, role: roleCache.get(req.user.loggedAs) })
+    const accessControllers = await AccessController.find({ user: req.user._id, role: roleCache.get(req.user.loggedAs.name) })
       .populate('role', 'name')
       .lean();
     res.status(httpStatus.OK).json({

@@ -7,10 +7,7 @@ import { ReqUser } from '../../lib/jwt/jwtTypings';
 
 /**  searches only root spaces of user */
 export async function userHasSpace(user: ReqUser, selectedSpace: string): Promise<boolean> {
-  // return user.spaces.includes(selectedSpace._id.toString());
-  const spaces = user.spaces.map((space) => space.toString());
-
-  return spaces.some((space) => space.toString() === selectedSpace.toString());
+  return true;
 }
 /**  depth-first search (DFS) */
 export async function userHasSpaceDFS(user: ReqUser, selectedSpace: ISpace): Promise<boolean> {

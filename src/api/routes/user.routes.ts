@@ -18,7 +18,7 @@ import { isLoggedIn } from '../../middlewares/isLoggedIn';
 const router = express.Router();
 
 router.use((req: RequestCustom, response: Response, next: NextFunction) => {
-  if (!req.user.isSuperAdmin && req.user.loggedAs === 'Inhabitant') {
+  if (!req.user.isSuperAdmin && req.user.loggedAs.name === 'Inhabitant') {
     // if (!req.user.spaceId) {
     //   return response.status(httpStatus.FORBIDDEN).send('something went wrong');
     // }

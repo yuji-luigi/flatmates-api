@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
-import { RoleInterface } from '../types/mongoose-types/model-types/role-interface';
+import { RoleInterface, isRoleField } from '../types/mongoose-types/model-types/role-interface';
 
 const { Schema } = mongoose;
 
@@ -23,7 +23,11 @@ roleSchema.plugin(autoPopulate);
 roleSchema.pre('save', function () {
   if (this.name) {
     // capitalize role name
-    this.name = this.name.charAt(0).toUpperCase() + this.name.slice(1).toLowerCase();
+    const name = this.name.charAt(0).toUpperCase() + this.name.slice(1).toLowerCase();
+    if (!isRoleField(name)) {
+      throw new Error('invalid Role name');
+    }
+    this.name = name;
   } else {
     throw new Error('Role name is required');
   }

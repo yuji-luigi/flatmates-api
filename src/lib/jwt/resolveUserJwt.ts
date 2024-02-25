@@ -6,7 +6,7 @@ import Space from '../../models/Space';
 import { UserBase } from '../../types/mongoose-types/model-types/user-interface';
 import { stringifyObjectIds } from '../../middlewares/auth-middlewares';
 import { reqUserBuilder } from './reqUserBuilder';
-import { CurrentSpace, DecodedJwtPayload } from './jwtTypings';
+import { CurrentSpace, JwtSignPayload, JwtSignPayloadWithAccessCtrlAndSpaceDetail } from './jwtTypings';
 import { accessControllersCache } from '../mongoose/mongoose-cache/access-controller-cache';
 import { roleCache } from '../mongoose/mongoose-cache/role-cache';
 import AccessController from '../../models/AccessController';
@@ -54,7 +54,7 @@ const jwtOptions = {
   // jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('Bearer'),
 };
 
-const resolveUserJwt = async (payload: DecodedJwtPayload, done: UserResolverReturnType) => {
+const resolveUserJwt = async (payload: JwtSignPayload | JwtSignPayloadWithAccessCtrlAndSpaceDetail, done: UserResolverReturnType) => {
   try {
     const leanUser: UserBase = await User.findOne({ email: payload.email }).lean();
     delete leanUser.password;
@@ -93,7 +93,12 @@ const resolveUserJwt = async (payload: DecodedJwtPayload, done: UserResolverRetu
       currentSpace.isAdminOfSpace = stringifyObjectIds(space.admins).includes(leanUser._id.toString());
     }
 
-    const reqUser = await reqUserBuilder({ user: leanUser, currentSpace, loggedAs: payload.loggedAs, accessControllers });
+    const reqUser = await reqUserBuilder({
+      user: leanUser,
+      currentSpace,
+      loggedAs: payload.loggedAs,
+      accessControllers
+    });
 
     // You can attach space and organization to the user object if you like
     return done(null, reqUser);

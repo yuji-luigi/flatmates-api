@@ -337,8 +337,7 @@ export const sendMainOrganizationSelectionsToClient = async (req: RequestCustom,
 export const setSpaceAndOrgInJwt = async (req: RequestCustom, res: Response) => {
   try {
     const { user } = req;
-    // const user = await User.findById(req.user._id);
-    // set new property to resolved jwt(.)
+
     if (!user.isSuperAdmin && !userHasSpace(user, req.params.idMongoose)) {
       throw new Error(_MSG.NOT_ALLOWED);
     }

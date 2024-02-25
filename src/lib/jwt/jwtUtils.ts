@@ -3,7 +3,7 @@ import vars, { basicCookieOptions, sensitiveCookieOptions } from '../../utils/gl
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
 import { Response } from 'express';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
-import { JsonObjPayload, JwtSignPayload, SpaceDataInCookieFull, SpaceDetails } from './jwtTypings';
+import { JsonObjPayload, JwtSignPayload, JwtSignPayloadWithAccessCtrlAndSpaceDetail, SpaceDataInCookieFull, SpaceDetails } from './jwtTypings';
 const baseUrl = vars.frontendUrl + '/auth-tokens';
 
 export const generateTokenUrl = {
@@ -12,7 +12,8 @@ export const generateTokenUrl = {
 
 export const signJwt = (payload: string | Record<string, any>) => jwt.sign(payload, vars.jwtSecret, { expiresIn: vars.jwtExpirationInterval });
 
-export const createJWTObjectFromJWTAndSpace = (payload: JsonObjPayload): JwtSignPayload => {
+// re-create jwt object from jwt and space
+export const createJWTObjectFromJWTAndSpace = (payload: JsonObjPayload): JwtSignPayloadWithAccessCtrlAndSpaceDetail => {
   let spaceData: SpaceDataInCookieFull | null = null;
   spaceData = payload.space
     ? {
@@ -26,15 +27,15 @@ export const createJWTObjectFromJWTAndSpace = (payload: JsonObjPayload): JwtSign
     : null;
 
   spaceData = payload.organizationId ? { ...spaceData, organizationId: payload.organizationId } : spaceData;
-  const data: JwtSignPayload = {
-    email: payload.user?.email,
-    loggedAs: payload.user?.loggedAs,
+  const data: JwtSignPayloadWithAccessCtrlAndSpaceDetail = {
+    email: payload.user.email,
+    loggedAs: payload.user.loggedAs.name,
     ...spaceData
   };
   return data;
 };
 /** @description sign payload as jwt then res.cookie with type checking. set jwt and space + organization cookie*/
-export function handleSetCookiesFromPayload(res: Response, payload: JwtSignPayload) {
+export function handleSetCookiesFromPayload(res: Response, payload: JwtSignPayloadWithAccessCtrlAndSpaceDetail) {
   res.cookie('jwt', signJwt(payload), sensitiveCookieOptions);
   if (hasSpaceDetails(payload)) {
     res.cookie('spaceId', payload.spaceId, basicCookieOptions);
@@ -55,7 +56,7 @@ export function handleSetCookiesFromSpace(res: Response, space: ISpace) {
   res.cookie('spaceImage', space.cover?.url);
 }
 
-function hasSpaceDetails(payload: JwtSignPayload): payload is SpaceDetails & JwtSignPayload {
+function hasSpaceDetails(payload: JwtSignPayloadWithAccessCtrlAndSpaceDetail): payload is SpaceDetails & JwtSignPayloadWithAccessCtrlAndSpaceDetail {
   if ('spaceId' in payload) {
     return payload.spaceId !== undefined;
   }

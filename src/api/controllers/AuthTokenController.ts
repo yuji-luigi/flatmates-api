@@ -9,7 +9,6 @@ import { stringifyAuthToken, typeGuardAuthTokenSpaceOrg, verifyPinFromRequest } 
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { sensitiveCookieOptions } from '../../utils/globalVariables';
 import { signJwt } from '../../lib/jwt/jwtUtils';
-import Space from '../../models/Space';
 import { JwtSignPayload } from '../../lib/jwt/jwtTypings';
 
 const entity = 'authTokens';

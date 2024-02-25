@@ -1,6 +1,6 @@
 import { ObjectId } from 'bson';
 import { UserBase } from '../../types/mongoose-types/model-types/user-interface';
-import { RoleFields } from '../../types/mongoose-types/model-types/role-interface';
+import { RoleFields, RoleInterface } from '../../types/mongoose-types/model-types/role-interface';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 import { AccessControllerInterface } from '../../types/mongoose-types/model-types/access-controller-interface';
 
@@ -14,13 +14,13 @@ export type CurrentSpace = {
 
 // not jwt this is type of the req.user
 export type ReqUser = UserBase & {
-  loggedAs: RoleFields;
+  loggedAs: RoleInterface;
   accessControllers?: AccessControllerInterface[];
 } & { currentSpace?: CurrentSpace };
 
 export type JsonObjPayload = {
   space?: Partial<ISpace> | null;
-  user?: ReqUser | null;
+  user: ReqUser | null;
   organizationId?: string;
 };
 export type SpaceDataInCookieFull = {
@@ -32,18 +32,19 @@ export type SpaceDataInCookieFull = {
   spaceImage?: string;
 };
 
-export type JwtSignPayload = {
-  email: string;
-  loggedAs: RoleFields;
-};
-
-export type JwtSignPayloadWithAccessCtrl =
+export type JwtSignPayloadWithAccessCtrlAndSpaceDetail =
   | SpaceDetails & {
       email: string;
       loggedAs: RoleFields;
       spaceId?: string;
       accessControllerId?: string; // superAdmin does not need this
     };
+export type JwtSignPayload = {
+  email: string;
+  loggedAs: RoleFields;
+  spaceId?: string;
+  accessControllerId?: string; // superAdmin does not need this
+};
 
 export type __JwtSignPayload =
   | (SpaceDetails & {
@@ -58,7 +59,7 @@ export type __JwtSignPayload =
       organizationId?: string;
     };
 
-export type DecodedJwtPayload = JwtSignPayload;
+export type DecodedJwtPayload = ReqUser;
 
 export type SpaceDetails = {
   spaceId: string;
