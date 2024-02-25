@@ -1,7 +1,7 @@
 import express from 'express';
 import { getPublicCrudObjects } from '../controllers/CrudController';
 
-import postController from '../controllers/PostController';
+import postController from '../controllers/ThreadController';
 import { isLoggedIn } from '../../middlewares/isLoggedIn';
 const router = express.Router();
 

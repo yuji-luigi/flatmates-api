@@ -15,9 +15,6 @@ const createThread = async (req: RequestCustom, res: Response) => {
   try {
     req.body.createdBy = req.user;
     const reqBody = deleteEmptyFields(req.body);
-
-    // reqBody.organization = req.user.organizationId;
-    // reqBody.space = req.user.spaceId;
     reqBody.user = req.user;
     await Thread.create(reqBody);
     delete req.query.organizations;
