@@ -10,11 +10,9 @@ import { RequestCustom } from '../../types/custom-express/express-custom';
 import vars, { sensitiveCookieOptions } from '../../utils/globalVariables';
 import { aggregateDescendantIds, userHasSpace } from '../helpers/spaceHelper';
 import { _MSG } from '../../utils/messages';
-import Thread from '../../models/Thread';
-import Maintenance from '../../models/Maintenance';
 import { ObjectId } from 'mongodb';
 import { LOOKUP_PIPELINE_STAGES } from '../aggregation-helpers/lookups';
-import { createJWTObjectFromJWTAndSpace, handleSetCookiesFromPayload, signJwt } from '../../lib/jwt/jwtUtils';
+import { JWTPayload, handleSetCookiesFromPayload, signJwt } from '../../lib/jwt/jwtUtils';
 import { checkAdminOfSpace } from '../../middlewares/auth-middlewares';
 import { Maintainer } from './MaintainerController';
 const entity = 'spaces';
@@ -394,7 +392,7 @@ export const sendSpaceSelectionToClient = async (req: RequestCustom, res: Respon
   try {
     const entity = 'spaces';
 
-    const data = await Space.find({ _id: { $in: req.user.spaces } });
+    const data = await Space.find({ _id: { $in: req.user.accessControllers.map((actrl) => actrl.space) } });
 
     res.status(httpStatus.OK).json({
       success: true,
@@ -486,7 +484,11 @@ export const addSpaceToJWTAndSendToClient = async (req: RequestCustom, res: Resp
     // user is super admin or has the root space.
     const space = await Space.findById(req.params.spaceId);
 
-    const jwt = createJWTObjectFromJWTAndSpace({ user: req.user, space });
+    const jwt = new JWTPayload({
+      email: req.user.email,
+      spaceId: space._id,
+      loggedAs: req.user.loggedAs.name
+    });
 
     // const jwt = space.token();
 
@@ -497,7 +499,7 @@ export const addSpaceToJWTAndSendToClient = async (req: RequestCustom, res: Resp
     //   httpOnly: false
     // };
     res.clearCookie('jwt', { domain: vars.cookieDomain });
-    handleSetCookiesFromPayload(res, jwt);
+    handleSetCookiesFromPayload(res, jwt, space);
     // res.cookie('jwt', jwt, sensitiveCookieOptions);
     // res.cookie('space', jwt, httpOnlyFalseCookieOptions);
     // res.cookie('spaceName', space.name, { domain: vars.cookieDomain });
@@ -527,7 +529,10 @@ export const addSpaceToJWTAndSendToClient = async (req: RequestCustom, res: Resp
 export const deleteSpaceCookie = async (req: RequestCustom, res: Response) => {
   try {
     deleteSpaceCookies(res);
-    const payload = createJWTObjectFromJWTAndSpace({ user: req.user, /* organizationId: req.user.organizationId?.toString(), */ space: null });
+    const payload = JWTPayload.simple({
+      email: req.user.email,
+      loggedAs: req.user.loggedAs.name
+    });
     const jwt = signJwt(payload);
 
     res.clearCookie('jwt', { domain: vars.cookieDomain });

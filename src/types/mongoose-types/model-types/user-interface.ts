@@ -42,10 +42,8 @@ export interface UserBase {
   adminOf: ISpace[];
   // wallet?: string;
   // userSetting: string | boolean;
-  spaces?: ObjectId[];
   active: boolean;
   // organization?: IOrganization | null | undefined;
-  organizations?: ObjectId[];
   cover: IUpload;
   _update?: {
     password?: Buffer | string;

@@ -1,3 +1,4 @@
+import { RoleFields } from './../types/mongoose-types/model-types/role-interface';
 import { belongsToFields } from './field/belongsToFields';
 import { Schema, model } from 'mongoose';
 import bcrypt from 'bcrypt';
@@ -15,6 +16,7 @@ import { IUser, UserError, UserModel } from '../types/mongoose-types/model-types
 import { _MSG } from '../utils/messages';
 import Role from './AccessController';
 import AccessController from './AccessController';
+import { JwtSignPayload } from '../lib/jwt/jwtTypings';
 
 export type modules = {
   [key: string]: boolean;
@@ -164,7 +166,12 @@ userSchema.method({
 
     return transformed;
   },
-
+  toJWTPayload(loggedAs: RoleFields): JwtSignPayload {
+    return {
+      email: this.email,
+      loggedAs
+    };
+  },
   token() {
     const payload = {
       email: this.email,

@@ -3,7 +3,9 @@ import vars, { basicCookieOptions, sensitiveCookieOptions } from '../../utils/gl
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
 import { Response } from 'express';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
-import { JsonObjPayload, JwtSignPayload, JwtSignPayloadWithAccessCtrlAndSpaceDetail, SpaceDataInCookieFull, SpaceDetails } from './jwtTypings';
+import { JwtSignPayload } from './jwtTypings';
+import { RoleFields } from '../../types/mongoose-types/model-types/role-interface';
+import { ObjectId } from 'bson';
 const baseUrl = vars.frontendUrl + '/auth-tokens';
 
 export const generateTokenUrl = {
@@ -13,36 +15,61 @@ export const generateTokenUrl = {
 export const signJwt = (payload: string | Record<string, any>) => jwt.sign(payload, vars.jwtSecret, { expiresIn: vars.jwtExpirationInterval });
 
 // re-create jwt object from jwt and space
-export const createJWTObjectFromJWTAndSpace = (payload: JsonObjPayload): JwtSignPayloadWithAccessCtrlAndSpaceDetail => {
-  let spaceData: SpaceDataInCookieFull | null = null;
-  spaceData = payload.space
-    ? {
-        spaceName: payload.space.name,
-        spaceId: payload.space._id.toString(),
-        spaceSlug: payload.space.slug,
-        spaceAddress: payload.space.address,
-        organizationId: payload.space?.organization.toString(),
-        spaceImage: payload.space.cover?.url
-      }
-    : null;
+// export const createJWTObjectFromJWTAndSpace = (payload: JwtSignPayload): JwtSignPayloadWithAccessCtrlAndSpaceDetail => {
+//   return {
+//     // email: payload.email;
+//     // loggedAs: RoleFields;
+//     // spaceId?: string;
+//     // accessControllerId?: string;
+//   };
+// };
+export class JWTPayload implements JwtSignPayload {
+  email: string;
+  loggedAs: RoleFields;
+  spaceId?: string;
+  accessControllerId?: string;
 
-  spaceData = payload.organizationId ? { ...spaceData, organizationId: payload.organizationId } : spaceData;
-  const data: JwtSignPayloadWithAccessCtrlAndSpaceDetail = {
-    email: payload.user.email,
-    loggedAs: payload.user.loggedAs.name,
-    ...spaceData
-  };
-  return data;
-};
+  constructor({
+    email,
+    loggedAs,
+    spaceId,
+    accessControllerId
+  }: {
+    email: string;
+    loggedAs: RoleFields;
+    spaceId?: string | ObjectId;
+    accessControllerId?: string | ObjectId;
+  }) {
+    this.email = email;
+    this.loggedAs = loggedAs;
+    this.spaceId = spaceId.toString();
+    if (accessControllerId instanceof ObjectId) {
+      accessControllerId = accessControllerId.toString();
+    }
+    this.accessControllerId = accessControllerId;
+  }
+
+  static simple({ email, loggedAs, spaceId }: { email: string; loggedAs: RoleFields; spaceId?: string | ObjectId }): JWTPayload {
+    if (spaceId instanceof ObjectId) {
+      spaceId = spaceId.toString();
+    }
+    return {
+      email,
+      loggedAs,
+      spaceId
+    };
+  }
+}
+
 /** @description sign payload as jwt then res.cookie with type checking. set jwt and space + organization cookie*/
-export function handleSetCookiesFromPayload(res: Response, payload: JwtSignPayloadWithAccessCtrlAndSpaceDetail) {
+export function handleSetCookiesFromPayload(res: Response, payload: JWTPayload, space?: ISpace) {
   res.cookie('jwt', signJwt(payload), sensitiveCookieOptions);
-  if (hasSpaceDetails(payload)) {
-    res.cookie('spaceId', payload.spaceId, basicCookieOptions);
-    res.cookie('spaceName', payload.spaceName, basicCookieOptions);
-    res.cookie('spaceSlug', payload.spaceSlug, basicCookieOptions);
-    res.cookie('spaceAddress', payload.spaceAddress, basicCookieOptions);
-    res.cookie('spaceImage', payload.spaceImage);
+  if (space) {
+    res.cookie('spaceId', space._id.toString(), basicCookieOptions);
+    res.cookie('spaceName', space.name, basicCookieOptions);
+    res.cookie('spaceSlug', space.slug, basicCookieOptions);
+    res.cookie('spaceAddress', space.address, basicCookieOptions);
+    res.cookie('spaceImage', space.cover?.url, basicCookieOptions);
   }
 }
 /**
@@ -56,11 +83,11 @@ export function handleSetCookiesFromSpace(res: Response, space: ISpace) {
   res.cookie('spaceImage', space.cover?.url);
 }
 
-function hasSpaceDetails(payload: JwtSignPayloadWithAccessCtrlAndSpaceDetail): payload is SpaceDetails & JwtSignPayloadWithAccessCtrlAndSpaceDetail {
-  if ('spaceId' in payload) {
-    return payload.spaceId !== undefined;
-  }
-}
+// function hasSpaceDetails(payload: JwtSignPayloadWithAccessCtrlAndSpaceDetail): payload is SpaceDetails & JwtSignPayloadWithAccessCtrlAndSpaceDetail {
+//   if ('spaceId' in payload) {
+//     return payload.spaceId !== undefined;
+//   }
+// }
 
 export function resetSpaceCookies(res: Response) {
   res.clearCookie('spaceId', { domain: vars.cookieDomain });

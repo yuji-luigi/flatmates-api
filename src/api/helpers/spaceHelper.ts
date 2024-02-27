@@ -6,13 +6,17 @@ import { CurrentSpace, ISpace } from '../../types/mongoose-types/model-types/spa
 import { ReqUser } from '../../lib/jwt/jwtTypings';
 
 /**  searches only root spaces of user */
-export async function userHasSpace(user: ReqUser, selectedSpace: string): Promise<boolean> {
-  return true;
+export async function userHasSpace(user: ReqUser, currentSpaceId: string | ObjectId): Promise<boolean> {
+  if (currentSpaceId instanceof ObjectId) {
+    currentSpaceId = currentSpaceId.toString();
+  }
+  const spaces = user.accessControllers.map((actrl) => actrl.space.toString());
+  return spaces.includes(currentSpaceId);
 }
 /**  depth-first search (DFS) */
 export async function userHasSpaceDFS(user: ReqUser, selectedSpace: ISpace): Promise<boolean> {
   // return user.spaces.includes(selectedSpace._id.toString());
-  const spaces = user.spaces.map((space) => space.toString());
+  const spaces = user.accessControllers.map((actrl) => actrl.space.toString());
 
   const hasSpaceAsRootSpace = spaces.some((space) => space.toString() === selectedSpace._id.toString());
   if (hasSpaceAsRootSpace) {
@@ -45,10 +49,9 @@ async function searchDescendants(spaceId: string, targetId: string, user: ReqUse
   }
   return false;
 }
-
 /** breadth-first search */
 export async function userHasSpaceBFS(user: ReqUser, selectedSpace: ISpace): Promise<boolean> {
-  const spaces = user.spaces.map((space) => space.toString());
+  const spaces = user.accessControllers.map((actrl) => actrl.space.toString());
 
   // Initialize a queue with the root spaces
   const queue = [...spaces];

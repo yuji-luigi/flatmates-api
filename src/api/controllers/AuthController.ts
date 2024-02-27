@@ -15,7 +15,7 @@ import Organization from '../../models/Organization';
 import { IOrganization } from '../../types/mongoose-types/model-types/organization-interface';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { userHasSpace } from '../helpers/spaceHelper';
-import { createJWTObjectFromJWTAndSpace, resetSpaceCookies, handleSetCookiesFromPayload, signLoginInstanceJwt } from '../../lib/jwt/jwtUtils';
+import { resetSpaceCookies, handleSetCookiesFromPayload, signLoginInstanceJwt, JWTPayload } from '../../lib/jwt/jwtUtils';
 import { handleGenerateTokenByRoleAtLogin } from '../../utils/login-instance-utils/generateTokens';
 import { RoleFields } from '../../types/mongoose-types/model-types/role-interface';
 import AccessController from '../../models/AccessController';
@@ -67,7 +67,7 @@ const register = async (req: Request, res: Response) => {
       surname,
       active: true,
       role: 'admin'
-    }) as any;
+    });
 
     const newOrganization = new Organization({
       name: `${name} ${surname}'s organization`
@@ -80,13 +80,7 @@ const register = async (req: Request, res: Response) => {
     // const spaceCookie = formatCurrentSpaceToJSON(newRootSpace);
     await newOrganization.save();
 
-    newUser.spaces.push(newRootSpace);
-    newUser.organizations.push(newOrganization);
-    await newUser.save();
-
-    const _leanedUser = newUser.toObject();
-    _leanedUser.entity = 'users';
-    const jwt = createJWTObjectFromJWTAndSpace({ user: _leanedUser, space: newRootSpace });
+    const jwt = JWTPayload.simple({ email: newUser.email, loggedAs: 'Inhabitant', spaceId: newRootSpace._id });
     handleSetCookiesFromPayload(res, jwt);
     // res.cookie('organization', organizationToken, sensitiveCookieOptions);
     // res.cookie('space', spaceCookie, sensitiveCookieOptions);
@@ -322,8 +316,8 @@ export const sendRootSpaceSelectionsToClient = async (req: RequestCustom, res: R
 export const sendMainOrganizationSelectionsToClient = async (req: RequestCustom, res: Response) => {
   try {
     // query by users organizations. in all user cases. Since user can have multiple organizations.
-    const query = req.user.isSuperAdmin ? {} : { _id: { $in: req.user.organizations } };
-    const organizations = await Organization.find(query).lean();
+    // const query = req.user.isSuperAdmin ? {} : { _id: { $in: req.user.organizations } };
+    const organizations = await Organization.find(req.query).lean();
     res.status(httpStatus.OK).json({ success: true, data: organizations });
   } catch (error) {
     logger.error(error.message || error);
@@ -343,11 +337,11 @@ export const setSpaceAndOrgInJwt = async (req: RequestCustom, res: Response) => 
     }
     // user is super admin or has the root space.
     const space = await Space.findById(req.params.idMongoose);
-    const jwt = createJWTObjectFromJWTAndSpace({ user: req.user, space });
+    const jwt = new JWTPayload({ loggedAs: req.user.loggedAs.name, email: req.user.email });
     // const jwt = signJwt(updatedJwt);
 
     res.clearCookie('jwt', { domain: vars.cookieDomain });
-    handleSetCookiesFromPayload(res, jwt);
+    handleSetCookiesFromPayload(res, jwt, space);
 
     res.status(httpStatus.OK).json({
       success: true,
