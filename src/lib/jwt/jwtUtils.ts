@@ -14,15 +14,6 @@ export const generateTokenUrl = {
 
 export const signJwt = (payload: string | Record<string, any>) => jwt.sign(payload, vars.jwtSecret, { expiresIn: vars.jwtExpirationInterval });
 
-// re-create jwt object from jwt and space
-// export const createJWTObjectFromJWTAndSpace = (payload: JwtSignPayload): JwtSignPayloadWithAccessCtrlAndSpaceDetail => {
-//   return {
-//     // email: payload.email;
-//     // loggedAs: RoleFields;
-//     // spaceId?: string;
-//     // accessControllerId?: string;
-//   };
-// };
 export class JWTPayload implements JwtSignPayload {
   email: string;
   loggedAs: RoleFields;
