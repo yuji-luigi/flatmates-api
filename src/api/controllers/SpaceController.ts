@@ -291,7 +291,7 @@ export const sendSpaceSettingPageDataToClient = async (req: RequestCustom, res: 
   try {
     const data = await Space.findOne({ slug: req.params.slug });
     const maintainers = await Maintainer.find({ spaces: { $in: [data._id] } });
-    const isSpaceAdmin = await checkAdminOfSpace({ space: data, currentUser: req.user });
+    const isSpaceAdmin = checkAdminOfSpace({ space: data, currentUser: req.user });
     // await setUrlToSpaceImages(data);
     for (const maintainer of maintainers) {
       await maintainer.avatar?.setUrl();
@@ -620,8 +620,7 @@ export async function sendMainSpacesSlug(req: RequestCustom, res: Response) {
 export async function updateSpaceAndSendToClient(req: RequestCustom, res: Response) {
   try {
     const space = await Space.findById(req.params.idMongoose);
-
-    if (!(await checkAdminOfSpace({ space, currentUser: req.user }))) {
+    if (checkAdminOfSpace({ space, currentUser: req.user })) {
       throw new Error(_MSG.NOT_AUTHORIZED);
     }
 
@@ -648,7 +647,7 @@ export async function updateSpaceAndSendToClient(req: RequestCustom, res: Respon
 export async function sendIsAdminToClient(req: RequestCustom, res: Response) {
   try {
     const space = await Space.findById(req.params.idMongoose);
-    const isAdmin = await checkAdminOfSpace({ space, currentUser: req.user });
+    const isAdmin = checkAdminOfSpace({ space, currentUser: req.user });
     res.status(httpStatus.OK).json({
       success: true,
       data: isAdmin

@@ -6,6 +6,7 @@ import { RequestCustom } from '../types/custom-express/express-custom';
 import { ObjectId } from 'mongodb';
 import { ISpace } from '../types/mongoose-types/model-types/space-interface';
 import { ReqUser } from '../lib/jwt/jwtTypings';
+import { accessControllersCache } from '../lib/mongoose/mongoose-cache/access-controller-cache';
 
 export function clearQueriesForSAdmin(req: RequestCustom, res: Response, next: NextFunction) {
   if (req.user.isSuperAdmin) {
@@ -31,13 +32,13 @@ export const ADMIN = 'admin';
 export const LOGGED_USER = 'user';
 export const SUPER_ADMIN = 'super_admin';
 
-export async function checkAdminOfSpace({ space, currentUser }: { space: ISpace; currentUser: ReqUser }) {
+export function checkAdminOfSpace({ space, currentUser }: { space: ISpace; currentUser: ReqUser }) {
   if (currentUser.isSuperAdmin) {
     return true;
   }
-  const mainSpace = await space.getMainSpace();
-  if (stringifyObjectIds(mainSpace.admins).includes(currentUser._id.toString())) {
-    return true;
-  }
-  return false;
+  const accessControllers = accessControllersCache.get(currentUser._id.toString());
+  const isSystemAdmin = accessControllers.some((actrl) => {
+    return actrl.space.toString() === space._id.toString() && (actrl.isSubSystemAdmin || actrl.isSystemAdmin);
+  });
+  return isSystemAdmin;
 }

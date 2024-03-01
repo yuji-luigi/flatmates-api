@@ -15,6 +15,7 @@ export type CurrentSpace = {
 export type ReqUser = UserBase & {
   loggedAs: RoleInterface;
   accessControllers?: AccessControllerInterface[];
+  isAdminOfCurrentSpace?: boolean;
 } & { currentSpace?: CurrentSpace };
 
 // export type JsonObjPayload = {

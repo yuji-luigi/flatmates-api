@@ -4,9 +4,9 @@ import vars from '../../utils/globalVariables';
 import User from '../../models/User';
 import Space from '../../models/Space';
 import { UserBase } from '../../types/mongoose-types/model-types/user-interface';
-import { stringifyObjectIds } from '../../middlewares/auth-middlewares';
+import { checkAdminOfSpace, stringifyObjectIds } from '../../middlewares/auth-middlewares';
 import { reqUserBuilder } from './reqUserBuilder';
-import { CurrentSpace, JwtSignPayload, JwtSignPayloadWithAccessCtrlAndSpaceDetail } from './jwtTypings';
+import { CurrentSpace, JwtSignPayload, JwtSignPayloadWithAccessCtrlAndSpaceDetail, ReqUser } from './jwtTypings';
 import { accessControllersCache } from '../mongoose/mongoose-cache/access-controller-cache';
 import { roleCache } from '../mongoose/mongoose-cache/role-cache';
 import AccessController from '../../models/AccessController';
@@ -56,12 +56,12 @@ const jwtOptions = {
 
 const resolveUserJwt = async (resolvedJwt: JwtSignPayload | JwtSignPayloadWithAccessCtrlAndSpaceDetail, done: UserResolverReturnType) => {
   try {
-    const leanUser: UserBase = await User.findOne({ email: resolvedJwt.email }).lean();
+    const leanUser: ReqUser = await User.findOne({ email: resolvedJwt.email }).lean();
     delete leanUser.password;
     if (!leanUser) {
       return done(null, false);
     }
-
+    // init cache of all accessControllers of the user. setting array of accessControllers in the cache
     if (!accessControllersCache.get(leanUser._id.toString())) {
       const _accessControllers = await AccessController.find({ user: leanUser._id, role: roleCache.get(resolvedJwt.loggedAs) });
       accessControllersCache.set(leanUser._id.toString(), _accessControllers);
@@ -70,6 +70,8 @@ const resolveUserJwt = async (resolvedJwt: JwtSignPayload | JwtSignPayloadWithAc
     const accessControllers = accessControllersCache.get(leanUser._id.toString());
 
     for (const aCtrl of accessControllers) {
+      // init cache of all spaces of the user(accessControllers).
+      // todo: the use case of the cache??
       if (!spaceCache.get(aCtrl.space.toString())) {
         const space = await Space.findById(aCtrl.space).lean();
         spaceCache.set(aCtrl.space.toString(), space);
@@ -85,12 +87,13 @@ const resolveUserJwt = async (resolvedJwt: JwtSignPayload | JwtSignPayloadWithAc
     // if spaceId key in resolvedJwt
     if ('spaceId' in resolvedJwt) {
       // get selected space(space organization input)
-      const space = await Space.findById(resolvedJwt.spaceId).lean();
+      // const space = await Space.findById(resolvedJwt.spaceId).lean();
+      const space = spaceCache.get(resolvedJwt.spaceId);
       currentSpace.name = space.name;
       currentSpace._id = space._id;
       // from selectedSpace extract admins Array then check the requiesting user is in the array.
       // if yes then set the user is admin of the space
-      currentSpace.isAdminOfSpace = stringifyObjectIds(space.admins).includes(leanUser._id.toString());
+      leanUser.isAdminOfCurrentSpace = checkAdminOfSpace({ space, currentUser: leanUser });
     }
 
     const reqUser = await reqUserBuilder({
