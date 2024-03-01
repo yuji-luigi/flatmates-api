@@ -20,24 +20,10 @@ export class JWTPayload implements JwtSignPayload {
   spaceId?: string;
   accessControllerId?: string;
 
-  constructor({
-    email,
-    loggedAs,
-    spaceId,
-    accessControllerId
-  }: {
-    email: string;
-    loggedAs: RoleFields;
-    spaceId?: string | ObjectId;
-    accessControllerId?: string | ObjectId;
-  }) {
+  constructor({ email, loggedAs, spaceId }: { email: string; loggedAs: RoleFields; spaceId: string | ObjectId }) {
     this.email = email;
     this.loggedAs = loggedAs;
     this.spaceId = spaceId.toString();
-    if (accessControllerId instanceof ObjectId) {
-      accessControllerId = accessControllerId.toString();
-    }
-    this.accessControllerId = accessControllerId;
   }
 
   static simple({ email, loggedAs, spaceId }: { email: string; loggedAs: RoleFields; spaceId?: string | ObjectId }): JWTPayload {
@@ -54,7 +40,7 @@ export class JWTPayload implements JwtSignPayload {
 
 /** @description sign payload as jwt then res.cookie with type checking. set jwt and space + organization cookie*/
 export function handleSetCookiesFromPayload(res: Response, payload: JWTPayload, space?: ISpace) {
-  res.cookie('jwt', signJwt(payload), sensitiveCookieOptions);
+  res.cookie('jwt', signJwt({ ...payload }), sensitiveCookieOptions);
   if (space) {
     res.cookie('spaceId', space._id.toString(), basicCookieOptions);
     res.cookie('spaceName', space.name, basicCookieOptions);

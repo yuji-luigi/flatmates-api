@@ -54,16 +54,16 @@ const jwtOptions = {
   // jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('Bearer'),
 };
 
-const resolveUserJwt = async (payload: JwtSignPayload | JwtSignPayloadWithAccessCtrlAndSpaceDetail, done: UserResolverReturnType) => {
+const resolveUserJwt = async (resolvedJwt: JwtSignPayload | JwtSignPayloadWithAccessCtrlAndSpaceDetail, done: UserResolverReturnType) => {
   try {
-    const leanUser: UserBase = await User.findOne({ email: payload.email }).lean();
+    const leanUser: UserBase = await User.findOne({ email: resolvedJwt.email }).lean();
     delete leanUser.password;
     if (!leanUser) {
       return done(null, false);
     }
 
     if (!accessControllersCache.get(leanUser._id.toString())) {
-      const _accessControllers = await AccessController.find({ user: leanUser._id, role: roleCache.get(payload.loggedAs) });
+      const _accessControllers = await AccessController.find({ user: leanUser._id, role: roleCache.get(resolvedJwt.loggedAs) });
       accessControllersCache.set(leanUser._id.toString(), _accessControllers);
     }
 
@@ -78,16 +78,16 @@ const resolveUserJwt = async (payload: JwtSignPayload | JwtSignPayloadWithAccess
 
     //Todo: set SpaceId[] in req.user and use it for querying. when selected one space from frontend (AppBar) then only one space array.
     //! Actually use directly the accessControllers array for querying.
-    // Fetch space and organization if they're in the payload
+    // Fetch space and organization if they're in the resolvedJwt
     const currentSpace: CurrentSpace = {
       isAdminOfSpace: false
     };
-    // if spaceId key in payload
-    if ('spaceId' in payload) {
+    // if spaceId key in resolvedJwt
+    if ('spaceId' in resolvedJwt) {
       // get selected space(space organization input)
-      const space = await Space.findById(payload.spaceId).lean();
-      currentSpace.spaceName = space.name;
-      currentSpace.spaceId = space._id;
+      const space = await Space.findById(resolvedJwt.spaceId).lean();
+      currentSpace.name = space.name;
+      currentSpace._id = space._id;
       // from selectedSpace extract admins Array then check the requiesting user is in the array.
       // if yes then set the user is admin of the space
       currentSpace.isAdminOfSpace = stringifyObjectIds(space.admins).includes(leanUser._id.toString());
@@ -96,7 +96,7 @@ const resolveUserJwt = async (payload: JwtSignPayload | JwtSignPayloadWithAccess
     const reqUser = await reqUserBuilder({
       user: leanUser,
       currentSpace,
-      loggedAs: payload.loggedAs,
+      loggedAs: resolvedJwt.loggedAs,
       accessControllers
     });
 

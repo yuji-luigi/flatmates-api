@@ -4,8 +4,8 @@ import { RoleFields, RoleInterface } from '../../types/mongoose-types/model-type
 import { AccessControllerInterface } from '../../types/mongoose-types/model-types/access-controller-interface';
 
 export type CurrentSpace = {
-  spaceName?: string;
-  spaceId?: ObjectId;
+  name?: string;
+  _id?: ObjectId;
   organizationId?: ObjectId;
   /** check from selected space.admins and requesting user id */
   isAdminOfSpace: boolean;

@@ -19,7 +19,6 @@ export interface ISpace extends MongooseBaseModel {
   typeOfSpace: TypeOfSpace;
   // spaceType: 'city' | 'district' | 'neighborhood' | 'street' | 'building' | 'floor' | 'space';
   /** now user does not have role as admin, they will be registered as admin in the space. */
-  admins: ObjectId[] | [];
   /** meaning that this is the end of the chain of spaces.
    *
    * Also meaning that has no children */
