@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson';
 import { UserBase } from '../../types/mongoose-types/model-types/user-interface';
 import { RoleFields, RoleInterface } from '../../types/mongoose-types/model-types/role-interface';
-import { AccessControllerInterface } from '../../types/mongoose-types/model-types/access-controller-interface';
+import { AccessControllerCache } from '../../types/mongoose-types/model-types/access-controller-interface';
 
 export type CurrentSpace = {
   name?: string;
@@ -14,7 +14,7 @@ export type CurrentSpace = {
 // not jwt this is type of the req.user
 export type ReqUser = UserBase & {
   loggedAs: RoleInterface;
-  accessControllers?: AccessControllerInterface[];
+  accessControllers?: AccessControllerCache[];
   isAdminOfCurrentSpace?: boolean;
 } & { currentSpace?: CurrentSpace };
 

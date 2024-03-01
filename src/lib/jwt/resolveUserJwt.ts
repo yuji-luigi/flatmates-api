@@ -3,8 +3,7 @@ import { Request } from 'express';
 import vars from '../../utils/globalVariables';
 import User from '../../models/User';
 import Space from '../../models/Space';
-import { UserBase } from '../../types/mongoose-types/model-types/user-interface';
-import { checkAdminOfSpace, stringifyObjectIds } from '../../middlewares/auth-middlewares';
+import { checkAdminOfSpace } from '../../middlewares/auth-middlewares';
 import { reqUserBuilder } from './reqUserBuilder';
 import { CurrentSpace, JwtSignPayload, JwtSignPayloadWithAccessCtrlAndSpaceDetail, ReqUser } from './jwtTypings';
 import { accessControllersCache } from '../mongoose/mongoose-cache/access-controller-cache';
@@ -13,6 +12,7 @@ import AccessController from '../../models/AccessController';
 import logger from '../logger';
 import { spaceCache } from '../mongoose/mongoose-cache/space-cache';
 import { UserResolverReturnType } from '../../middlewares/handleUserFromRequest';
+import { AccessControllerCache } from '../../types/mongoose-types/model-types/access-controller-interface';
 
 const { jwtSecret } = vars;
 const JwtStrategy = passport.Strategy;
@@ -63,7 +63,10 @@ const resolveUserJwt = async (resolvedJwt: JwtSignPayload | JwtSignPayloadWithAc
     }
     // init cache of all accessControllers of the user. setting array of accessControllers in the cache
     if (!accessControllersCache.get(leanUser._id.toString())) {
-      const _accessControllers = await AccessController.find({ user: leanUser._id, role: roleCache.get(resolvedJwt.loggedAs) });
+      const _accessControllers: AccessControllerCache[] = await AccessController.find({
+        user: leanUser._id,
+        role: roleCache.get(resolvedJwt.loggedAs)
+      });
       accessControllersCache.set(leanUser._id.toString(), _accessControllers);
     }
 

@@ -1,3 +1,5 @@
+import { RoleFields } from '../mongoose-types/model-types/role-interface';
+
 type ActionEnum = 'LOGIN' | 'REGISTER' | 'LOGOUT' | 'INITIALIZE';
 
 // export type JWTContextState = {
@@ -45,6 +47,7 @@ interface RegisterData extends LoginData {
   surname: string;
   organization: string;
   purpose: PurposeUser;
+  role: RoleFields;
 }
 type PurposeUser = 'condoAdmin' | 'flatAdmin' | 'companyAdmin';
 

@@ -14,13 +14,15 @@ import Space from '../../models/Space';
 import Organization from '../../models/Organization';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { userHasSpace } from '../helpers/spaceHelper';
-import { resetSpaceCookies, handleSetCookiesFromPayload, signLoginInstanceJwt, JWTPayload, signJwt } from '../../lib/jwt/jwtUtils';
+import { resetSpaceCookies, handleSetCookiesFromPayload, signLoginInstanceJwt, JWTPayload } from '../../lib/jwt/jwtUtils';
 import { handleGenerateTokenByRoleAtLogin } from '../../utils/login-instance-utils/generateTokens';
-import { RoleFields, roles } from '../../types/mongoose-types/model-types/role-interface';
+import { RoleFields } from '../../types/mongoose-types/model-types/role-interface';
 import AccessController from '../../models/AccessController';
 import { roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
 import { accessControllersCache } from '../../lib/mongoose/mongoose-cache/access-controller-cache';
 import { correctQueryForEntity } from '../helpers/mongoose.helper';
+import { RegisterData } from '../../types/auth/formdata';
+import { AccessControllerCache } from '../../types/mongoose-types/model-types/access-controller-interface';
 // import { CurrentSpace } from '../../types/mongoose-types/model-types/space-interface';
 
 const { cookieDomain } = vars;
@@ -47,7 +49,7 @@ const { cookieDomain } = vars;
 
 const register = async (req: Request, res: Response) => {
   try {
-    const { email, password, password2, name, surname, space } = req.body as RegisterData;
+    const { email, password, password2, name, surname, space, role = 'Inhabitant' } = req.body as RegisterData;
 
     if (password !== password2) {
       throw new Error('Password non corrispondenti');
@@ -57,8 +59,7 @@ const register = async (req: Request, res: Response) => {
       password,
       name,
       surname,
-      active: true,
-      role: 'admin'
+      active: true
     });
 
     const accessToken = newUser.token();
@@ -67,10 +68,15 @@ const register = async (req: Request, res: Response) => {
     const newRootSpace = await createNewSpaceAtRegister({ space, user: newUser });
     // create accessController for the user and space as system admin
     await AccessController.create({
-      role: roleCache.get(roles[0])._id,
+      role: roleCache.get(role)._id,
+      space: newRootSpace._id,
+      user: newUser._id
+    });
+    // create system Admin for the new space and new user
+    await AccessController.create({
       space: newRootSpace._id,
       user: newUser._id,
-      isSystemAdmin: true
+      role: roleCache.get('System Admin')._id
     });
     await newUser.save();
     const jwt = JWTPayload.simple({ email: newUser.email, loggedAs: 'Inhabitant', spaceId: newRootSpace._id });
@@ -85,6 +91,7 @@ const register = async (req: Request, res: Response) => {
     });
     // return res.status(httpStatus.OK).redirect('/');
   } catch (error) {
+    logger.error(error.message);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message || error });
   }
 };
@@ -209,10 +216,10 @@ const loginByRole = async (req: Request<{ role: RoleFields }>, res: Response) =>
       throw new Error('Password non corrispondenti');
     }
 
-    const accessControllers = await AccessController.find({
+    const accessControllers: AccessControllerCache[] = await AccessController.find({
       role: roleCache.get(role)._id,
       user: user._id
-    }).lean();
+    });
 
     accessControllersCache.set(user._id.toString(), accessControllers);
 

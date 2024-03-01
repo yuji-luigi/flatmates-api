@@ -4,15 +4,19 @@ import { ISpace } from './space-interface';
 import { IUser } from './user-interface';
 import { RoleFields, RoleInterface } from './role-interface';
 import { Model } from 'mongoose';
-// enities
-// threads, maintenances, comments, users, spaces, roles
+
 export const permissions = [
   'canCreatePost',
   'canCreateMaintenance',
   'canNotifyMaintainer',
   'canDeletePost',
   'canDeleteMaintenance',
-  'canDeleteComment'
+  'canDeleteComment',
+  // new: these should create view for admin dashboard.
+  'canCreateUsers',
+  'canDeleteUsers',
+  'canCreateSpaces',
+  'canAssignMaintainers'
 ] as const;
 
 export type Permission = (typeof permissions)[number];
@@ -38,8 +42,12 @@ export interface AccessControllerBase extends MongooseBaseModel {
   user: ObjectId | IUser;
   space: ObjectId | ISpace;
   role: ObjectId | RoleInterface;
-  isSystemAdmin: boolean;
-  isSubSystemAdmin: boolean;
+  permissions: PermissionInterface[];
+}
+export interface AccessControllerCache extends MongooseBaseModel {
+  user: ObjectId | IUser;
+  space: ObjectId | ISpace;
+  role: ObjectId;
   permissions: PermissionInterface[];
 }
 

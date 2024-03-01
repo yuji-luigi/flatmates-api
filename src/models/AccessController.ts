@@ -38,14 +38,7 @@ export const accessControllerSchema = new Schema<AccessControllerInterface, Acce
       ref: 'spaces',
       required: true
     },
-    isSystemAdmin: {
-      type: Boolean,
-      default: false
-    },
-    isSubSystemAdmin: {
-      type: Boolean,
-      default: false
-    },
+
     permissions: [permissionSchema]
   },
   {

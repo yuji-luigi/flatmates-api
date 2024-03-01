@@ -7,6 +7,7 @@ import { ObjectId } from 'mongodb';
 import { ISpace } from '../types/mongoose-types/model-types/space-interface';
 import { ReqUser } from '../lib/jwt/jwtTypings';
 import { accessControllersCache } from '../lib/mongoose/mongoose-cache/access-controller-cache';
+import { roleCache } from '../lib/mongoose/mongoose-cache/role-cache';
 
 export function clearQueriesForSAdmin(req: RequestCustom, res: Response, next: NextFunction) {
   if (req.user.isSuperAdmin) {
@@ -37,8 +38,9 @@ export function checkAdminOfSpace({ space, currentUser }: { space: ISpace; curre
     return true;
   }
   const accessControllers = accessControllersCache.get(currentUser._id.toString());
+  const systemAdminRoleId = roleCache.get('System Admin')._id.toString();
   const isSystemAdmin = accessControllers.some((actrl) => {
-    return actrl.space.toString() === space._id.toString() && (actrl.isSubSystemAdmin || actrl.isSystemAdmin);
+    return actrl.space.toString() === space._id.toString() && actrl.role.toString() === systemAdminRoleId;
   });
   return isSystemAdmin;
 }

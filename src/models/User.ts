@@ -138,8 +138,7 @@ userSchema.method({
   token() {
     const payload = {
       email: this.email,
-      entity: 'users',
-      organizationId: this.organizations[0]?._id.toString()
+      entity: 'users'
     };
     return jwt.sign(payload, jwtSecret, {
       expiresIn: '24h' // expires in 24 hours

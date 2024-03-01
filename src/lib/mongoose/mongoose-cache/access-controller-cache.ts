@@ -1,4 +1,4 @@
-import { AccessControllerInterface } from '../../../types/mongoose-types/model-types/access-controller-interface';
+import { AccessControllerCache } from '../../../types/mongoose-types/model-types/access-controller-interface';
 
 type UserId = string;
-export const accessControllersCache = new Map<UserId, AccessControllerInterface[]>();
+export const accessControllersCache = new Map<UserId, AccessControllerCache[]>();
