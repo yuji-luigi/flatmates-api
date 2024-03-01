@@ -23,6 +23,7 @@ const entity = 'users';
 const lookupSpaces: PipelineStage.FacetPipelineStage = {
   $lookup: { from: 'spaces', localField: 'spaces', foreignField: '_id', as: 'spaces' }
 };
+
 export const createUserAndSendDataWithPagination = async (req: RequestCustom, res: Response) => {
   try {
     // todo: control for user accessController.
@@ -81,13 +82,30 @@ export const createUserAndSendDataWithPagination = async (req: RequestCustom, re
 
 export async function sendUsersToClient(req: RequestCustom, res: Response) {
   try {
-    const users = await aggregateWithPagination(req.query, 'users', [lookupSpaces]);
-
+    const resultACtrl = await aggregateWithPagination(req.query, 'accessControllers', [
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      { $unwind: '$user' },
+      {
+        $group: {
+          _id: '$user',
+          doc: { $first: '$$ROOT' } // Keep the first document encountered for each unique user
+        }
+      },
+      { $replaceRoot: { newRoot: '$doc' } }
+    ]);
+    const users = resultACtrl[0].paginatedResult.map((actrl) => actrl.user);
     res.status(httpStatus.OK).json({
       success: true,
       collection: 'organizations',
-      data: users[0].paginatedResult || [],
-      totalDocuments: users[0].counts[0]?.total || 0
+      data: users,
+      totalDocuments: resultACtrl[0].counts[0]?.total || 0
     });
   } catch (error) {
     logger.error(error.message || error);
@@ -239,7 +257,7 @@ export async function importExcelFromClient(req: RequestCustom, res: Response) {
     const fileFromClient = req.files.file;
     // Parse the file based on its type
     const data = convertExcelToJson<userExcelData>(fileFromClient);
-    const space = req.user.currentSpace.spaceId;
+    const space = req.user.currentSpace._id;
     const organization = req.user.currentSpace.organizationId;
     if (!space)
       throw new ErrorEx({

@@ -4,13 +4,12 @@ import logger from '../../lib/logger';
 import { _MSG } from '../../utils/messages';
 import { CurrentSpace, ISpace } from '../../types/mongoose-types/model-types/space-interface';
 import { ReqUser } from '../../lib/jwt/jwtTypings';
+import { accessControllersCache } from '../../lib/mongoose/mongoose-cache/access-controller-cache';
 
 /**  searches only root spaces of user */
-export async function userHasSpace(user: ReqUser, currentSpaceId: string | ObjectId): Promise<boolean> {
-  if (currentSpaceId instanceof ObjectId) {
-    currentSpaceId = currentSpaceId.toString();
-  }
-  const spaces = user.accessControllers.map((actrl) => actrl.space.toString());
+export function userHasSpace(user: ReqUser, currentSpaceId: string | ObjectId): boolean {
+  currentSpaceId = currentSpaceId.toString();
+  const spaces = accessControllersCache.get(user._id.toString()).map((actrl) => actrl.space.toString());
   return spaces.includes(currentSpaceId);
 }
 /**  depth-first search (DFS) */

@@ -12,15 +12,15 @@ import logger from '../../lib/logger';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import Space from '../../models/Space';
 import Organization from '../../models/Organization';
-import { IOrganization } from '../../types/mongoose-types/model-types/organization-interface';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { userHasSpace } from '../helpers/spaceHelper';
-import { resetSpaceCookies, handleSetCookiesFromPayload, signLoginInstanceJwt, JWTPayload } from '../../lib/jwt/jwtUtils';
+import { resetSpaceCookies, handleSetCookiesFromPayload, signLoginInstanceJwt, JWTPayload, signJwt } from '../../lib/jwt/jwtUtils';
 import { handleGenerateTokenByRoleAtLogin } from '../../utils/login-instance-utils/generateTokens';
-import { RoleFields } from '../../types/mongoose-types/model-types/role-interface';
+import { RoleFields, roles } from '../../types/mongoose-types/model-types/role-interface';
 import AccessController from '../../models/AccessController';
 import { roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
 import { accessControllersCache } from '../../lib/mongoose/mongoose-cache/access-controller-cache';
+import { correctQueryForEntity } from '../helpers/mongoose.helper';
 // import { CurrentSpace } from '../../types/mongoose-types/model-types/space-interface';
 
 const { cookieDomain } = vars;
@@ -52,14 +52,6 @@ const register = async (req: Request, res: Response) => {
     if (password !== password2) {
       throw new Error('Password non corrispondenti');
     }
-
-    // IF YOU WANT TO CREATE SOME OTHER ENTITY WITH NEW USER. CODE HERE
-    // const {data, message} = await crudHelper.createWithReturnValue('projects', {
-    //     name: project,
-    //     email_sender: email,
-    // });
-
-    // Created user must have the User field and methods such as token()
     const newUser = new User({
       email,
       password,
@@ -69,22 +61,20 @@ const register = async (req: Request, res: Response) => {
       role: 'admin'
     });
 
-    const newOrganization = new Organization({
-      name: `${name} ${surname}'s organization`
-    });
-
     const accessToken = newUser.token();
     // const token = generateTokenResponse(newUser as any, accessToken);
 
-    const newRootSpace = await createNewSpaceAtRegister({ space, user: newUser, organization: newOrganization, isMain: true });
-    // const spaceCookie = formatCurrentSpaceToJSON(newRootSpace);
-    await newOrganization.save();
-
+    const newRootSpace = await createNewSpaceAtRegister({ space, user: newUser });
+    // create accessController for the user and space as system admin
+    await AccessController.create({
+      role: roleCache.get(roles[0])._id,
+      space: newRootSpace._id,
+      user: newUser._id,
+      isSystemAdmin: true
+    });
+    await newUser.save();
     const jwt = JWTPayload.simple({ email: newUser.email, loggedAs: 'Inhabitant', spaceId: newRootSpace._id });
-    handleSetCookiesFromPayload(res, jwt);
-    // res.cookie('organization', organizationToken, sensitiveCookieOptions);
-    // res.cookie('space', spaceCookie, sensitiveCookieOptions);
-    // res.cookie('jwt', token.accessToken, sensitiveCookieOptions);
+    handleSetCookiesFromPayload(res, jwt, newRootSpace);
 
     res.status(httpStatus.CREATED).send({
       success: true,
@@ -175,15 +165,15 @@ const register = async (req: Request, res: Response) => {
 async function createNewSpaceAtRegister({
   space,
   // purpose,
-  user,
-  organization,
-  isMain
-}: {
+  user
+}: // organization,
+// isMain
+{
   space: { name: string; address: string; maxUsers: number; password: string };
   // purpose: PurposeUser;
   user: IUser;
-  isMain: boolean;
-  organization: IOrganization | string;
+  // isMain: boolean;
+  // organization: IOrganization | string;
 }) {
   try {
     const createdSpace = await Space.create({
@@ -191,11 +181,11 @@ async function createNewSpaceAtRegister({
       address: space.address,
       isHead: true,
       isTail: true,
-      isMain,
+      isMain: true,
       admins: [user._id],
       maxUsers: space.maxUsers, // this will cost per users or per user/x
-      password: space.password,
-      organization
+      password: space.password
+      // organization
     });
     return createdSpace;
   } catch (error) {
@@ -289,14 +279,16 @@ export const sendRootSpaceSelectionsToClient = async (req: RequestCustom, res: R
     //!todo think about structure of the maintainers. do they have to have root spaces? role must be maintainers
     // let query: Record<string, string | any> = { isMain: true, _id: { $in: req.user.spaces } };
     // case admin show all main spaces of his organizations
-    const accessControllers = accessControllersCache.get(req.user._id.toString());
-    const spaces = await Space.find({
-      _id: {
-        $in: accessControllers.map((actrl) => actrl.space)
-      }
-    })
-      .populate({ path: 'cover', select: 'url' })
-      .lean();
+    const query = req.user.isSuperAdmin
+      ? req.query
+      : {
+          ...req.query,
+          _id: {
+            $in: accessControllersCache.get(req.user._id.toString()).map((actrl) => actrl.space)
+          }
+        };
+    const correctedQuery = correctQueryForEntity({ entity: 'spaces', query });
+    const spaces = await Space.find(correctedQuery).populate({ path: 'cover', select: 'url' }).lean();
 
     res.status(httpStatus.OK).json({
       collection: 'spaces',
@@ -331,17 +323,15 @@ export const sendMainOrganizationSelectionsToClient = async (req: RequestCustom,
 export const setSpaceAndOrgInJwt = async (req: RequestCustom, res: Response) => {
   try {
     const { user } = req;
-
     if (!user.isSuperAdmin && !userHasSpace(user, req.params.idMongoose)) {
       throw new Error(_MSG.NOT_ALLOWED);
     }
     // user is super admin or has the root space.
     const space = await Space.findById(req.params.idMongoose);
-    const jwt = new JWTPayload({ loggedAs: req.user.loggedAs.name, email: req.user.email });
-    // const jwt = signJwt(updatedJwt);
+    const payload = new JWTPayload({ loggedAs: req.user.loggedAs.name, email: req.user.email, spaceId: space._id });
 
     res.clearCookie('jwt', { domain: vars.cookieDomain });
-    handleSetCookiesFromPayload(res, jwt, space);
+    handleSetCookiesFromPayload(res, payload, space);
 
     res.status(httpStatus.OK).json({
       success: true,

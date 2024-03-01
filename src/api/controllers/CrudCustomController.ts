@@ -256,9 +256,9 @@ export const sendDataForHomeDashboard = async (req: RequestCustom, res: Response
 
     let space: Partial<ISpace> = {};
 
-    if (req.user?.currentSpace?.spaceId) {
-      space = await Space.findById(req.user.currentSpace.spaceId);
-      query = { space: req.user.currentSpace.spaceId };
+    if (req.user?.currentSpace?._id) {
+      space = await Space.findById(req.user.currentSpace._id);
+      query = { space: req.user.currentSpace._id };
     }
 
     const threads = await Thread.find(query).limit(10);

@@ -57,7 +57,6 @@ export const LOOKUP_PIPELINE_STAGES: Record<Entities, PipelineStage.FacetPipelin
   organizations: [],
   funds: [],
   fundRules: [],
-  instances: [],
   proposals: [],
   bookmarks: [],
   comments: [],
@@ -68,7 +67,7 @@ export const LOOKUP_PIPELINE_STAGES: Record<Entities, PipelineStage.FacetPipelin
   notifications: [],
   maintenances: [LOOKUPS.MAINTAINERS, { $unwind: '$maintainer' }],
   checks: [],
-  'auth-tokens': [],
+  authTokens: [],
   roles: [],
   accessControllers: []
 };

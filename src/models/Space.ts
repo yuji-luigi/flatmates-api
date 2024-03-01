@@ -59,13 +59,7 @@ export const spacesSchema = new Schema<ISpace, SpaceModel, ISpaceMethods>(
       type: Boolean,
       default: false
     },
-    admins: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'users'
-        // autopopulate: true
-      }
-    ],
+
     // user: {
     //   type: Schema.Types.ObjectId,
     //   ref: 'users'

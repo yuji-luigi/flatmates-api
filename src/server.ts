@@ -14,6 +14,8 @@ import passport from 'passport';
 import routes from './api/routes';
 import strategies from './lib/jwt/resolveUserJwt';
 import mongooseConnector from './lib/mongoose/initMongoose';
+import { entities } from './types/mongoose-types/model-types/Entities';
+import { getSchemaPathTypes } from './api/helpers/mongoose.helper';
 // import { seedRoles } from './lib/mongoose/seed/mongoose-seeder';
 
 const { port, env } = vars;
@@ -51,6 +53,9 @@ mongooseConnector.init();
 
 app.listen(port, async () => {
   console.log(`server started on port ${port} (${env})`);
+  entities.forEach((entity) => {
+    getSchemaPathTypes(entity);
+  });
 });
 
 /**

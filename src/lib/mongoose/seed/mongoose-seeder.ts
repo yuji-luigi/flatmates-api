@@ -1,14 +1,17 @@
 import Role from '../../../models/Role';
 
 const roles = [
+  // {
+  //   name: 'Inhabitant'
+  // },
+  // {
+  //   name: 'Maintainer'
+  // },
+  // {
+  //   name: 'Administrator'
+  // },
   {
-    name: 'Inhabitant'
-  },
-  {
-    name: 'Maintainer'
-  },
-  {
-    name: 'Administrator'
+    name: 'System Admin'
   }
 ];
 

@@ -1,4 +1,4 @@
-import mongoose, { Document, Model, PipelineStage, SortOrder } from 'mongoose';
+import mongoose, { Document, Model, PipelineStage, Schema, SortOrder } from 'mongoose';
 import Thread from '../../models/Thread';
 import logger from '../../lib/logger';
 import { ObjectId } from 'mongodb';
@@ -6,7 +6,7 @@ import { generateWord, replaceSpecialCharsWith } from '../../utils/functions';
 import { MongooseBaseModel } from '../../types/mongoose-types/model-types/base-types/base-model-interface';
 import { Entities } from '../../types/mongoose-types/model-types/Entities';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
-import _ from 'lodash';
+import cloneDeep from 'lodash/cloneDeep';
 // todo: aggregation method
 interface LookUpQueryInterface {
   [key: string]: mongoose.PipelineStage.FacetPipelineStage[];
@@ -180,30 +180,121 @@ export async function checkDuplicateEmail({ model, email, user }: { model: Model
   return !!count;
 }
 
-export function getValidFields({ entity, query }: { entity: Entities; query: Record<string, string | boolean | number> }) {
-  const validFields = Object.keys(mongoose.model(entity).schema.paths);
-
-  for (const key in query) {
-    if (!validFields.includes(key)) {
-      delete query[key];
-    } else {
-      query[key] === 'true' ? (query[key] = true) : query[key];
-      query[key] === 'false' ? (query[key] = false) : query[key];
-    }
-  }
+export function getValidFields({ entity }: { entity: Entities }) {
+  return Object.keys(mongoose.model(entity).schema.paths);
 }
 
 // pure function...
-export function getValidFieldsAndConvertToBoolean({ entity, query }: { entity: Entities; query: Record<string, string | boolean | number> }) {
-  const validFields = Object.keys(mongoose.model(entity).schema.paths);
-
-  const clonedQuery = _.cloneDeep(query);
+export function getValidFieldsAndConvertToBoolean({
+  entity,
+  query
+}: {
+  entity: Entities;
+  query: Record<string, string | boolean | number | ObjectId>;
+}) {
+  const validFields = getValidFields({ entity });
+  const clonedQuery = cloneDeep(query);
   for (const key in clonedQuery) {
     if (!validFields.includes(key)) {
       delete clonedQuery[key];
     } else {
       clonedQuery[key] === 'true' ? (clonedQuery[key] = true) : clonedQuery[key];
       clonedQuery[key] === 'false' ? (clonedQuery[key] = false) : clonedQuery[key];
+    }
+  }
+  return clonedQuery;
+}
+
+interface SchemaTypeWithCaster {
+  caster: {
+    instance: string;
+  };
+}
+
+interface SchemaTypeBase {
+  instance: string;
+  schema?: Schema;
+}
+function isSchemaTypeWithCaster(schemaType: SchemaTypeBase | SchemaTypeWithCaster): schemaType is SchemaTypeWithCaster {
+  return 'caster' in schemaType && !!schemaType.caster;
+}
+
+/** @description returns an object which has key as field of entity scheme and value as a type of that field */
+export function getSchemaPathTypes<T extends Document>(entity: Entities): Record<string, string> {
+  const model = mongoose.model<T>(entity);
+  const schemaPaths = model.schema.paths;
+  const pathTypes: Record<string, string> = {};
+
+  Object.keys(schemaPaths).forEach((path) => {
+    const schemaType = schemaPaths[path] as SchemaTypeBase | SchemaTypeWithCaster; // Cast to combined type
+    if (!('instance' in schemaType)) throw new Error('Schema type does not have instance property');
+    // Handle simple paths directly
+    // console.log(schemaType);
+    let typeDescription = schemaType.instance;
+
+    // Handle sub-documents
+    if (schemaType.schema) {
+      typeDescription = 'SubDocument';
+    }
+    // Use type guard for arrays
+    else if (isSchemaTypeWithCaster(schemaType)) {
+      // typeDescription = `Array ${schemaType.caster.instance}`;
+      typeDescription = schemaType.caster.instance;
+    }
+    pathTypes[path] = typeDescription;
+  });
+
+  return pathTypes;
+}
+
+type QueryMongoose = Record<string, string | boolean | number | ObjectId>;
+
+export function correctQueryForEntity({ entity, query }: { entity: Entities; query: Record<string, string | boolean | number> }) {
+  const pathTypes = getSchemaPathTypes(entity);
+  const resultQuery: QueryMongoose = cloneDeep(pathTypes);
+  function correctQuery(type: string, field: string) {
+    if (typeof query[field] === 'object') return (resultQuery[field] = query[field]);
+    if (type === 'Number') {
+      resultQuery[field] = +query[field];
+    }
+    if (type === 'Boolean') {
+      resultQuery[field] = query[field] === 'true';
+    }
+    if (type === 'ObjectId') {
+      resultQuery[field] = new ObjectId(query[field].toString());
+    }
+  }
+  for (const [field, fieldType] of Object.entries(pathTypes)) {
+    if (!query[field]) {
+      delete resultQuery[field];
+      continue;
+    }
+
+    correctQuery(fieldType, field);
+
+    resultQuery[field] = query[field];
+  }
+  return resultQuery;
+}
+
+export function getValidFieldsAndConvertToBooleanAndObjectId({
+  entity,
+  query
+}: {
+  entity: Entities;
+  query: Record<string, string | boolean | number | ObjectId>;
+}) {
+  const validFields = getValidFields({ entity });
+  const clonedQuery = getValidFieldsAndConvertToBoolean({ entity, query });
+  for (const key in clonedQuery) {
+    if (!validFields.includes(key)) {
+      delete clonedQuery[key];
+    } else {
+      clonedQuery[key] === 'true' ? (clonedQuery[key] = true) : clonedQuery[key];
+      clonedQuery[key] === 'false' ? (clonedQuery[key] = false) : clonedQuery[key];
+      if (key === 'organization' || key === 'space' || key === 'parentId') {
+        clonedQuery[key] = new ObjectId(clonedQuery[key].toString());
+      }
     }
   }
   return clonedQuery;

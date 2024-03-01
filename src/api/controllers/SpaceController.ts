@@ -30,12 +30,12 @@ export const sendSpacesToClient = async (req: RequestCustom, res: Response) => {
     if (!req.user) {
       throw new Error(_MSG.NOT_AUTHORIZED);
     }
-    const currentSpaceId = req.user.currentSpace.spaceId?.toString();
+    const currentSpaceId = req.user.currentSpace._id?.toString();
     const spaceIds = currentSpaceId ? await aggregateDescendantIds(currentSpaceId, req.user) : null;
-    delete req.query.space;
     let { query } = req;
-    query = currentSpaceId ? { ...query, _id: { $in: [...spaceIds, currentSpaceId] } } : query;
+    query = currentSpaceId ? { ...query, _id: { $in: [...spaceIds, currentSpaceId] } } : { ...query, _id: query.space };
     //  TODO: use req.query for querying in find method and paginating. maybe need to delete field to query in find method
+    delete query.space;
     const data = await Space.find(query).lean();
 
     res.status(httpStatus.OK).json({

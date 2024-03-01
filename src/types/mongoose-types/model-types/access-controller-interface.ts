@@ -38,6 +38,8 @@ export interface AccessControllerBase extends MongooseBaseModel {
   user: ObjectId | IUser;
   space: ObjectId | ISpace;
   role: ObjectId | RoleInterface;
+  isSystemAdmin: boolean;
+  isSubSystemAdmin: boolean;
   permissions: PermissionInterface[];
 }
 

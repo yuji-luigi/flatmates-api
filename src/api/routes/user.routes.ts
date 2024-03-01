@@ -1,6 +1,6 @@
 import express, { NextFunction, Request, Response } from 'express';
 // import { stringifyObjectIds } from '../../middlewares/auth-middlewares';
-
+import logger from '../../lib/logger';
 import httpStatus from 'http-status';
 import {
   createUserAndSendDataWithPagination,
@@ -14,25 +14,30 @@ import {
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { deleteCrudObjectByIdAndSendDataWithPagination } from '../controllers/DataTableController';
 import { isLoggedIn } from '../../middlewares/isLoggedIn';
+import MSG from '../../utils/messages';
 
 const router = express.Router();
 
 router.use((req: RequestCustom, response: Response, next: NextFunction) => {
-  if (!req.user.isSuperAdmin && req.user.loggedAs.name === 'Inhabitant') {
-    // if (!req.user.spaceId) {
-    //   return response.status(httpStatus.FORBIDDEN).send('something went wrong');
-    // }
-    // req.query.spaces = { $in: [req.user.spaceId] };
+  try {
+    if (!req.user.isSuperAdmin && req.user.loggedAs.name === 'Inhabitant') {
+      if (!req.user.currentSpace._id) {
+        throw new Error('User must select a space first.');
+      }
+    }
+    if (req.query.organization) {
+      req.query.organizations = { $in: [req.query.organization] };
+    }
+    if (req.query.space) {
+      // req.query.spaces = { $in: [req.user._id] };
+    }
+    // delete req.query.organization;
+    // delete req.query.space;
+    next();
+  } catch (error) {
+    logger.error(error.message || error);
+    response.status(httpStatus.FORBIDDEN).json({ message: MSG().NOT_AUTHORIZED });
   }
-  if (req.query.organization) {
-    req.query.organizations = { $in: [req.query.organization] };
-  }
-  if (req.query.space) {
-    // req.query.spaces = { $in: [req.user.spaceId] };
-  }
-  delete req.query.organization;
-  delete req.query.space;
-  next();
 });
 
 /**
