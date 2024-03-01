@@ -1,5 +1,4 @@
 import { RoleFields } from './../types/mongoose-types/model-types/role-interface';
-import { belongsToFields } from './field/belongsToFields';
 import { Schema, model } from 'mongoose';
 import bcrypt from 'bcrypt';
 import httpStatus from 'http-status';
@@ -49,18 +48,11 @@ export const userSchema = new Schema<IUser, UserModel>(
       ref: 'uploads',
       autopopulate: true
     },
-    // role: {
-    //   type: Schema.Types.ObjectId,
-    //   ref: 'roles'
-    // },
+
     isSuperAdmin: {
       type: Boolean,
       default: false
     },
-    // roleNew: {
-    //   type: Schema.Types.ObjectId,
-    //   ref: 'roles'
-    // },
 
     email: {
       type: String,
@@ -84,34 +76,7 @@ export const userSchema = new Schema<IUser, UserModel>(
     },
     lastLogin: {
       type: Date
-    },
-
-    // spaces refer to mainSpaces.
-    ...belongsToFields
-    // spaces: [
-    //   {
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'spaces',
-    //     required: true
-    //     // autopopulate: true
-    //   }
-    // ],
-    // organizations: [
-    //   {
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'organizations'
-    //     // required: true
-    //   }
-    // ]
-    // organization: {
-    //   type: Schema.Types.ObjectId,
-    //   ref: 'organizations'
-    //   // required: true
-    // }
-    // authToken: {
-    //   type: Schema.Types.ObjectId,
-    //   ref: 'authTokens'
-    // }
+    }
   },
   {
     versionKey: false,
@@ -158,12 +123,10 @@ userSchema.method({
   // metto solo i campi che mi servono(evito di mandare tutti i campi)
   transform() {
     const transformed: TransformedT = {};
-    const fields = ['id', 'name', 'email', 'role', 'createdAt'];
-
+    const fields = ['id', 'name', 'email', 'createdAt'];
     fields.forEach((field) => {
       transformed[field] = this[field];
     });
-
     return transformed;
   },
   toJWTPayload(loggedAs: RoleFields): JwtSignPayload {
@@ -211,7 +174,9 @@ userSchema.method({
 });
 
 userSchema.statics = {
-  // roles: USER_ROLES_ENUM,
+  findByIdForMe: async function (id: string) {
+    return this.findById(id).select('-password ').exec();
+  },
   /**
    * Find user by email and tries to generate a JWT token
    *

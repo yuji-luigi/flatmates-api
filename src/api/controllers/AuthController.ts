@@ -259,12 +259,26 @@ const me = async (req: RequestCustom, res: Response) => {
   // set last login
   try {
     const user = await User.findOne({ _id: req.user._id.toString() });
+    const accessController = accessControllersCache
+      .get(req.user._id.toString())
+      .find((actrl) => actrl.space.toString() === req.user.currentSpace._id.toString());
+    // define transform function here. now only used from me call.
     user.lastLogin = new Date(Date.now());
     await user.save();
+    const meUser = {
+      name: user.name,
+      surname: user.surname,
+      avatar: user.avatar?.url,
+      cover: user.cover?.url,
+      isSuperAdmin: user.isSuperAdmin,
+      phone: user.phone,
+      active: user.active,
+      accessController
+    };
 
     return res.send({
       success: true,
-      user,
+      user: meUser,
       loggedAs: req.user.loggedAs
     });
   } catch (error) {
