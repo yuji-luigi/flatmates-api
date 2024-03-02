@@ -48,38 +48,17 @@ export const spacesSchema = new Schema<ISpace, SpaceModel, ISpaceMethods>(
       ref: 'spaces'
     },
     password: String,
-    //! TODO: condominium then main is a building. other cases are yet to be defined
-    /** actual instance that contains users. ex: (🚫 Italy).  (✅ NttRoma) */
-    // todo Delete this
+
     isMain: {
       type: Boolean
     },
-
     isPublic: {
       type: Boolean,
       default: false
     },
 
-    // user: {
-    //   type: Schema.Types.ObjectId,
-    //   ref: 'users'
-    // },
-    // maintainers: [
-    //   {
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'maintainers'
-    //   }
-    // ],
-    organization: {
-      type: Schema.Types.ObjectId,
-      ref: 'organizations'
-      // required: true
-      // autopopulate: true
-    },
-
     slug: {
       type: String,
-      // slug: 'name',
       unique: true
     }
   },
@@ -189,24 +168,6 @@ spacesSchema.pre('save', async function (next) {
     throw new Error('error in slug generation of space');
   }
 });
-
-spacesSchema.pre('validate', async function (next) {
-  if (this.organization) {
-    return next();
-  }
-  if (!this.parentId) {
-    this.organization = undefined;
-    return next();
-  }
-  const organization = await getOrganizationOfHead(this.parentId, 'spaces');
-  this.organization = organization;
-  next();
-});
-//! REMEMBER: after save the children array is empty
-// spacesSchema.pre('save', async function (next) {
-//   this.children = [];
-//   next();
-// });
 
 spacesSchema.plugin(autoPopulate);
 // spacesSchema.plugin(urlSlug);
