@@ -1,5 +1,4 @@
 import mongoose, { model, Model } from 'mongoose';
-import { getOrganizationOfHead } from '../api/helpers/customHelper';
 import logger from '../lib/logger';
 const { Schema } = mongoose;
 // import jwt from 'jsonwebtoken';

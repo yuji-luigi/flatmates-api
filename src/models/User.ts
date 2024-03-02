@@ -8,9 +8,6 @@ import APIError from '../errors/api.error';
 import vars from '../utils/globalVariables';
 import autopopulate from 'mongoose-autopopulate';
 import logger from '../lib/logger';
-import Space from './Space';
-import Organization from './Organization';
-import { ISpace } from '../types/mongoose-types/model-types/space-interface';
 import { IUser, UserError, UserModel } from '../types/mongoose-types/model-types/user-interface';
 import { _MSG } from '../utils/messages';
 import Role from './AccessController';
@@ -146,29 +143,6 @@ userSchema.method({
   },
   async passwordMatches(password: string) {
     return await bcrypt.compare(password, this.password);
-  },
-  async getOrganizations() {
-    try {
-      // const query = this.isSuperAdmin ? {} : { _id: { $in: this.spaces } };
-      const spaces: ISpace[] = await Space.find({ _id: { $in: this.spaces } }).lean();
-      return spaces.map((space) => space.organization);
-    } catch (error) {
-      logger.error(error.message, error);
-      throw new Error('User.ts: UserSchema getOrganizations error');
-    }
-  },
-
-  async hasOrganization(organizationId: string): Promise<boolean> {
-    if (this.isSuperAdmin) {
-      return true;
-    }
-    const usersOrganizations = await this.getOrganizations();
-    return usersOrganizations.includes(organizationId);
-  },
-  async isAdminOrganization(organizationId: string): Promise<boolean> {
-    if (this.isSuperAdmin) return true;
-    const organization = await Organization.findOne({ _id: organizationId, admins: { $in: this._id } }).lean();
-    return !!organization;
   }
 });
 

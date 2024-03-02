@@ -205,45 +205,6 @@ export const deleteHeadSpace = async (req: Request, res: Response) => {
   }
 };
 
-// export const addSpaceToJWTAndSendToClient = async (req: Request, res: Response) => {
-//   try {
-//     const space = await Space.findById(req.params.spaceId);
-//     const jwt = space.token();
-
-//     res.clearCookie('space');
-
-//     res.cookie('space', jwt, {
-//       // httpOnly: true,
-//       // secure: true,
-//       sameSite: true,
-//       domain: vars.cookieDomain,
-//       maxAge: 1000 * 60 * 60 * 24 * 7
-//     });
-
-//     res.status(httpStatus.OK).json({
-//       success: true,
-//       collection: 'spaces',
-//       data: {
-//         space: {
-//           _id: space._id,
-//           name: space.name,
-//           address: space.address,
-//           organization: space.organization
-//         },
-//         jwt
-//       },
-//       count: 1
-//     });
-//   } catch (error) {
-//     logger.error(error.message || error);
-//     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-//       message: error.message || error
-//     });
-//   }
-// };
-
-// router.get('/home', isLoggedIn(), sendDataForHomeDashboard);
-
 export const sendDataForHomeDashboard = async (req: RequestCustom, res: Response) => {
   try {
     const entity = 'spaces';

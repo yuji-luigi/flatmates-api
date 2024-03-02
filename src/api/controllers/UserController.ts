@@ -125,12 +125,6 @@ export async function sendUsersToClient(req: RequestCustom, res: Response) {
  *  */
 export async function organizationSelected(req: RequestCustom, res: Response) {
   try {
-    const user = await User.findById(req.user._id);
-
-    if (!(await user.isAdminOrganization(req.params.organizationId))) {
-      throw new Error(_MSG.NOT_AUTHORIZED);
-    }
-
     res.clearCookie('space', { domain: vars.cookieDomain });
     res.cookie('organization', req.params.organizationId, { domain: vars.cookieDomain });
     const spaces = await Space.find({ organization: req.params.organizationId, isMain: true }).lean();
@@ -163,10 +157,6 @@ export async function sendUsersSelectionForSuperAdmin(req: RequestCustom, res: R
 
 export async function updateOrganizationById(req: RequestCustom, res: Response) {
   try {
-    const user = await User.findById(req.user._id);
-    if (!(await user.isAdminOrganization(req.params.organizationId))) {
-      throw new Error(_MSG.NOT_AUTHORIZED);
-    }
     const organization = await User.findById(req.params.organizationId);
     // const {name, descripition, phone, email, homepage, logoBanner, logoSquare, admins, isPublic} = req.body;
     // const organization = await User.findById(req.params.organizationId).lean();

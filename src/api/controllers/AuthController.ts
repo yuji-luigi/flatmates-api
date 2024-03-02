@@ -90,98 +90,17 @@ const register = async (req: Request, res: Response) => {
       accessToken,
       count: 1
     });
-    // return res.status(httpStatus.OK).redirect('/');
   } catch (error) {
     logger.error(error.message);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message || error });
   }
 };
-// const completeRegisterMaintainer = async (req: RequestCustom, res: Response) => {
-//   try {
-//     const {
-//       email,
-//       password,
-//       password2,
-//       name,
-//       surname,
-//       space: spaceId,
-//       organization,
-//       _id,
-//       maintenanceId,
-//       description,
-//       tel,
-//       address,
-//       homepage,
-//       company,
-//       type
-//     } = req.body;
-
-//     if (password !== password2) {
-//       throw new Error('Password non corrispondenti');
-//     }
-
-//     const authToken = await AuthToken.findOne({
-//       'docHolder.ref': 'maintenances',
-//       'docHolder.instanceId': maintenanceId,
-//       nonce: req.cookies.maintenanceNonce
-//     });
-
-//     if (!authToken) throw new Error('invalid access');
-//     // find a space for jwt generation
-//     const space = await Space.findById(spaceId);
-//     const maintainer = await Maintainer.findById(_id);
-//     // set all the values passed from the client
-//     maintainer.name = name;
-//     maintainer.surname = surname;
-//     maintainer.email = email;
-//     maintainer.password = password;
-//     maintainer.active = true;
-//     maintainer.description = description;
-//     maintainer.tel = tel;
-//     maintainer.address = address;
-//     maintainer.homepage = homepage;
-//     maintainer.company = company;
-//     maintainer.type = type;
-
-//     const rootSpaceIds = maintainer.spaces.map((space) => space.toString());
-//     maintainer.spaces = [...new Set([...rootSpaceIds, space])];
-//     const organizationIds = maintainer.organizations.map((org) => org.toString());
-//     maintainer.organizations = [...new Set([...organizationIds, organization])];
-
-//     await maintainer.save();
-
-//     const _leanedMaintainer = maintainer.toObject() as LeanMaintainer;
-//     _leanedMaintainer.entity = 'maintainers';
-//     _leanedMaintainer.role = 'maintainer';
-//     const jwt = generatePayloadMaintainer({ maintainer, space });
-
-//     handleSetCookiesFromPayload(res, jwt);
-
-//     res.status(httpStatus.CREATED).send({
-//       success: true,
-//       message: _MSG.OBJ_CREATED,
-//       user: maintainer,
-//       accessToken: jwt,
-//       count: 1
-//     });
-//     // return res.status(httpStatus.OK).redirect('/');
-//   } catch (error) {
-//     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message || error });
-//   }
-// };
-
 async function createNewSpaceAtRegister({
   space,
-  // purpose,
   user
-}: // organization,
-// isMain
-{
+}: {
   space: { name: string; address: string; maxUsers: number; password: string };
-  // purpose: PurposeUser;
   user: IUser;
-  // isMain: boolean;
-  // organization: IOrganization | string;
 }) {
   try {
     const createdSpace = await Space.create({
@@ -191,9 +110,8 @@ async function createNewSpaceAtRegister({
       isTail: true,
       isMain: true,
       admins: [user._id],
-      maxUsers: space.maxUsers, // this will cost per users or per user/x
+      maxUsers: space.maxUsers,
       password: space.password
-      // organization
     });
     return createdSpace;
   } catch (error) {
@@ -369,7 +287,6 @@ export const setSpaceAndOrgInJwt = async (req: RequestCustom, res: Response) => 
           address: space.address,
           slug: space.slug,
           image: space.cover?.url
-          // organization: space.organization
         }
       },
       count: 1

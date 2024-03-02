@@ -8,11 +8,11 @@ import { deleteEmptyFields } from '../../utils/functions';
 import { aggregateWithPagination } from '../helpers/mongoose.helper';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import vars, { sensitiveCookieOptions } from '../../utils/globalVariables';
-import { aggregateDescendantIds, userHasSpace } from '../helpers/spaceHelper';
+import { aggregateDescendantIds } from '../helpers/spaceHelper';
 import { _MSG } from '../../utils/messages';
 import { ObjectId } from 'mongodb';
 import { LOOKUP_PIPELINE_STAGES } from '../aggregation-helpers/lookups';
-import { JWTPayload, handleSetCookiesFromPayload, signJwt } from '../../lib/jwt/jwtUtils';
+import { JWTPayload, signJwt } from '../../lib/jwt/jwtUtils';
 import { checkAdminOfSpace } from '../../middlewares/auth-middlewares';
 import { Maintainer } from './MaintainerController';
 const entity = 'spaces';
@@ -473,56 +473,6 @@ export const deleteHeadSpaceWithPagination = async (req: Request, res: Response)
   } catch (err) {
     logger.error(err.message || err);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: err.message || err });
-  }
-};
-
-export const addSpaceToJWTAndSendToClient = async (req: RequestCustom, res: Response) => {
-  try {
-    if (!req.user.isSuperAdmin && !userHasSpace(req.user, req.params.spaceId)) {
-      throw new Error(_MSG.NOT_ALLOWED);
-    }
-    // user is super admin or has the root space.
-    const space = await Space.findById(req.params.spaceId);
-
-    const jwt = new JWTPayload({
-      email: req.user.email,
-      spaceId: space._id,
-      loggedAs: req.user.loggedAs.name
-    });
-
-    // const jwt = space.token();
-
-    // res.clearCookie('space');
-
-    // const httpOnlyFalseCookieOptions = {
-    //   ...sensitiveCookieOptions,
-    //   httpOnly: false
-    // };
-    res.clearCookie('jwt', { domain: vars.cookieDomain });
-    handleSetCookiesFromPayload(res, jwt, space);
-    // res.cookie('jwt', jwt, sensitiveCookieOptions);
-    // res.cookie('space', jwt, httpOnlyFalseCookieOptions);
-    // res.cookie('spaceName', space.name, { domain: vars.cookieDomain });
-
-    res.status(httpStatus.OK).json({
-      success: true,
-      collection: 'spaces',
-      data: {
-        space: {
-          _id: space._id,
-          name: space.name,
-          address: space.address,
-          organization: space.organization
-        },
-        jwt
-      },
-      count: 1
-    });
-  } catch (error) {
-    logger.error(error.message || error);
-    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-      message: error.message || error
-    });
   }
 };
 

@@ -6,7 +6,6 @@ import Organization from '../../models/Organization';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { aggregateWithPagination } from '../helpers/mongoose.helper';
 import vars, { sensitiveCookieOptions } from '../../utils/globalVariables';
-import User from '../../models/User';
 import { _MSG } from '../../utils/messages';
 import { deleteEmptyFields } from '../../utils/functions';
 import { JWTPayload, handleSetCookiesFromPayload, signJwt } from '../../lib/jwt/jwtUtils';
@@ -14,26 +13,6 @@ import { handleGenerateTokenByRoleAfterLogin } from '../../utils/login-instance-
 
 export async function sendOrganizations(req: RequestCustom, res: Response) {
   try {
-    // const user = await User.findById<IUser>(req.user._id);
-    // const userSpaces = await Space.find({ _id: { $in: user.spaces } }).lean();
-
-    // let organizationIds = userSpaces.map((space) => {
-    //   if (typeof space.organization === 'string') {
-    //     return space.organization;
-    //   }
-    //   return space.organization._id;
-    // });
-    // const filteredArray = new Set(organizationIds);
-    // organizationIds = [...filteredArray];
-    // // super admin gets all organizations, other users get only their organizations
-    // const query = req.user.isSuperAdmin ? req.query : { ...req.query, _id: { $in: organizationIds } };
-    // // TEST CODE const query = { _id: { $in: ['6444f0a8c9243bfee443c53e', '643861526aec086124b0e0e7', '6432ceb45647e578ce20f896'] } };
-    // delete query.space;
-    // delete query.organization;
-    // delete query.organizations;
-    // delete query.spaces;
-    // const data = await Organization.find(query).lean();
-
     res.status(httpStatus.OK).json({
       success: true,
       collection: 'organizations',
@@ -46,28 +25,9 @@ export async function sendOrganizations(req: RequestCustom, res: Response) {
 }
 export async function sendOrganizationsWithPagination(req: RequestCustom, res: Response) {
   try {
-    // const user = await User.findById<IUser>(req.user._id);
-    // const userSpaces = await Space.find({ _id: { $in: user.spaces } }).lean();
-
-    // let organizationIds = userSpaces.map((space) => {
-    //   if (typeof space.organization === 'string') {
-    //     return space.organization;
-    //   }
-    //   return space.organization._id;
-    // });
-    // const filteredArray = new Set(organizationIds);
-    // organizationIds = [...filteredArray];
-    // // super admin gets all organizations, other users get only their organizations
-    // const query = req.user.isSuperAdmin ? req.query : { ...req.query, _id: { $in: organizationIds } };
-    // // TEST CODE const query = { _id: { $in: ['6444f0a8c9243bfee443c53e', '643861526aec086124b0e0e7', '6432ceb45647e578ce20f896'] } };
-    // delete query.space;
-    // const data = await aggregateWithPagination(query, 'organizations');
-
     res.status(httpStatus.OK).json({
       success: true,
       collection: 'organizations'
-      // data: data[0].paginatedResult || [],
-      // totalDocuments: data[0].counts[0]?.total || 0
     });
   } catch (error) {
     logger.error(error.message || error);
@@ -101,16 +61,6 @@ export async function sendAllOrganizations(req: RequestCustom, res: Response) {
  *  */
 export async function organizationSelected(req: RequestCustom, res: Response) {
   try {
-    const user = await User.findById(req.user._id);
-
-    if (!req.user.isSuperAdmin && !(await user.isAdminOrganization(req.params.organizationId))) {
-      throw new Error(_MSG.NOT_AUTHORIZED);
-    }
-    // const jwt = signJwt({ ...formattedUser, organizationId: req.params.organizationId });
-
-    // res.cookie('jwt', jwt, sensitiveCookieOptions);
-    // res.cookie('organization', req.params.organizationId, sensitiveCookieOptions);
-    // res.cookie('organizationName', organization.name, { domain: vars.cookieDomain });
     const spaces = await Space.find({ organization: req.params.organizationId, isMain: true }).populate({ path: 'cover', select: 'url' }).lean();
     const jwtPayload = JWTPayload.simple({ email: req.user.email, loggedAs: req.user.loggedAs.name });
     handleSetCookiesFromPayload(res, jwtPayload);
@@ -142,13 +92,7 @@ export async function sendOrganizationsSelectionForSuperAdmin(req: RequestCustom
 
 export async function updateOrganizationById(req: RequestCustom, res: Response) {
   try {
-    const user = await User.findById(req.user._id);
-    if (!(await user.isAdminOrganization(req.params.organizationId))) {
-      throw new Error(_MSG.NOT_AUTHORIZED);
-    }
     const organization = await Organization.findById(req.params.organizationId);
-    // const {name, descripition, phone, email, homepage, logoBanner, logoSquare, admins, isPublic} = req.body;
-    // const organization = await Organization.findById(req.params.organizationId).lean();
     const reqBody = deleteEmptyFields(req.body);
     organization.set(reqBody);
     await organization.save();

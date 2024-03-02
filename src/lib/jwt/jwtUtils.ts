@@ -56,7 +56,6 @@ export function handleSetCookiesFromSpace(res: Response, space: ISpace) {
   res.cookie('spaceName', space.name, basicCookieOptions);
   res.cookie('spaceSlug', space.slug, basicCookieOptions);
   res.cookie('spaceAddress', space.address, basicCookieOptions);
-  res.cookie('organizationId', space.organization, basicCookieOptions);
   res.cookie('spaceImage', space.cover?.url);
 }
 

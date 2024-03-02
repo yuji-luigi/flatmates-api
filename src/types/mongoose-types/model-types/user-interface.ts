@@ -18,12 +18,8 @@ export type UserError = {
 export interface IUser extends UserBase, LoginInstance<IUser>, MongooseBaseModel {
   // tailSpace: ISpace | string;
   passwordMatches: (password: string) => Promise<boolean>;
-
-  // hasOrganization: (organizationId: string) => Promise<boolean>;
   token: () => string;
   save: () => void;
-  getOrganizations: () => Promise<IOrganization[]>;
-  isAdminOrganization: (organizationId: ObjectId) => Promise<boolean>;
 }
 export interface UserBase {
   _id: ObjectId;
