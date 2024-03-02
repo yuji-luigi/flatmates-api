@@ -75,11 +75,11 @@ export const accessControllerSchema = new Schema<AccessControllerInterface, Acce
   }
 );
 
-accessControllerSchema.pre('find', function () {
-  this.populate('role');
-});
-accessControllerSchema.pre('findOne', function () {
-  this.populate('role');
-});
+// accessControllerSchema.pre('find', function () {
+//   this.populate('role');
+// });
+// accessControllerSchema.pre('findOne', function () {
+//   this.populate('role');
+// });
 accessControllerSchema.plugin(autoPopulate);
 export default mongoose.model<AccessControllerInterface, AccessControllerModel>('accessControllers', accessControllerSchema);

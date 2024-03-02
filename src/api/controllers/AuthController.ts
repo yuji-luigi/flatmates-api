@@ -23,6 +23,7 @@ import { accessControllersCache } from '../../lib/mongoose/mongoose-cache/access
 import { correctQueryForEntity } from '../helpers/mongoose.helper';
 import { RegisterData } from '../../types/auth/formdata';
 import { AccessControllerCache } from '../../types/mongoose-types/model-types/access-controller-interface';
+import { checkAdminOfSpace } from '../../middlewares/auth-middlewares';
 // import { CurrentSpace } from '../../types/mongoose-types/model-types/space-interface';
 
 const { cookieDomain } = vars;
@@ -217,7 +218,6 @@ const loginByRole = async (req: Request<{ role: RoleFields }>, res: Response) =>
     }
 
     const accessControllers: AccessControllerCache[] = await AccessController.find({
-      role: roleCache.get(role)._id,
       user: user._id
     });
 
@@ -233,7 +233,7 @@ const loginByRole = async (req: Request<{ role: RoleFields }>, res: Response) =>
 
     res.status(httpStatus.OK).json({
       success: true,
-      data: { token, accessControllers, user }
+      data: { message: `login succeeded as ${user.name} ${user.surname} as ${role}` }
     });
     return;
   } catch (error) {
@@ -269,8 +269,9 @@ const me = async (req: RequestCustom, res: Response) => {
     const accessController = accessControllersCache
       .get(req.user._id.toString())
       .find((actrl) => actrl.space.toString() === req.user.currentSpace._id?.toString());
-    // define transform function here. now only used from me call.
     user.lastLogin = new Date(Date.now());
+    console.log(accessControllersCache.get(req.user._id.toString()));
+    // define transform function here. now only used from me call.
     await user.save();
     const meUser = {
       _id: user._id,
@@ -279,6 +280,10 @@ const me = async (req: RequestCustom, res: Response) => {
       avatar: user.avatar?.url,
       cover: user.cover?.url,
       isSuperAdmin: user.isSuperAdmin,
+      isSystemAdmin: checkAdminOfSpace({
+        space: req.user.currentSpace,
+        currentUser: req.user
+      }),
       phone: user.phone,
       active: user.active,
       accessController
