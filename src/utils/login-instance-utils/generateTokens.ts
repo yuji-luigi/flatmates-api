@@ -44,8 +44,4 @@ export function generatePayloadUser(user: IUser) {
     // organizationId: user.organizations[0]?._id.toString()
   };
   return payload;
-  // return signLoginInstanceJwt(payload);
-  // return jwt.sign(payload, jwtSecret, {
-  //   expiresIn: vars.jwtExpirationInterval // expires in 24 hours
-  // });
 }

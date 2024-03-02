@@ -1,18 +1,15 @@
+import { ObjectId } from 'mongoose';
 import { PostBaseInterface } from './base-types/post-base-interface';
-import { IOrganization } from './organization-interface';
 import { ISpace } from './space-interface';
 import { IUpload } from './upload-interface';
 import { IUser } from './user-interface';
 
 export interface IThread extends PostBaseInterface {
-  // listViewType: 'default' | 'bigImage';
-  // articleType: 'default' | 'blog' | 'news' | 'event' | 'announcement' | 'poll' | 'survey' | 'question' | 'discussion';
   description: string;
   attachments: IUpload[] | [];
   rating?: number | undefined;
   createdBy: IUser;
-  organization?: IOrganization | string;
-  space: ISpace | string;
+  spaces: ISpace[] | ObjectId[];
   isImportant?: boolean;
   createdAt: string;
 }

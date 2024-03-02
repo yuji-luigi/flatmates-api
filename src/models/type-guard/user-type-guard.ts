@@ -1,4 +1,3 @@
-import { ObjectId } from 'mongodb';
 import { RoleFields } from '../../types/mongoose-types/model-types/role-interface';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 
@@ -8,5 +7,5 @@ export function getPopulatedRoleField({ role, user }: { role: RoleFields; user: 
   // }
   // if(role === 'inhabitant') {
   //   return user.role[role] as ;
-  // }
+  // }s
 }

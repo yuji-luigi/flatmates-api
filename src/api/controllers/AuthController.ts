@@ -1,4 +1,3 @@
-import { sensitiveCookieOptions } from '../../utils/globalVariables';
 // import { IUser } from './../../types/model/user.d';
 // import { RegisterData } from './../../types/auth/formdata.d';
 /** *********** User ************* */
@@ -14,7 +13,7 @@ import Space from '../../models/Space';
 import Organization from '../../models/Organization';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { userHasSpace } from '../helpers/spaceHelper';
-import { resetSpaceCookies, handleSetCookiesFromPayload, signLoginInstanceJwt, JWTPayload } from '../../lib/jwt/jwtUtils';
+import { resetSpaceCookies, handleSetCookiesFromPayload, JWTPayload } from '../../lib/jwt/jwtUtils';
 import { handleGenerateTokenByRoleAtLogin } from '../../utils/login-instance-utils/generateTokens';
 import { RoleFields } from '../../types/mongoose-types/model-types/role-interface';
 import AccessController from '../../models/AccessController';
@@ -142,12 +141,12 @@ const loginByRole = async (req: Request<{ role: RoleFields }>, res: Response) =>
     accessControllersCache.set(user._id.toString(), accessControllers);
 
     const payload = await handleGenerateTokenByRoleAtLogin({ selectedRole: role, user });
-    const token = signLoginInstanceJwt(payload);
     //clear all spaceCookies
     resetSpaceCookies(res);
 
-    res.cookie('jwt', token, sensitiveCookieOptions);
-    res.cookie('loggedAs', role, { ...sensitiveCookieOptions, httpOnly: false, sameSite: false }); // js in browser needs this
+    handleSetCookiesFromPayload(res, payload);
+    // res.cookie('jwt', token, sensitiveCookieOptions);
+    // res.cookie('loggedAs', role, { ...sensitiveCookieOptions, httpOnly: false, sameSite: false }); // js in browser needs this
 
     res.status(httpStatus.OK).json({
       success: true,
@@ -183,6 +182,20 @@ const removeSpaceToken = (req: Request, res: Response) => {
   res.status(httpStatus.OK).json({ message: 'SpaceToken removed' });
 };
 
+type MeUser = {
+  _id: string;
+  name: string;
+  surname: string;
+  avatar: string;
+  loggedAs: string;
+  cover: string;
+  isSuperAdmin: boolean;
+  isSystemAdmin: boolean;
+  phone: string;
+  active: boolean;
+  accessController: AccessControllerCache;
+};
+
 const me = async (req: RequestCustom, res: Response) => {
   // set last login
   try {
@@ -190,13 +203,14 @@ const me = async (req: RequestCustom, res: Response) => {
     user.lastLogin = new Date(Date.now());
     // define transform function here. now only used from me call.
     await user.save();
-    const meUser = {
-      _id: user._id,
+    const meUser: MeUser = {
+      _id: user._id.toString(),
       name: user.name,
       surname: user.surname,
       avatar: user.avatar?.url,
       cover: user.cover?.url,
       isSuperAdmin: user.isSuperAdmin,
+      loggedAs: req.user.loggedAs.name,
       isSystemAdmin: checkAdminOfSpace({
         space: req.user.currentSpace,
         currentUser: req.user

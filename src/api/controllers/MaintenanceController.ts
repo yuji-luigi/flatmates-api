@@ -343,15 +343,7 @@ export async function authUserMaintenanceByJWT(req: Request, res: Response) {
     //     ]
     //   });
     // todo!!
-    // const organizationId = getIdString(maintenance.organization);
-    // const spaceId = getIdString(maintenance.space);
-    // const maintainer = await Maintainer.findById(maintenance.maintainer);
-    // const payload = generatePayloadMaintainer({ maintainer, organizationId, spaceId, space: maintenance.space });
-    // const token = signLoginInstanceJwt(payload);
-    // handleSetCookiesFromSpace(res, maintenance.space);
-    // res.cookie('jwt', token, sensitiveCookieOptions);
 
-    // const checks = await Check.find({ maintenance: maintenance.space._id }).populate('organization');
     res.status(httpStatus.OK).json({
       success: true,
       collection: 'maintenances',

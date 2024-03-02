@@ -52,11 +52,13 @@ export const threadSchema = new Schema<IThread, ThreadModel, IThreadMethods>(
       default: false
     },
     isImportant: Boolean,
-    space: {
-      type: Schema.Types.ObjectId,
-      ref: 'spaces'
-      // required: true
-    }
+    spaces: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'spaces'
+        // required: true
+      }
+    ]
   },
   {
     versionKey: false,

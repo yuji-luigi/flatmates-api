@@ -222,7 +222,7 @@ export const sendDataForHomeDashboard = async (req: RequestCustom, res: Response
       query = { space: req.user.currentSpace._id };
     }
 
-    const threads = await Thread.find(query).limit(10);
+    const threads = await Thread.find({ spaces: req.query.space }).limit(10);
     const maintenances = await Maintenance.find(query);
     // const checksByDate = await sumUpChecksByDate(query);
     const checksByMonth = await sumUpChecksByMonth(query);

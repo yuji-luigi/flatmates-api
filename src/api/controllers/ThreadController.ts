@@ -6,10 +6,11 @@ import { deleteEmptyFields, getEntity } from '../../utils/functions';
 import { getFileDirName, saveInStorage, separateFiles } from '../helpers/uploadFileHelper';
 import Upload from '../../models/Upload';
 import { RequestCustom } from '../../types/custom-express/express-custom';
-import { getThreadsForPlatForm } from '../helpers/mongoose.helper';
+import { correctQueryForEntity, getThreadsForPlatForm } from '../helpers/mongoose.helper';
 import mongoose from 'mongoose';
 import { UploadsThread } from '../helpers/types-uploadFileHelper';
 import { _MSG } from '../../utils/messages';
+import { ObjectId } from 'bson';
 
 const createThread = async (req: RequestCustom, res: Response) => {
   try {
@@ -17,9 +18,12 @@ const createThread = async (req: RequestCustom, res: Response) => {
     const reqBody = deleteEmptyFields(req.body);
     reqBody.user = req.user;
     await Thread.create(reqBody);
-    delete req.query.organizations;
-    delete req.query.spaces;
-    const threadsToSend = await getThreadsForPlatForm({ entity: 'threads', query: req.query, sortQuery: { isImportant: -1, createdAt: -1 } });
+    req.query = {
+      ...req.query,
+      spaces: { $in: [new ObjectId(req.user.currentSpace._id)] }
+    };
+    const correctedQuery = correctQueryForEntity({ entity: 'threads', query: req.query });
+    const threadsToSend = await getThreadsForPlatForm({ entity: 'threads', query: correctedQuery, sortQuery: { isImportant: -1, createdAt: -1 } });
     res.status(httpStatus.CREATED).json({
       success: true,
       collection: 'posts',

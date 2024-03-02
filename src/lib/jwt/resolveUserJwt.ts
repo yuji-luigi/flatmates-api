@@ -7,7 +7,6 @@ import { checkAdminOfSpace } from '../../middlewares/auth-middlewares';
 import { reqUserBuilder } from './reqUserBuilder';
 import { CurrentSpace, JwtSignPayload, JwtSignPayloadWithAccessCtrlAndSpaceDetail, ReqUser } from './jwtTypings';
 import { accessControllersCache } from '../mongoose/mongoose-cache/access-controller-cache';
-import { roleCache } from '../mongoose/mongoose-cache/role-cache';
 import AccessController from '../../models/AccessController';
 import logger from '../logger';
 import { spaceCache } from '../mongoose/mongoose-cache/space-cache';
