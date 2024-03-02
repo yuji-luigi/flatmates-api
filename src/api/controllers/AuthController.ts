@@ -233,7 +233,10 @@ const loginByRole = async (req: Request<{ role: RoleFields }>, res: Response) =>
 
     res.status(httpStatus.OK).json({
       success: true,
-      data: { message: `login succeeded as ${user.name} ${user.surname} as ${role}` }
+      data: {
+        message: `login succeeded as ${user.name} ${user.surname} as ${role}`,
+        accessLength: accessControllers.length
+      }
     });
     return;
   } catch (error) {
@@ -266,11 +269,7 @@ const me = async (req: RequestCustom, res: Response) => {
   // set last login
   try {
     const user = await User.findOne({ _id: req.user._id.toString() });
-    const accessController = accessControllersCache
-      .get(req.user._id.toString())
-      .find((actrl) => actrl.space.toString() === req.user.currentSpace._id?.toString());
     user.lastLogin = new Date(Date.now());
-    console.log(accessControllersCache.get(req.user._id.toString()));
     // define transform function here. now only used from me call.
     await user.save();
     const meUser = {
@@ -286,7 +285,7 @@ const me = async (req: RequestCustom, res: Response) => {
       }),
       phone: user.phone,
       active: user.active,
-      accessController
+      accessController: req.user.currentAccessController
     };
 
     return res.send({

@@ -88,6 +88,9 @@ const resolveUserJwt = async (resolvedJwt: JwtSignPayload | JwtSignPayloadWithAc
     };
     // if spaceId key in resolvedJwt
     if ('spaceId' in resolvedJwt) {
+      if (accessControllers.length && !accessControllers.map((aCtrl) => aCtrl.space.toString()).includes(resolvedJwt.spaceId)) {
+        return done(null, false);
+      }
       // get selected space(space organization input)
       // const space = await Space.findById(resolvedJwt.spaceId).lean();
       const space = spaceCache.get(resolvedJwt.spaceId);
@@ -98,11 +101,15 @@ const resolveUserJwt = async (resolvedJwt: JwtSignPayload | JwtSignPayloadWithAc
       leanUser.isAdminOfCurrentSpace = checkAdminOfSpace({ space, currentUser: leanUser });
     }
 
+    const currentAccessController =
+      accessControllers.length && accessControllers.find((aCtrl) => aCtrl.space.toString() === currentSpace._id?.toString());
+
     const reqUser = await reqUserBuilder({
       user: leanUser,
       currentSpace,
       loggedAs: resolvedJwt.loggedAs,
-      accessControllers
+      accessControllers,
+      currentAccessController
     });
 
     // You can attach space and organization to the user object if you like

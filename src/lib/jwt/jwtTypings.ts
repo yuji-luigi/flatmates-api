@@ -15,6 +15,7 @@ export type CurrentSpace = {
 export type ReqUser = UserBase & {
   loggedAs: RoleInterface;
   accessControllers?: AccessControllerCache[];
+  currentAccessController?: AccessControllerCache;
   isAdminOfCurrentSpace?: boolean;
 } & { currentSpace?: CurrentSpace };
 
