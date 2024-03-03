@@ -60,7 +60,7 @@ const resolveUserJwt = async (resolvedJwt: JwtSignPayload | JwtSignPayloadWithAc
     if (!leanUser) {
       return done(null, false);
     }
-    // init cache of all accessControllers of the user. setting array of accessControllers in the cache
+    // init cache of all accessPermissions of the user. setting array of accessPermissions in the cache
     // TODO: good logic for init space cache. where when how which space.
     if (!accessControllersCache.get(leanUser._id.toString())) {
       const _accessControllers: AccessControllerCache[] = await AccessController.find({
@@ -69,10 +69,10 @@ const resolveUserJwt = async (resolvedJwt: JwtSignPayload | JwtSignPayloadWithAc
       accessControllersCache.set(leanUser._id.toString(), _accessControllers);
     }
 
-    const accessControllers = accessControllersCache.get(leanUser._id.toString());
+    const accessPermissions = accessControllersCache.get(leanUser._id.toString());
 
-    for (const aCtrl of accessControllers) {
-      // init cache of all spaces of the user(accessControllers).
+    for (const aCtrl of accessPermissions) {
+      // init cache of all spaces of the user(accessPermissions).
       // todo: the use case of the cache??
       if (!spaceCache.get(aCtrl.space.toString())) {
         const space = await Space.findById(aCtrl.space).lean();
@@ -81,14 +81,14 @@ const resolveUserJwt = async (resolvedJwt: JwtSignPayload | JwtSignPayloadWithAc
     }
 
     //Todo: set SpaceId[] in req.user and use it for querying. when selected one space from frontend (AppBar) then only one space array.
-    //! Actually use directly the accessControllers array for querying.
+    //! Actually use directly the accessPermissions array for querying.
     // Fetch space and organization if they're in the resolvedJwt
     const currentSpace: CurrentSpace = {
       isAdminOfSpace: false
     };
     // if spaceId key in resolvedJwt
     if ('spaceId' in resolvedJwt) {
-      if (accessControllers.length && !accessControllers.map((aCtrl) => aCtrl.space.toString()).includes(resolvedJwt.spaceId)) {
+      if (accessPermissions.length && !accessPermissions.map((aCtrl) => aCtrl.space.toString()).includes(resolvedJwt.spaceId)) {
         return done(null, false);
       }
       // get selected space(space organization input)
@@ -102,13 +102,13 @@ const resolveUserJwt = async (resolvedJwt: JwtSignPayload | JwtSignPayloadWithAc
     }
 
     const currentAccessController =
-      accessControllers.length && accessControllers.find((aCtrl) => aCtrl.space.toString() === currentSpace._id?.toString());
+      accessPermissions.length && accessPermissions.find((aCtrl) => aCtrl.space.toString() === currentSpace._id?.toString());
 
     const reqUser = await reqUserBuilder({
       user: leanUser,
       currentSpace,
       loggedAs: resolvedJwt.loggedAs,
-      accessControllers,
+      accessPermissions,
       currentAccessController
     });
 

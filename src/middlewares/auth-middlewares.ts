@@ -41,9 +41,9 @@ export function checkAdminOfSpace({ space, currentUser }: { space: ISpace | Curr
   if (!space._id) {
     return false;
   }
-  const accessControllers = accessControllersCache.get(currentUser._id.toString());
+  const accessPermissions = accessControllersCache.get(currentUser._id.toString());
   const systemAdminRoleId = roleCache.get('System Admin')._id.toString();
-  const isSystemAdmin = accessControllers.some((actrl) => {
+  const isSystemAdmin = accessPermissions.some((actrl) => {
     return actrl.space.toString() === space._id.toString() && actrl.role.toString() === systemAdminRoleId;
   });
   return isSystemAdmin;

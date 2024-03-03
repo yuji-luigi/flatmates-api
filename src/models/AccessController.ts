@@ -21,7 +21,7 @@ const permissionSchema = new Schema<PermissionInterface>({
   }
 });
 
-export const accessControllerSchema = new Schema<AccessControllerInterface, AccessControllerModel>(
+export const accessPermisionSchema = new Schema<AccessControllerInterface, AccessControllerModel>(
   {
     user: {
       type: Schema.Types.ObjectId,
@@ -75,11 +75,11 @@ export const accessControllerSchema = new Schema<AccessControllerInterface, Acce
   }
 );
 
-// accessControllerSchema.pre('find', function () {
+// accessPermisionSchema.pre('find', function () {
 //   this.populate('role');
 // });
-// accessControllerSchema.pre('findOne', function () {
+// accessPermisionSchema.pre('findOne', function () {
 //   this.populate('role');
 // });
-accessControllerSchema.plugin(autoPopulate);
-export default mongoose.model<AccessControllerInterface, AccessControllerModel>('accessControllers', accessControllerSchema);
+accessPermisionSchema.plugin(autoPopulate);
+export default mongoose.model<AccessControllerInterface, AccessControllerModel>('accessPermissions', accessPermisionSchema);

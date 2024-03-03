@@ -10,12 +10,12 @@ import { roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
 
 export async function sendAccessControllersToClient(req: RequestCustom, res: Response) {
   try {
-    const accessControllers = await AccessController.find({ user: req.user._id, role: roleCache.get(req.user.loggedAs.name) })
+    const accessPermissions = await AccessController.find({ user: req.user._id, role: roleCache.get(req.user.loggedAs.name) })
       .populate('role', 'name')
       .lean();
     res.status(httpStatus.OK).json({
       success: true,
-      data: accessControllers
+      data: accessPermissions
     });
   } catch (error) {
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message || error });
@@ -31,7 +31,7 @@ export const createAccessControllerAndSendToClient = async (req: Request, res: R
       if (other[role.name]) {
         console.log(other[role.name]);
         const permissions = Object.entries(other[role.name]).map(([name, value]: [string, boolean]) => ({ name, allowed: value }));
-        const accessController =
+        const accessPermission =
           (await AccessController.findOne({
             user,
             space,
@@ -42,9 +42,9 @@ export const createAccessControllerAndSendToClient = async (req: Request, res: R
             space,
             role
           });
-        accessController.set({ permissions });
-        console.log(accessController);
-        await accessController.save();
+        accessPermission.set({ permissions });
+        console.log(accessPermission);
+        await accessPermission.save();
       }
     }
     res.status(httpStatus.CREATED).send({

@@ -8,12 +8,12 @@ export const reqUserBuilder = async ({
   user,
   currentSpace,
   loggedAs,
-  accessControllers,
+  accessPermissions,
   currentAccessController
 }: {
   user: UserBase;
   currentSpace: CurrentSpace;
-  accessControllers: AccessControllerCache[];
+  accessPermissions: AccessControllerCache[];
   currentAccessController?: AccessControllerCache;
   loggedAs: RoleFields;
 }): Promise<ReqUser> => {
@@ -21,7 +21,7 @@ export const reqUserBuilder = async ({
   const jwtReturnObject: ReqUser = {
     ...user,
     currentSpace,
-    accessControllers,
+    accessPermissions,
     currentAccessController,
     loggedAs: currentRole
   };

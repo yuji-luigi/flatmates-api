@@ -392,7 +392,7 @@ export const sendSpaceSelectionToClient = async (req: RequestCustom, res: Respon
   try {
     const entity = 'spaces';
 
-    const data = await Space.find({ _id: { $in: req.user.accessControllers.map((actrl) => actrl.space) } });
+    const data = await Space.find({ _id: { $in: req.user.accessPermissions.map((actrl) => actrl.space) } });
 
     res.status(httpStatus.OK).json({
       success: true,

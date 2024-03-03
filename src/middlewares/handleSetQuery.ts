@@ -12,13 +12,13 @@ export function queryHandler(req: RequestCustom, res: Response, next: NextFuncti
       req.query = { ...req.query, space: req.user.currentSpace._id };
     }
     // todo: set the query to req.query
-    if (!req.user.isSuperAdmin && !req.user.accessControllers.length) {
-      throw new Error('User without accessController.');
+    if (!req.user.isSuperAdmin && !req.user.accessPermissions.length) {
+      throw new Error('User without accessPermission.');
     }
-    if (req.user.isSuperAdmin && !req.user.accessControllers.length) {
+    if (req.user.isSuperAdmin && !req.user.accessPermissions.length) {
       return next();
     }
-    req.query = { ...req.query, space: { $in: req.user.accessControllers.map((ac) => ac.space) } };
+    req.query = { ...req.query, space: { $in: req.user.accessPermissions.map((ac) => ac.space) } };
 
     return next();
   } catch (error) {

@@ -62,5 +62,5 @@ export const LOOKUP_PIPELINE_STAGES: Record<Entities, PipelineStage.FacetPipelin
   checks: [],
   authTokens: [],
   roles: [],
-  accessControllers: []
+  accessPermissions: []
 };

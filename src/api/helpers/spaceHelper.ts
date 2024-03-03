@@ -15,7 +15,7 @@ export function userHasSpace(user: ReqUser, currentSpaceId: string | ObjectId): 
 /**  depth-first search (DFS) */
 export async function userHasSpaceDFS(user: ReqUser, selectedSpace: ISpace): Promise<boolean> {
   // return user.spaces.includes(selectedSpace._id.toString());
-  const spaces = user.accessControllers.map((actrl) => actrl.space.toString());
+  const spaces = user.accessPermissions.map((actrl) => actrl.space.toString());
 
   const hasSpaceAsRootSpace = spaces.some((space) => space.toString() === selectedSpace._id.toString());
   if (hasSpaceAsRootSpace) {
@@ -50,7 +50,7 @@ async function searchDescendants(spaceId: string, targetId: string, user: ReqUse
 }
 /** breadth-first search */
 export async function userHasSpaceBFS(user: ReqUser, selectedSpace: ISpace): Promise<boolean> {
-  const spaces = user.accessControllers.map((actrl) => actrl.space.toString());
+  const spaces = user.accessPermissions.map((actrl) => actrl.space.toString());
 
   // Initialize a queue with the root spaces
   const queue = [...spaces];

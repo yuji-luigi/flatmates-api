@@ -36,7 +36,7 @@ router.use('/statistics', statisticRoutes);
 router.use(handleUserFromRequest);
 router.use(queryHandler);
 
-router.use('/accessControllers', accessControllerRoutes);
+router.use('/accessPermissions', accessControllerRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/maintenances', maintenanceRoutes);
 router.use('/threads', threadRoutes);

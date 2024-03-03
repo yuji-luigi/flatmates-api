@@ -66,7 +66,7 @@ const register = async (req: Request, res: Response) => {
     // const token = generateTokenResponse(newUser as any, accessToken);
 
     const newRootSpace = await createNewSpaceAtRegister({ space, user: newUser });
-    // create accessController for the user and space as system admin
+    // create accessPermission for the user and space as system admin
     await AccessController.create({
       role: roleCache.get(role)._id,
       space: newRootSpace._id,
@@ -134,11 +134,11 @@ const loginByRole = async (req: Request<{ role: RoleFields }>, res: Response) =>
       throw new Error('Password non corrispondenti');
     }
 
-    const accessControllers: AccessControllerCache[] = await AccessController.find({
+    const accessPermissions: AccessControllerCache[] = await AccessController.find({
       user: user._id
     });
 
-    accessControllersCache.set(user._id.toString(), accessControllers);
+    accessControllersCache.set(user._id.toString(), accessPermissions);
 
     const payload = await handleGenerateTokenByRoleAtLogin({ selectedRole: role, user });
     //clear all spaceCookies
@@ -152,7 +152,7 @@ const loginByRole = async (req: Request<{ role: RoleFields }>, res: Response) =>
       success: true,
       data: {
         message: `login succeeded as ${user.name} ${user.surname} as ${role}`,
-        accessLength: accessControllers.length
+        accessLength: accessPermissions.length
       }
     });
     return;
@@ -193,7 +193,7 @@ type MeUser = {
   isSystemAdmin: boolean;
   phone: string;
   active: boolean;
-  accessController: AccessControllerCache;
+  accessPermission: AccessControllerCache;
 };
 
 const me = async (req: RequestCustom, res: Response) => {
@@ -217,7 +217,7 @@ const me = async (req: RequestCustom, res: Response) => {
       }),
       phone: user.phone,
       active: user.active,
-      accessController: req.user.currentAccessController
+      accessPermission: req.user.currentAccessController
     };
 
     return res.send({

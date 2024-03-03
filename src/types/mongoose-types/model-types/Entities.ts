@@ -18,7 +18,7 @@ export const entities = [
   'roles',
   'users',
   'maintenances',
-  'accessControllers'
+  'accessPermissions'
   // ...loginInstanceEntities
   // 'users',
   // 'maintainers'

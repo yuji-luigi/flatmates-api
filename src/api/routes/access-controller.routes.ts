@@ -7,7 +7,7 @@ const router = express.Router();
 export const cache = new Map();
 
 router.get('/test', (req: Request, res: Response) => {
-  res.send('accessController routes');
+  res.send('accessPermission routes');
 });
 
 router.get('/', isLoggedIn(), sendAccessControllersToClient);

@@ -26,7 +26,7 @@ const lookupSpaces: PipelineStage.FacetPipelineStage = {
 
 export const createUserAndSendDataWithPagination = async (req: RequestCustom, res: Response) => {
   try {
-    // todo: control for user accessController.
+    // todo: control for user accessPermission.
     if (!req.user.isSuperAdmin) {
       throw new Error('You are not allowed to create access controller');
     }
@@ -38,7 +38,7 @@ export const createUserAndSendDataWithPagination = async (req: RequestCustom, re
     //   throw new Error('organization is not set.');
     // }
     req.body = deleteEmptyFields(req.body);
-    const { accessControllers } = req.body;
+    const { accessPermissions } = req.body;
     // req.body.user = req.user._id;
     // req.body.organization = req.user.organizationId;
     // req.body.space = req.user.spaceId;
@@ -54,11 +54,11 @@ export const createUserAndSendDataWithPagination = async (req: RequestCustom, re
     const newUser = new User(req.body);
 
     await newUser.save();
-    for (const accessController of accessControllers) {
-      const newAccessController = new AccessController({ ...accessController, user: newUser._id });
+    for (const accessPermission of accessPermissions) {
+      const newAccessController = new AccessController({ ...accessPermission, user: newUser._id });
       await newAccessController.save();
     }
-    // case accessController is sent from the client, create and attach the user
+    // case accessPermission is sent from the client, create and attach the user
 
     // modify query for user model.
     // req.query.spaces = req.user.spaceId ? { $in: [req.user.spaceId] } : null;
@@ -82,7 +82,7 @@ export const createUserAndSendDataWithPagination = async (req: RequestCustom, re
 
 export async function sendUsersToClient(req: RequestCustom, res: Response) {
   try {
-    const resultACtrl = await aggregateWithPagination(req.query, 'accessControllers', [
+    const resultACtrl = await aggregateWithPagination(req.query, 'accessPermissions', [
       {
         $lookup: {
           from: 'users',

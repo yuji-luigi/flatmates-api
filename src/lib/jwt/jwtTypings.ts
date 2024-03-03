@@ -14,7 +14,7 @@ export type CurrentSpace = {
 // not jwt this is type of the req.user
 export type ReqUser = UserBase & {
   loggedAs: RoleInterface;
-  accessControllers?: AccessControllerCache[];
+  accessPermissions?: AccessControllerCache[];
   currentAccessController?: AccessControllerCache;
   isAdminOfCurrentSpace?: boolean;
 } & { currentSpace?: CurrentSpace };
