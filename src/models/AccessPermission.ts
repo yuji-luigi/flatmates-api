@@ -1,12 +1,12 @@
 import mongoose from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
 import {
-  AccessControllerInterface,
+  AccessPermissionInterface,
   AccessControllerModel,
   PermissionInterface,
   permissions
 } from '../types/mongoose-types/model-types/access-controller-interface';
-import { accessControllersCache } from '../lib/mongoose/mongoose-cache/access-controller-cache';
+import { accessPermissionsCache } from '../lib/mongoose/mongoose-cache/access-permission-cache';
 const { Schema } = mongoose;
 
 const permissionSchema = new Schema<PermissionInterface>({
@@ -21,7 +21,7 @@ const permissionSchema = new Schema<PermissionInterface>({
   }
 });
 
-export const accessPermisionSchema = new Schema<AccessControllerInterface, AccessControllerModel>(
+export const accessPermisionSchema = new Schema<AccessPermissionInterface, AccessControllerModel>(
   {
     user: {
       type: Schema.Types.ObjectId,
@@ -60,7 +60,7 @@ export const accessPermisionSchema = new Schema<AccessControllerInterface, Acces
       },
 
       getCachedPermission: function () {
-        return accessControllersCache.get(this.getCacheKey());
+        return accessPermissionsCache.get(this.getCacheKey());
       },
       cachePermission: function () {
         // accessControllerCache.set(this.getCacheKey(), this);
@@ -82,4 +82,4 @@ export const accessPermisionSchema = new Schema<AccessControllerInterface, Acces
 //   this.populate('role');
 // });
 accessPermisionSchema.plugin(autoPopulate);
-export default mongoose.model<AccessControllerInterface, AccessControllerModel>('accessPermissions', accessPermisionSchema);
+export default mongoose.model<AccessPermissionInterface, AccessControllerModel>('accessPermissions', accessPermisionSchema);

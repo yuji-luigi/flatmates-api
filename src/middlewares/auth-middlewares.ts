@@ -6,7 +6,7 @@ import { RequestCustom } from '../types/custom-express/express-custom';
 import { ObjectId } from 'mongodb';
 import { ISpace } from '../types/mongoose-types/model-types/space-interface';
 import { CurrentSpace, ReqUser } from '../lib/jwt/jwtTypings';
-import { accessControllersCache } from '../lib/mongoose/mongoose-cache/access-controller-cache';
+import { accessPermissionsCache } from '../lib/mongoose/mongoose-cache/access-permission-cache';
 import { roleCache } from '../lib/mongoose/mongoose-cache/role-cache';
 
 export function clearQueriesForSAdmin(req: RequestCustom, res: Response, next: NextFunction) {
@@ -41,7 +41,7 @@ export function checkAdminOfSpace({ space, currentUser }: { space: ISpace | Curr
   if (!space._id) {
     return false;
   }
-  const accessPermissions = accessControllersCache.get(currentUser._id.toString());
+  const accessPermissions = accessPermissionsCache.get(currentUser._id.toString());
   const systemAdminRoleId = roleCache.get('System Admin')._id.toString();
   const isSystemAdmin = accessPermissions.some((actrl) => {
     return actrl.space.toString() === space._id.toString() && actrl.role.toString() === systemAdminRoleId;

@@ -10,8 +10,8 @@ import autopopulate from 'mongoose-autopopulate';
 import logger from '../lib/logger';
 import { IUser, UserError, UserModel } from '../types/mongoose-types/model-types/user-interface';
 import { _MSG } from '../utils/messages';
-import Role from './AccessController';
-import AccessController from './AccessController';
+import Role from './AccessPermission';
+import AccessController from './AccessPermission';
 import { JwtSignPayload } from '../lib/jwt/jwtTypings';
 
 export type modules = {

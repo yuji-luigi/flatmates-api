@@ -16,7 +16,7 @@ import { checkAuthTokenForError, findAuthTokenFromCookie } from '../helpers/auth
 import { PipelineStage } from 'mongoose';
 import ErrorEx from '../../errors/extendable.error';
 import { deleteCrudObjectByIdAndSendDataWithPagination } from './DataTableController';
-import AccessController from '../../models/AccessController';
+import AccessController from '../../models/AccessPermission';
 
 const entity = 'users';
 

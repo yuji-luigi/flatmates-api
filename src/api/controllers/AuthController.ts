@@ -18,10 +18,10 @@ import { handleGenerateTokenByRoleAtLogin } from '../../utils/login-instance-uti
 import { RoleFields } from '../../types/mongoose-types/model-types/role-interface';
 import AccessController from '../../models/AccessPermission';
 import { roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
-import { accessControllersCache } from '../../lib/mongoose/mongoose-cache/access-controller-cache';
+import { accessPermissionsCache } from '../../lib/mongoose/mongoose-cache/access-permission-cache';
 import { correctQueryForEntity } from '../helpers/mongoose.helper';
 import { RegisterData } from '../../types/auth/formdata';
-import { AccessControllerCache } from '../../types/mongoose-types/model-types/access-controller-interface';
+import { AccessPermissionCache } from '../../types/mongoose-types/model-types/access-controller-interface';
 import { checkAdminOfSpace } from '../../middlewares/auth-middlewares';
 // import { CurrentSpace } from '../../types/mongoose-types/model-types/space-interface';
 
@@ -134,11 +134,11 @@ const loginByRole = async (req: Request<{ role: RoleFields }>, res: Response) =>
       throw new Error('Password non corrispondenti');
     }
 
-    const accessPermissions: AccessControllerCache[] = await AccessController.find({
+    const accessPermissions: AccessPermissionCache[] = await AccessController.find({
       user: user._id
     });
 
-    accessControllersCache.set(user._id.toString(), accessPermissions);
+    accessPermissionsCache.set(user._id.toString(), accessPermissions);
 
     const payload = await handleGenerateTokenByRoleAtLogin({ selectedRole: role, user });
     //clear all spaceCookies
@@ -193,7 +193,7 @@ type MeUser = {
   isSystemAdmin: boolean;
   phone: string;
   active: boolean;
-  accessPermission: AccessControllerCache;
+  accessPermission: AccessPermissionCache;
 };
 
 const me = async (req: RequestCustom, res: Response) => {
@@ -242,7 +242,7 @@ export const sendRootSpaceSelectionsToClient = async (req: RequestCustom, res: R
       : {
           ...req.query,
           _id: {
-            $in: accessControllersCache.get(req.user._id.toString()).map((actrl) => actrl.space)
+            $in: accessPermissionsCache.get(req.user._id.toString()).map((actrl) => actrl.space)
           }
         };
     const correctedQuery = correctQueryForEntity({ entity: 'spaces', query });

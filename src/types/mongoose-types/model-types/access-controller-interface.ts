@@ -38,27 +38,27 @@ export type ACtrlDtoDashboard = {
   [key in Permission]: boolean;
 };
 
-export interface AccessControllerBase extends MongooseBaseModel {
+export interface AccessPermissionBase extends MongooseBaseModel {
   user: ObjectId | IUser;
   space: ObjectId | ISpace;
   role: ObjectId | RoleInterface;
   permissions: PermissionInterface[];
 }
-export interface AccessControllerCache extends MongooseBaseModel {
+export interface AccessPermissionCache extends MongooseBaseModel {
   user: ObjectId | IUser;
   space: ObjectId | ISpace;
   role: ObjectId;
   permissions: PermissionInterface[];
 }
 
-export interface AccessControllerInterface extends AccessControllerBase {
+export interface AccessPermissionInterface extends AccessPermissionBase {
   getCacheKey: () => string;
   getCachedPermission: () => boolean | undefined;
   cachePermission: () => void;
   checkPermissionWithCache: () => boolean;
 }
 
-export interface AccessControllerStatics {
+export interface AccessPermissionStatics {
   buildPermissionFields: (dto: ACtrlDtoDashboard) => PermissionInterface[];
 }
-export type AccessControllerModel = Model<AccessControllerInterface, object, AccessControllerStatics> & AccessControllerStatics;
+export type AccessControllerModel = Model<AccessPermissionInterface, object, AccessPermissionStatics> & AccessPermissionStatics;

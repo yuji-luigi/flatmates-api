@@ -6,12 +6,12 @@ import Space from '../../models/Space';
 import { checkAdminOfSpace } from '../../middlewares/auth-middlewares';
 import { reqUserBuilder } from './reqUserBuilder';
 import { CurrentSpace, JwtSignPayload, JwtSignPayloadWithAccessCtrlAndSpaceDetail, ReqUser } from './jwtTypings';
-import { accessControllersCache } from '../mongoose/mongoose-cache/access-controller-cache';
+import { accessPermissionsCache } from '../mongoose/mongoose-cache/access-permission-cache';
 import AccessController from '../../models/AccessPermission';
 import logger from '../logger';
 import { spaceCache } from '../mongoose/mongoose-cache/space-cache';
 import { UserResolverReturnType } from '../../middlewares/handleUserFromRequest';
-import { AccessControllerCache } from '../../types/mongoose-types/model-types/access-controller-interface';
+import { AccessPermissionCache } from '../../types/mongoose-types/model-types/access-controller-interface';
 
 const { jwtSecret } = vars;
 const JwtStrategy = passport.Strategy;
@@ -62,14 +62,14 @@ const resolveUserJwt = async (resolvedJwt: JwtSignPayload | JwtSignPayloadWithAc
     }
     // init cache of all accessPermissions of the user. setting array of accessPermissions in the cache
     // TODO: good logic for init space cache. where when how which space.
-    if (!accessControllersCache.get(leanUser._id.toString())) {
-      const _accessControllers: AccessControllerCache[] = await AccessController.find({
+    if (!accessPermissionsCache.get(leanUser._id.toString())) {
+      const _accessControllers: AccessPermissionCache[] = await AccessController.find({
         user: leanUser._id
       });
-      accessControllersCache.set(leanUser._id.toString(), _accessControllers);
+      accessPermissionsCache.set(leanUser._id.toString(), _accessControllers);
     }
 
-    const accessPermissions = accessControllersCache.get(leanUser._id.toString());
+    const accessPermissions = accessPermissionsCache.get(leanUser._id.toString());
 
     for (const aCtrl of accessPermissions) {
       // init cache of all spaces of the user(accessPermissions).
