@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson';
 import { UserBase } from '../../types/mongoose-types/model-types/user-interface';
 import { RoleFields, RoleInterface } from '../../types/mongoose-types/model-types/role-interface';
-import { AccessPermissionCache } from '../../types/mongoose-types/model-types/access-controller-interface';
+import { AccessPermissionCache } from '../../types/mongoose-types/model-types/access-permission-interface';
 
 export type CurrentSpace = {
   name?: string;

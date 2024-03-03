@@ -1,7 +1,7 @@
 import { CurrentSpace, ReqUser } from './jwtTypings';
 import { RoleFields } from '../../types/mongoose-types/model-types/role-interface';
 import { UserBase } from '../../types/mongoose-types/model-types/user-interface';
-import { AccessPermissionCache } from '../../types/mongoose-types/model-types/access-controller-interface';
+import { AccessPermissionCache } from '../../types/mongoose-types/model-types/access-permission-interface';
 import { roleCache } from '../mongoose/mongoose-cache/role-cache';
 
 export const reqUserBuilder = async ({

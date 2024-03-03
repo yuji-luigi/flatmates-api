@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { createAccessControllerAndSendToClient, sendAccessControllersToClient } from '../controllers/AccessControllerController';
+import { createAccessControllerAndSendToClient, sendAccessControllersToClient } from '../controllers/AccessPermissionController';
 import { onlySuperAdmin } from '../../middlewares/onlySuperAdmin';
 import { isLoggedIn } from '../../middlewares/isLoggedIn';
 const router = express.Router();

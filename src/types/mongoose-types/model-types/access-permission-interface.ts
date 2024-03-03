@@ -61,4 +61,5 @@ export interface AccessPermissionInterface extends AccessPermissionBase {
 export interface AccessPermissionStatics {
   buildPermissionFields: (dto: ACtrlDtoDashboard) => PermissionInterface[];
 }
+
 export type AccessControllerModel = Model<AccessPermissionInterface, object, AccessPermissionStatics> & AccessPermissionStatics;

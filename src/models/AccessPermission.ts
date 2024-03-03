@@ -5,7 +5,7 @@ import {
   AccessControllerModel,
   PermissionInterface,
   permissions
-} from '../types/mongoose-types/model-types/access-controller-interface';
+} from '../types/mongoose-types/model-types/access-permission-interface';
 import { accessPermissionsCache } from '../lib/mongoose/mongoose-cache/access-permission-cache';
 const { Schema } = mongoose;
 

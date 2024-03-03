@@ -13,7 +13,7 @@ import notificationRoutes from './notification.routes';
 import authTokenRoutes from './auth-token.routes';
 import organizationRoutes from './organization.routes';
 import maintainerRoutes from './maintainer.routes';
-import accessControllerRoutes from './access-controller.routes';
+import accessControllerRoutes from './access-permission.routes';
 // import dataTableRoutes from './data-table.routes';
 import maintenanceRoutes from './maintenance.routes';
 import spaceAuthRoutes from './space-auth.routes';

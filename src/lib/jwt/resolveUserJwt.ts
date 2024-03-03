@@ -11,7 +11,7 @@ import AccessController from '../../models/AccessPermission';
 import logger from '../logger';
 import { spaceCache } from '../mongoose/mongoose-cache/space-cache';
 import { UserResolverReturnType } from '../../middlewares/handleUserFromRequest';
-import { AccessPermissionCache } from '../../types/mongoose-types/model-types/access-controller-interface';
+import { AccessPermissionCache } from '../../types/mongoose-types/model-types/access-permission-interface';
 
 const { jwtSecret } = vars;
 const JwtStrategy = passport.Strategy;
