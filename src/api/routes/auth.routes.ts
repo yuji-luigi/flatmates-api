@@ -39,6 +39,4 @@ router.delete('/space-selections', isLoggedIn(), deleteSpaceCookie);
 
 router.get('/me', isLoggedIn(), authCtrl.me);
 
-// router.post('/logout', authCtrl.logout);
-
 export default router;
