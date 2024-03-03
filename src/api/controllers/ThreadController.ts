@@ -83,6 +83,7 @@ const updateThread = async (req: RequestCustom, res: Response) => {
 
 const sendThreadsToFrondEnd = async (req: Request, res: Response) => {
   try {
+    delete req.query.space;
     const threads = await Thread.find(req.query).sort({
       isImportant: -1,
       createdAt: -1

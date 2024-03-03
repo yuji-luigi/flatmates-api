@@ -61,6 +61,7 @@ const resolveUserJwt = async (resolvedJwt: JwtSignPayload | JwtSignPayloadWithAc
       return done(null, false);
     }
     // init cache of all accessControllers of the user. setting array of accessControllers in the cache
+    // TODO: good logic for init space cache. where when how which space.
     if (!accessControllersCache.get(leanUser._id.toString())) {
       const _accessControllers: AccessControllerCache[] = await AccessController.find({
         user: leanUser._id

@@ -3,8 +3,15 @@ import { getPublicCrudObjects } from '../controllers/CrudController';
 
 import postController from '../controllers/ThreadController';
 import { isLoggedIn } from '../../middlewares/isLoggedIn';
+import { RequestCustom } from '../../types/custom-express/express-custom';
 const router = express.Router();
-
+router.use((req: RequestCustom, res, next) => {
+  if (req.query.space) {
+    req.query.spaces = { $in: [req.query.space] };
+    delete req.query.space;
+  }
+  next();
+});
 router.post('/', isLoggedIn(), postController.createThread);
 router.put('/:threadId', isLoggedIn(), postController.updateThread);
 

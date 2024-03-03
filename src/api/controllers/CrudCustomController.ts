@@ -221,10 +221,11 @@ export const sendDataForHomeDashboard = async (req: RequestCustom, res: Response
       space = await Space.findById(req.user.currentSpace._id);
       query = { space: req.user.currentSpace._id };
     }
-
-    const threads = await Thread.find({ spaces: req.query.space }).limit(10);
+    const threadQuery = query.space ? { spaces: { $in: [query.space] } } : {};
+    const threads = await Thread.find(threadQuery).limit(10);
     const maintenances = await Maintenance.find(query);
     // const checksByDate = await sumUpChecksByDate(query);
+    console.log(threads);
     const checksByMonth = await sumUpChecksByMonth(query);
     // const maintainers = await Maintainer.find(maintainerQuery);
 

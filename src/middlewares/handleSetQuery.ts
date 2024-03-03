@@ -7,6 +7,10 @@ import { _MSG } from '../utils/messages';
 // called in handleQuery middleware.
 export function queryHandler(req: RequestCustom, res: Response, next: NextFunction) {
   try {
+    // SET BASE QUERY. HANDLE FOR EACH ENTITY EX THREAD ACCEPTS SPACES: { $IN: [SPACE_ID] }
+    if (req.user.currentSpace?._id) {
+      req.query = { ...req.query, space: req.user.currentSpace._id };
+    }
     // todo: set the query to req.query
     if (!req.user.isSuperAdmin && !req.user.accessControllers.length) {
       throw new Error('User without accessController.');
