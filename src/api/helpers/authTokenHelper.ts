@@ -1,7 +1,7 @@
 import AuthToken from '../../models/AuthToken';
 
 import { RequestCustom } from '../../types/custom-express/express-custom';
-import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
+import { AuthTokenInterface } from 'mongoose-types/model-types/AuthTokenInterface';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { _MSG } from '../../utils/messages';
 import logger from '../../lib/logger';

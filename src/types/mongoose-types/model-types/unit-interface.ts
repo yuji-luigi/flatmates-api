@@ -1,4 +1,4 @@
-import { AuthTokenInterface } from './auth-token-interface';
+import { AuthTokenInterface } from './AuthTokenInterface';
 import { MongooseBaseModel } from './base-types/base-model-interface';
 import { IOrganization } from './organization-interface';
 import { ISpace } from './space-interface';

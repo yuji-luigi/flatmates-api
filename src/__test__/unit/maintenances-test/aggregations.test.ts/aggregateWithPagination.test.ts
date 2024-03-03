@@ -5,7 +5,7 @@ import { IMaintenance } from '../../../../types/mongoose-types/model-types/maint
 
 import 'jest';
 import Maintenance from '../../../../models/Maintenance';
-import { AuthTokenInterface } from '../../../../types/mongoose-types/model-types/auth-token-interface';
+import { AuthTokenInterface } from 'mongoose-types/model-types/AuthTokenInterface';
 import AuthToken from '../../../../models/AuthToken';
 
 describe('test for creating body/html for email', () => {

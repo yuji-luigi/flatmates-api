@@ -20,7 +20,6 @@ import Check from '../../models/Check';
 import SpaceTag from '../../models/SpaceTag';
 import AuthToken from '../../models/AuthToken';
 import BusinessProfile from '../../models/BusinessProfile';
-import UserSpaceConjunction from '../../models/UserSpaceConjunction';
 
 import vars from '../../utils/globalVariables';
 import Role from '../../models/Role';
@@ -44,7 +43,6 @@ Comment;
 Tag;
 Thread;
 User;
-UserSpaceConjunction;
 Wallet;
 Organization;
 Notification;

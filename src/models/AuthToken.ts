@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
-import { AuthTokenInterface } from '../types/mongoose-types/model-types/auth-token-interface';
 import { generateNonceCode, generateRandomStringByLength, replaceSpecialChars } from '../utils/functions';
+import { AuthTokenInterface } from '../types/mongoose-types/model-types/auth-token-interface';
 
 const { Schema } = mongoose;
 
@@ -19,11 +19,17 @@ export const authTokenSchema = new Schema<AuthTokenInterface>(
       type: Boolean,
       default: true
     },
-    userSpaceConjunction: {
-      ref: 'userSpaceConjunctions',
+    space: {
       type: Schema.Types.ObjectId,
-      autopopulate: true,
-      required: true
+      ref: 'spaces',
+      required: true,
+      autopopulate: true
+    },
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: 'users',
+      required: true,
+      autopopulate: true
     }
   },
   {

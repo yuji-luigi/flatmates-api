@@ -4,7 +4,7 @@ import logger from '../../lib/logger';
 
 import { _MSG } from '../../utils/messages';
 import AuthToken from '../../models/AuthToken';
-import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
+import { AuthTokenInterface } from 'mongoose-types/model-types/AuthTokenInterface';
 import { stringifyAuthToken, typeGuardAuthTokenSpaceOrg, verifyPinFromRequest } from '../helpers/authTokenHelper';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { sensitiveCookieOptions } from '../../utils/globalVariables';
