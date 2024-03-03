@@ -34,8 +34,8 @@ router.get('/space-selections', isLoggedIn(), sendRootSpaceSelectionsToClient);
 router.put('/space-selections/:idMongoose', isLoggedIn(), setSpaceAndOrgInJwt);
 router.get('/organization-selections', isLoggedIn(), sendMainOrganizationSelectionsToClient);
 // set jwt and send space
-router.get('/space-selected/:idMongoose', isLoggedIn(), setSpaceAndOrgInJwt);
-router.delete('/space-selected', isLoggedIn(), deleteSpaceCookie);
+router.get('/space-selections/:idMongoose', isLoggedIn(), setSpaceAndOrgInJwt);
+router.delete('/space-selections', isLoggedIn(), deleteSpaceCookie);
 
 router.get('/me', isLoggedIn(), authCtrl.me);
 
