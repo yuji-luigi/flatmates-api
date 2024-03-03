@@ -16,7 +16,7 @@ import { userHasSpace } from '../helpers/spaceHelper';
 import { resetSpaceCookies, handleSetCookiesFromPayload, JWTPayload } from '../../lib/jwt/jwtUtils';
 import { handleGenerateTokenByRoleAtLogin } from '../../utils/login-instance-utils/generateTokens';
 import { RoleFields } from '../../types/mongoose-types/model-types/role-interface';
-import AccessController from '../../models/AccessController';
+import AccessController from '../../models/AccessPermission';
 import { roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
 import { accessControllersCache } from '../../lib/mongoose/mongoose-cache/access-controller-cache';
 import { correctQueryForEntity } from '../helpers/mongoose.helper';

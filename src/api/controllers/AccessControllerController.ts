@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import httpStatus from 'http-status';
 // import { UserModel } from 'model/user';
 import { _MSG } from '../../utils/messages';
-import AccessController from '../../models/AccessController';
+import AccessController from '../../models/AccessPermission';
 import Role from '../../models/Role';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
