@@ -9,6 +9,7 @@ export function queryHandler(req: RequestCustom, res: Response, next: NextFuncti
   try {
     // SET BASE QUERY. HANDLE FOR EACH ENTITY EX THREAD ACCEPTS SPACES: { $IN: [SPACE_ID] }
     if (req.user.currentSpace?._id) {
+      // forcing the space to be the currentSpace of the user in server side client can't change it.
       req.query = { ...req.query, space: req.user.currentSpace._id };
     }
     // todo: set the query to req.query

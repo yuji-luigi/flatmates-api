@@ -5,6 +5,9 @@ import { RequestCustom } from '../../types/custom-express/express-custom';
 import { _MSG } from '../../utils/messages';
 import { IUpload } from '../../types/mongoose-types/model-types/upload-interface';
 import { Model } from 'mongoose';
+import Space from '../../models/Space';
+import UserRegistry from '../../models/UserRegistry';
+import { roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
 
 // placeholder for the deprecated mongoose model
 export class Maintainer extends Model {
@@ -24,29 +27,28 @@ export const createMaintainer = async (req: RequestCustom, res: Response) => {
     }
 
     req.body.createdBy = req.user;
-    // const reqBody = deleteEmptyFields<MaintainerInterface>(req.body);
-    // const newMaintainer = new Maintainer(reqBody);
-
-    // const organization = await Organization.findById(req.user.organizationId);
-    // if (organization) {
-    //   organization.maintainers.push(newMaintainer);
-    //   await organization.save();
-    // }
-
-    // const space = await Space.findById(req.user.spaceId).lean();
-    // if (space) {
-    //   newMaintainer.spaces.push(space._id);
-    //   // space.maintainers.push(newMaintainer);
-    //   // await space.save();
-    // }
-    // await newMaintainer.save();
-    // const data = await Maintainer.find({ _id: { $in: organization.maintainers } });
 
     res.status(httpStatus.CREATED).json({
       success: true,
       collection: entity
-      // data,
-      // count: data.length
+    });
+  } catch (error) {
+    logger.error(error.message || error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: error.message || error,
+      success: false
+    });
+  }
+};
+
+export const addMaintainerToSpace = async (req: RequestCustom, res: Response) => {
+  try {
+    const foundMaintainer = await Maintainer.findById(req.params.idMaintainer);
+    const space = await Space.findById(req.params.idSpace);
+    // todo: accessPermission creation
+    res.status(httpStatus.CREATED).json({
+      success: true,
+      collection: entity
     });
   } catch (error) {
     logger.error(error.message || error);
@@ -72,6 +74,26 @@ export const sendMaintainersWithPaginationToClient = async (req: RequestCustom, 
         // maintainer.isInSpace = true;
       }
     }
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: entity,
+      data: maintainers,
+      totalDocuments: maintainers.length
+    });
+  } catch (err) {
+    res.status(err).json({
+      message: err.message || err
+    });
+  }
+};
+
+export const sendMaintainersToClient = async (req: RequestCustom, res: Response) => {
+  try {
+    const maintainers = await UserRegistry.find({
+      role: roleCache.get('Maintainer')._id,
+      ...(req.user.currentSpace && { space: req.user.currentSpace._id })
+    });
 
     res.status(httpStatus.OK).json({
       success: true,
@@ -176,11 +198,4 @@ export const removeSpaceFromMaintainerById = async (req: RequestCustom, res: Res
     logger.error(err.message || err);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: err.message || err });
   }
-};
-
-export default {
-  createMaintainer,
-  sendMaintainersWithPaginationToClient,
-  updateMaintainerById,
-  sendSingleMaintainerBySlug
 };
