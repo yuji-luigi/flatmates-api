@@ -11,14 +11,7 @@ export const LOOKUPS = {
   ROOT_SPACES: {
     $lookup: { from: 'spaces', localField: 'spaces', foreignField: '_id', as: 'spaces' }
   },
-  ADMINS: {
-    $lookup: {
-      from: 'users',
-      localField: 'admins',
-      foreignField: '_id',
-      as: 'admins'
-    }
-  },
+
   ORGANIZATION: {
     $lookup: {
       from: 'organizations',
@@ -53,7 +46,7 @@ export const getUnwind = (path: string): PipelineStage.FacetPipelineStage => ({
 export const LOOKUP_PIPELINE_STAGES: Record<Entities, PipelineStage.FacetPipelineStage[]> = {
   spaceTags: [],
   users: [LOOKUPS.ROOT_SPACES],
-  spaces: [LOOKUPS.ADMINS, getUnwind('$admins'), LOOKUPS.ORGANIZATION, getUnwind('$organization')],
+  spaces: [LOOKUPS.ORGANIZATION, getUnwind('$organization')],
   organizations: [],
   funds: [],
   fundRules: [],

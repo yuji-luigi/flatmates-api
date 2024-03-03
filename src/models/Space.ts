@@ -157,8 +157,13 @@ spacesSchema.pre('save', async function (next) {
     if (this.parentId) {
       const parent = await Space.findById(this.parentId);
       if (parent.isTail) {
-        throw new Error('parent is tail');
+        parent.isTail = false;
+        await parent.save();
       }
+    }
+    const foundDescendant = await Space.findOne({ parentId: this._id });
+    if (!foundDescendant) {
+      this.isTail = true;
     }
 
     next();

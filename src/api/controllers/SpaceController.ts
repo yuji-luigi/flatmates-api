@@ -273,7 +273,7 @@ export const getLinkedChildrenSpaces = async (req: RequestCustom, res: Response)
 export const sendSingleSpaceByIdToClient = async (req: RequestCustom, res: Response) => {
   try {
     // return res.send('ok');
-    const data = (await Space.findOne(new ObjectId(req.params.spaceId))).populate('admins');
+    const data = await Space.findOne(new ObjectId(req.params.spaceId));
 
     res.status(httpStatus.OK).json({
       success: true,

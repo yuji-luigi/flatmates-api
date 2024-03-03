@@ -19,7 +19,6 @@ import dataTableCtrl from '../controllers/DataTableController';
 import { createLinkedChild } from '../controllers/CrudCustomController';
 import httpStatus from 'http-status';
 import { isLoggedIn } from '../../middlewares/isLoggedIn';
-import { RequestCustom } from '../../types/custom-express/express-custom';
 const router = express.Router();
 
 router.get('/', isLoggedIn(), sendSpacesToClient);
