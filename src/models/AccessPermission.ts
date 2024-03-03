@@ -7,6 +7,7 @@ import {
   permissions
 } from '../types/mongoose-types/model-types/access-permission-interface';
 import { accessPermissionsCache } from '../lib/mongoose/mongoose-cache/access-permission-cache';
+import UserRegistry from './UserRegistry';
 const { Schema } = mongoose;
 
 const permissionSchema = new Schema<PermissionInterface>({
@@ -21,7 +22,7 @@ const permissionSchema = new Schema<PermissionInterface>({
   }
 });
 
-export const accessPermisionSchema = new Schema<AccessPermissionInterface, AccessControllerModel>(
+export const accessPermissionSchema = new Schema<AccessPermissionInterface, AccessControllerModel>(
   {
     user: {
       type: Schema.Types.ObjectId,
@@ -75,11 +76,13 @@ export const accessPermisionSchema = new Schema<AccessPermissionInterface, Acces
   }
 );
 
-// accessPermisionSchema.pre('find', function () {
-//   this.populate('role');
-// });
-// accessPermisionSchema.pre('findOne', function () {
-//   this.populate('role');
-// });
-accessPermisionSchema.plugin(autoPopulate);
-export default mongoose.model<AccessPermissionInterface, AccessControllerModel>('accessPermissions', accessPermisionSchema);
+accessPermissionSchema.pre('save', async function () {
+  const userRegistry = await UserRegistry.findOne({ user: this.user, role: this.role });
+  if (userRegistry) {
+    return;
+  }
+  await UserRegistry.create({ user: this.user, role: this.role });
+});
+
+accessPermissionSchema.plugin(autoPopulate);
+export default mongoose.model<AccessPermissionInterface, AccessControllerModel>('accessPermissions', accessPermissionSchema);

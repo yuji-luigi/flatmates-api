@@ -13,6 +13,10 @@ export const userRegistrySchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'roles',
       required: true
+    },
+    isPublic: {
+      type: Boolean,
+      default: false
     }
   },
   {

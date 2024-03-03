@@ -21,8 +21,9 @@ import { roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
 import { accessPermissionsCache } from '../../lib/mongoose/mongoose-cache/access-permission-cache';
 import { correctQueryForEntity } from '../helpers/mongoose.helper';
 import { RegisterData } from '../../types/auth/formdata';
-import { AccessPermissionCache } from '../../types/mongoose-types/model-types/access-controller-interface';
+import { AccessPermissionCache } from '../../types/mongoose-types/model-types/access-permission-interface';
 import { checkAdminOfSpace } from '../../middlewares/auth-middlewares';
+import UserRegistry from '../../models/UserRegistry';
 // import { CurrentSpace } from '../../types/mongoose-types/model-types/space-interface';
 
 const { cookieDomain } = vars;
@@ -63,23 +64,28 @@ const register = async (req: Request, res: Response) => {
     });
 
     const accessToken = newUser.token();
-    // const token = generateTokenResponse(newUser as any, accessToken);
 
-    const newRootSpace = await createNewSpaceAtRegister({ space, user: newUser });
-    // create accessPermission for the user and space as system admin
-    await AccessController.create({
-      role: roleCache.get(role)._id,
-      space: newRootSpace._id,
-      user: newUser._id
-    });
-    // create system Admin for the new space and new user
-    await AccessController.create({
-      space: newRootSpace._id,
-      user: newUser._id,
-      role: roleCache.get('System Admin')._id
-    });
+    const newRootSpace = role !== 'Maintainer' && (await createNewSpaceAtRegister({ space, user: newUser }));
+
+    if (role !== 'Maintainer') {
+      // create accessPermission for the user and space as system admin
+      await AccessController.create({
+        role: roleCache.get(role)._id,
+        space: newRootSpace._id,
+        user: newUser._id
+      });
+      // create system Admin for the new space and new user
+      await AccessController.create({
+        space: newRootSpace._id,
+        user: newUser._id,
+        role: roleCache.get('System Admin')._id
+      });
+    }
     await newUser.save();
-    const jwt = JWTPayload.simple({ email: newUser.email, loggedAs: 'Inhabitant', spaceId: newRootSpace._id });
+
+    await UserRegistry.create({ user: newUser, role: roleCache.get(role)._id });
+
+    const jwt = JWTPayload.simple({ email: newUser.email, loggedAs: role, ...(newRootSpace ? { spaceId: newRootSpace._id } : {}) });
     handleSetCookiesFromPayload(res, jwt, newRootSpace);
 
     res.status(httpStatus.CREATED).send({
