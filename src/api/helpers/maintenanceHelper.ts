@@ -5,7 +5,7 @@ import Space from '../../models/Space';
 import { IMaintenance } from '../../types/mongoose-types/model-types/maintenance-interface';
 import { MaintainerInterface } from '../../types/mongoose-types/model-types/maintainer-interface';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
-import { AuthTokenInterface } from 'mongoose-types/model-types/AuthTokenInterface';
+import { AuthTokenInterface } from 'mongoose-types/model-types/auth-token-interface';
 import { Maintainer } from '../controllers/MaintainerController';
 
 export async function createOptionsForMaintenance({

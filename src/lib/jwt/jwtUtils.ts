@@ -1,11 +1,11 @@
 import jwt from 'jsonwebtoken';
 import vars, { basicCookieOptions, sensitiveCookieOptions } from '../../utils/globalVariables';
-import { AuthTokenInterface } from 'mongoose-types/model-types/AuthTokenInterface';
 import { Response } from 'express';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 import { JwtSignPayload } from './jwtTypings';
 import { RoleFields } from '../../types/mongoose-types/model-types/role-interface';
 import { ObjectId } from 'bson';
+import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
 const baseUrl = vars.frontendUrl + '/auth-tokens';
 
 export const generateTokenUrl = {

@@ -4,7 +4,7 @@ import { createOptionsForMaintenance } from '../../../api/helpers/maintenanceHel
 import { IMaintenance } from '../../../types/mongoose-types/model-types/maintenance-interface';
 import 'jest';
 import Maintenance from '../../../models/Maintenance';
-import { AuthTokenInterface } from 'mongoose-types/model-types/AuthTokenInterface';
+import { AuthTokenInterface } from 'mongoose-types/model-types/auth-token-interface';
 import AuthToken from '../../../models/AuthToken';
 
 describe('test for createMailOptionsForMaintenance', () => {

@@ -1,13 +1,12 @@
 import AuthToken from '../../models/AuthToken';
 
 import { RequestCustom } from '../../types/custom-express/express-custom';
-import { AuthTokenInterface } from 'mongoose-types/model-types/AuthTokenInterface';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { _MSG } from '../../utils/messages';
 import logger from '../../lib/logger';
 import { ObjectId } from 'bson';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
-import { IOrganization } from '../../types/mongoose-types/model-types/organization-interface';
+import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
 /**
  * @description verify pin from request body and return authToken document with populated space
  */
@@ -80,7 +79,7 @@ export async function handleCreateAuthTokenForUser(newUser: IUser) {
  * @param newUsers
  * @description create auth token handled by ids array
  */
-export async function handleCreateAuthTokensForUser(newUserIds: ObjectId[], spaceId: ObjectId) {
+export async function handleCreateAuthTokensForUser(newUserIds: ObjectId[]) {
   try {
     const foundTokens = await AuthToken.find({ 'docHolder.instanceId': { $in: newUserIds } });
 
@@ -101,13 +100,13 @@ export async function handleCreateAuthTokensForUser(newUserIds: ObjectId[], spac
   }
 }
 
-function isPopulatedSpace(space: ObjectId | ISpace): space is ISpace {
-  return !(space instanceof ObjectId);
-}
+// function isPopulatedSpace(space: ObjectId | ISpace): space is ISpace {
+//   return !(space instanceof ObjectId);
+// }
 
-function isObjectIdOrganization(organization: ObjectId | IOrganization | string): organization is ObjectId {
-  return organization instanceof ObjectId;
-}
+// function isObjectIdOrganization(organization: ObjectId | IOrganization | string): organization is ObjectId {
+//   return organization instanceof ObjectId;
+// }
 
 export function typeGuardAuthTokenSpaceOrg(
   authToken: AuthTokenInterface

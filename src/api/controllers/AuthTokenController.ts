@@ -4,12 +4,12 @@ import logger from '../../lib/logger';
 
 import { _MSG } from '../../utils/messages';
 import AuthToken from '../../models/AuthToken';
-import { AuthTokenInterface } from 'mongoose-types/model-types/AuthTokenInterface';
 import { stringifyAuthToken, typeGuardAuthTokenSpaceOrg, verifyPinFromRequest } from '../helpers/authTokenHelper';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { sensitiveCookieOptions } from '../../utils/globalVariables';
 import { signJwt } from '../../lib/jwt/jwtUtils';
 import { JwtSignPayload } from '../../lib/jwt/jwtTypings';
+import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
 
 const entity = 'authTokens';
 //= ===============================================================================
