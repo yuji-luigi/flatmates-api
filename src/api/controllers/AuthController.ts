@@ -50,7 +50,7 @@ const { cookieDomain } = vars;
 
 const register = async (req: Request, res: Response) => {
   try {
-    const { email, password, password2, name, surname, space, role = 'Inhabitant' } = req.body as RegisterData;
+    const { email, password, password2, name, surname, space, role = 'Inhabitant', isPublic = false } = req.body as RegisterData;
 
     if (password !== password2) {
       throw new Error('Password non corrispondenti');
@@ -83,7 +83,7 @@ const register = async (req: Request, res: Response) => {
     }
     await newUser.save();
 
-    await UserRegistry.create({ user: newUser, role: roleCache.get(role)._id });
+    await UserRegistry.create({ user: newUser, role: roleCache.get(role)._id, isPublic });
 
     const jwt = JWTPayload.simple({ email: newUser.email, loggedAs: role, ...(newRootSpace ? { spaceId: newRootSpace._id } : {}) });
     handleSetCookiesFromPayload(res, jwt, newRootSpace);
@@ -145,7 +145,12 @@ const loginByRole = async (req: Request<{ role: RoleFields }>, res: Response) =>
     });
 
     accessPermissionsCache.set(user._id.toString(), accessPermissions);
-
+    const userRegistry = await UserRegistry.findOne({ user: user._id, role: roleCache.get(role)._id });
+    if (!user.isSuperAdmin && !userRegistry) {
+      return res.status(httpStatus.UNAUTHORIZED).json({
+        message: 'User not registered as ' + role
+      });
+    }
     const payload = await handleGenerateTokenByRoleAtLogin({ selectedRole: role, user });
     //clear all spaceCookies
     resetSpaceCookies(res);
@@ -192,6 +197,7 @@ type MeUser = {
   _id: string;
   name: string;
   surname: string;
+  email: string;
   avatar: string;
   loggedAs: string;
   cover: string;
@@ -214,6 +220,7 @@ const me = async (req: RequestCustom, res: Response) => {
       name: user.name,
       surname: user.surname,
       avatar: user.avatar?.url,
+      email: user.email,
       cover: user.cover?.url,
       isSuperAdmin: user.isSuperAdmin,
       loggedAs: req.user.loggedAs.name,

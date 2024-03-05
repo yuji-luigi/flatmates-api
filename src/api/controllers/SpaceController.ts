@@ -33,7 +33,8 @@ export const sendSpacesToClient = async (req: RequestCustom, res: Response) => {
     const currentSpaceId = req.user.currentSpace._id?.toString();
     const spaceIds = currentSpaceId ? await aggregateDescendantIds(currentSpaceId, req.user) : null;
     let { query } = req;
-    query = currentSpaceId ? { ...query, _id: { $in: [...spaceIds, currentSpaceId] } } : { ...query, _id: query.space };
+    const spaceIdObj = query.space ? { _id: query.space } : {};
+    query = currentSpaceId ? { ...query, _id: { $in: [...spaceIds, currentSpaceId] } } : { ...query, ...spaceIdObj };
     //  TODO: use req.query for querying in find method and paginating. maybe need to delete field to query in find method
     delete query.space;
     const data = await Space.find(query).lean();

@@ -28,5 +28,12 @@ export const userRegistrySchema = new Schema(
 );
 
 userRegistrySchema.plugin(autoPopulate);
+userRegistrySchema.pre('save', async function (next) {
+  const foundSame = await UserRegistry.findOne({ user: this.user, role: this.role });
+  if (foundSame) {
+    return;
+  }
+  next();
+});
 const UserRegistry = mongoose.model('userRegistry', userRegistrySchema);
 export default UserRegistry;

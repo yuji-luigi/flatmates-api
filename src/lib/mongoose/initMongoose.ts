@@ -27,6 +27,8 @@ import { RoleInterface } from '../../types/mongoose-types/model-types/role-inter
 import { initCacheRole } from './mongoose-cache/role-cache';
 import { initSeed, seedRoles } from './seed/mongoose-seeder';
 import { initCache } from './mongoose-cache';
+import AccessPermission from '../../models/AccessPermission';
+import UserRegistry from '../../models/UserRegistry';
 
 // Set mongoose Promise to Bluebird
 // eslint-disable-next-line no-undef
@@ -72,10 +74,43 @@ const mongooseConnector = {
       .connect(vars.mongo.uri)
       .catch((err: object | string) => logger.error(`ERROR CONNECTING TO MONGO\n${err}. mongoURI: ${vars.mongo.uri}`));
     console.log('Connected to MongoDB');
-    initSeed();
-    initCache();
+    await initSeed();
+    await initCache();
+    await initUserRegistry();
   },
   close: () => mongoose.connection.close()
 };
 
 export default mongooseConnector;
+
+async function initUserRegistry() {
+  const documentsToInsert = await AccessPermission.find();
+
+  const operations = await Promise.all(
+    documentsToInsert.map(async (doc) => {
+      const foundSame = await UserRegistry.findOne({ user: doc.user, role: doc.role });
+      if (doc.user instanceof mongoose.Types.ObjectId && doc.role instanceof mongoose.Types.ObjectId) {
+        if (!foundSame) {
+          return {
+            insertOne: {
+              document: {
+                user: doc.user,
+                role: doc.role,
+                isPublic: false
+              }
+            }
+          };
+        }
+      }
+      // Optionally handle the case where a duplicate is found, such as logging it or pushing it to an array for reporting.
+      return null;
+    })
+  );
+
+  // Filter out any null operations resulting from duplicates
+  const filteredOperations = operations.filter((op) => op !== null);
+
+  if (filteredOperations.length > 0) {
+    await UserRegistry.bulkWrite(filteredOperations);
+  }
+}

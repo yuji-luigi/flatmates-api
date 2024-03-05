@@ -45,9 +45,8 @@ interface RegisterData extends LoginData {
   name: string;
   space: SpaceData;
   surname: string;
-  organization: string;
-  purpose: PurposeUser;
   role: RoleFields;
+  isPublic: boolean;
 }
 type PurposeUser = 'condoAdmin' | 'flatAdmin' | 'companyAdmin';
 

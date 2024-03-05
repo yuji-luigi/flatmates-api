@@ -19,7 +19,20 @@ import dataTableCtrl from '../controllers/DataTableController';
 import { createLinkedChild } from '../controllers/CrudCustomController';
 import httpStatus from 'http-status';
 import { isLoggedIn } from '../../middlewares/isLoggedIn';
+import { RequestCustom } from '../../types/custom-express/express-custom';
 const router = express.Router();
+
+router.use((req: RequestCustom, res, next) => {
+  if (req.user.isSuperAdmin) {
+    return next();
+  }
+  if (!req.query.space) {
+    return res.status(403).json({
+      message: 'You need to specify a space'
+    });
+  }
+  next();
+});
 
 router.get('/', isLoggedIn(), sendSpacesToClient);
 // router.get('/home', isLoggedIn(), sendDataForHomeDashboard);

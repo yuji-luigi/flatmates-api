@@ -8,6 +8,7 @@ import { Model } from 'mongoose';
 import Space from '../../models/Space';
 import UserRegistry from '../../models/UserRegistry';
 import { roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
+import User from '../../models/User';
 
 // placeholder for the deprecated mongoose model
 export class Maintainer extends Model {
@@ -43,9 +44,10 @@ export const createMaintainer = async (req: RequestCustom, res: Response) => {
 
 export const addMaintainerToSpace = async (req: RequestCustom, res: Response) => {
   try {
-    const foundMaintainer = await Maintainer.findById(req.params.idMaintainer);
+    const foundMaintainer = await User.findById(req.params.idMaintainer);
     const space = await Space.findById(req.params.idSpace);
     // todo: accessPermission creation
+    console.log({ foundMaintainer, space });
     res.status(httpStatus.CREATED).json({
       success: true,
       collection: entity
@@ -62,7 +64,6 @@ export const addMaintainerToSpace = async (req: RequestCustom, res: Response) =>
 export const sendMaintainersWithPaginationToClient = async (req: RequestCustom, res: Response) => {
   try {
     // const queryMaintainer = req.user.spaceId?.maintainers || req.organization?.maintainers;
-
     const maintainers = await Maintainer.find();
     // const maintainers = await Maintainer.find({ _id: { $in: queryMaintainer } });
 
@@ -90,11 +91,59 @@ export const sendMaintainersWithPaginationToClient = async (req: RequestCustom, 
 
 export const sendMaintainersToClient = async (req: RequestCustom, res: Response) => {
   try {
-    const maintainers = await UserRegistry.find({
-      role: roleCache.get('Maintainer')._id,
-      ...(req.user.currentSpace && { space: req.user.currentSpace._id })
-    });
+    const matchStage = req.user.isSuperAdmin
+      ? []
+      : [
+          {
+            $match: {
+              'userRegistry.isPublic': true
+            }
+          }
+        ];
 
+    const maintainers = await User.aggregate([
+      {
+        $lookup: {
+          from: 'userregistries', // This should match the actual collection name of user registries in MongoDB
+          localField: '_id',
+          foreignField: 'user',
+          as: 'userRegistry'
+        }
+      },
+      {
+        $unwind: '$userRegistry'
+      },
+      ...matchStage,
+      {
+        $lookup: {
+          from: 'roles', // This should match the actual collection name of roles in MongoDB
+          localField: 'userRegistry.role',
+          foreignField: '_id',
+          as: 'userRole'
+        }
+      },
+      {
+        $unwind: '$userRole'
+      },
+      {
+        $match: {
+          'userRole.name': 'Maintainer' // Filter by the role name, e.g., "maintainer"
+        }
+      },
+      {
+        $project: {
+          // Specify the fields you want to include in the final output
+          _id: 1,
+          name: 1,
+          surname: 1,
+          email: 1,
+          role: '$userRole.name',
+          isPublicProfile: '$userRegistry.isPublic',
+          cover: 1,
+          avatar: 1
+        }
+      }
+    ]);
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity,
