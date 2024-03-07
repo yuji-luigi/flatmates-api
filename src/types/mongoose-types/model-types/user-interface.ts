@@ -30,6 +30,7 @@ export interface UserBase {
   avatar?: IUpload;
   phone?: string | undefined;
   isSuperAdmin: boolean;
+  slug: string;
   /** will be only super_admin and user. will use adminOf field to check if user is admin of an space.
    */
   role: ObjectId | RoleInterface;

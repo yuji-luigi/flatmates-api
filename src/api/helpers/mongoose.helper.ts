@@ -7,6 +7,7 @@ import { MongooseBaseModel } from '../../types/mongoose-types/model-types/base-t
 import { Entities } from '../../types/mongoose-types/model-types/Entities';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import cloneDeep from 'lodash/cloneDeep';
+import { ErrorCustom } from '../../lib/ErrorCustom';
 // todo: aggregation method
 interface LookUpQueryInterface {
   [key: string]: mongoose.PipelineStage.FacetPipelineStage[];
@@ -122,14 +123,14 @@ export function convert_idToMongooseId(query: Record<string, string | ObjectId>)
 export interface ICollectionAware extends Document {
   constructor: { collection: { name: string } };
 }
-export type DocumentWithSlug = { slug?: string; name?: string; title: string } & ICollectionAware;
+export type DocumentWithSlug = { slug?: string; name?: string; title?: string } & ICollectionAware;
 
 /**
  * @returns string of collection name. using document.constructor.collection.name
  */
 export const getCollectionName = <T extends Document>(document: T & DocumentWithSlug) => document.constructor.collection.name;
 
-export async function createSlug<T extends Document>(document: T & DocumentWithSlug): Promise<string> {
+export async function createSlug<T extends Document>(document: T & DocumentWithSlug, ...otherFields: string[]): Promise<string> {
   // export async function createSlug(document: Document & { slug?: string; name: string } & MongooseThis): Promise<string> {
   try {
     // case the document already registered a slug. return
@@ -138,7 +139,7 @@ export async function createSlug<T extends Document>(document: T & DocumentWithS
     }
     let slug = document.name || document.title;
     if (!slug) {
-      throw new Error('slug is not defined. ');
+      throw new ErrorCustom('Name is not defined. ', 400);
     }
 
     slug = replaceSpecialCharsWith(slug, '-').toLocaleLowerCase();
@@ -148,7 +149,7 @@ export async function createSlug<T extends Document>(document: T & DocumentWithS
     const Model = mongoose.model(getCollectionName(document));
     // it can't find itself because it is not saved yet. and existing documents are not already returned
     const count = await Model.count({ slug });
-    let isUnique = !!count;
+    let isUnique = !count;
     while (!isUnique) {
       const word = generateWord();
       slugToCheck = `${slug}-${word}`;

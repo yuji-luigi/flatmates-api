@@ -8,6 +8,7 @@ import autoPopulate from 'mongoose-autopopulate';
 // import urlSlug from 'mongoose-slug-generator';
 import { generateWord, replaceSpecialCharsWith } from '../utils/functions';
 import { ISpace, ISpaceMethods, spaceTypes } from '../types/mongoose-types/model-types/space-interface';
+import { createSlug, ICollectionAware } from '../api/helpers/mongoose.helper';
 
 // const { jwtSecret } = vars;
 
@@ -137,7 +138,7 @@ export const spacesSchema = new Schema<ISpace, SpaceModel, ISpaceMethods>(
 //   next();
 // });
 // set slug for pre save
-spacesSchema.pre('save', async function (next) {
+spacesSchema.pre('save', async function (this: ISpace & ICollectionAware, next) {
   try {
     const slug = this.slug || this.name;
     this.slug = replaceSpecialCharsWith(slug, '-').toLocaleLowerCase();

@@ -40,6 +40,9 @@ export const userSchema = new Schema<IUser, UserModel>(
       ref: 'uploads',
       autopopulate: true
     },
+    slug: {
+      type: String
+    },
     cover: {
       type: Schema.Types.ObjectId,
       ref: 'uploads',

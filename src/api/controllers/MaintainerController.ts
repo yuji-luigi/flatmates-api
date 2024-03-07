@@ -3,22 +3,167 @@ import logger from '../../lib/logger';
 import { Response } from 'express';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { _MSG } from '../../utils/messages';
-import { IUpload } from '../../types/mongoose-types/model-types/upload-interface';
-import { Model } from 'mongoose';
 import Space from '../../models/Space';
-import UserRegistry from '../../models/UserRegistry';
 import { roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
 import User from '../../models/User';
+import AccessPermission from '../../models/AccessPermission';
+import { ErrorCustom } from '../../lib/ErrorCustom';
 
 // placeholder for the deprecated mongoose model
-export class Maintainer extends Model {
+export class Maintainer {
   // public static findOne()
-  constructor(_: any) {
-    super(_);
-    throw new Error('do not instantiate this class');
+
+  static async findOne(matchStage: any = {}) {
+    const [maintainer] = await User.aggregate([
+      {
+        $lookup: {
+          from: 'userregistries', // This should match the actual collection name of user registries in MongoDB
+          localField: '_id',
+          foreignField: 'user',
+          as: 'userRegistry'
+        }
+      },
+      {
+        $unwind: '$userRegistry'
+      },
+      {
+        $match: matchStage
+      },
+      {
+        $lookup: {
+          from: 'uploads', // This should match the actual collection name of roles in MongoDB
+          localField: 'avatar',
+          foreignField: '_id',
+          as: 'avatar'
+        }
+      },
+      {
+        $unwind: '$avatar'
+      },
+      {
+        $lookup: {
+          from: 'uploads', // This should match the actual collection name of roles in MongoDB
+          localField: 'cover',
+          foreignField: '_id',
+          as: 'cover'
+        }
+      },
+      {
+        $unwind: {
+          path: '$avatar',
+          preserveNullAndEmptyArrays: true // Keeps documents even if 'avatar' is null or an empty array
+        }
+      },
+      {
+        $lookup: {
+          from: 'roles',
+          localField: 'userRegistry.role',
+          foreignField: '_id',
+          as: 'userRole'
+        }
+      },
+      {
+        $unwind: {
+          path: '$avatar',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $match: {
+          'userRole.name': 'Maintainer'
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          surname: 1,
+          email: 1,
+          role: '$userRole.name',
+          isPublicProfile: '$userRegistry.isPublic',
+          cover: {
+            url: '$avatar.url',
+            fileName: '$avatar.fileName'
+          },
+          avatar: {
+            url: '$avatar.url',
+            fileName: '$avatar.fileName'
+          },
+          slug: 1
+        }
+      }
+    ]);
+    return maintainer;
+  }
+  static async find(matchStage: any = {}) {
+    return await User.aggregate([
+      {
+        $lookup: {
+          from: 'userregistries', // This should match the actual collection name of user registries in MongoDB
+          localField: '_id',
+          foreignField: 'user',
+          as: 'userRegistry'
+        }
+      },
+      {
+        $unwind: '$userRegistry'
+      },
+      {
+        $lookup: {
+          from: 'uploads', // This should match the actual collection name of roles in MongoDB
+          localField: 'avatar',
+          foreignField: '_id',
+          as: 'avatar'
+        }
+      },
+      {
+        $unwind: {
+          path: '$avatar',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $lookup: {
+          from: 'roles',
+          localField: 'userRegistry.role',
+          foreignField: '_id',
+          as: 'userRole'
+        }
+      },
+
+      {
+        $match: {
+          'userRole.name': 'Maintainer',
+          ...matchStage
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          surname: 1,
+          email: 1,
+          role: '$userRole.name',
+          isPublicProfile: '$userRegistry.isPublic',
+          cover: {
+            url: '$avatar.url',
+            fileName: '$avatar.fileName'
+          },
+          avatar: {
+            url: '$avatar.url',
+            fileName: '$avatar.fileName'
+          },
+          slug: 1
+        }
+      }
+    ]);
+  }
+  static findById(param?: any) {
+    console.error('Not implemented');
+    return param;
   }
 }
-const entity = 'maintainers';
+const entity = 'accessPermissions';
 
 export const createMaintainer = async (req: RequestCustom, res: Response) => {
   try {
@@ -46,15 +191,25 @@ export const addMaintainerToSpace = async (req: RequestCustom, res: Response) =>
   try {
     const foundMaintainer = await User.findById(req.params.idMaintainer);
     const space = await Space.findById(req.params.idSpace);
-    // todo: accessPermission creation
-    console.log({ foundMaintainer, space });
+    const foundPermission = await AccessPermission.findOne({ user: foundMaintainer, space });
+    if (foundPermission) {
+      throw new ErrorCustom(_MSG.MAINTAINER_EXISTS, httpStatus.CONFLICT);
+    }
+    await AccessPermission.create({
+      user: foundMaintainer,
+      space,
+      role: roleCache.get('Maintainer')._id
+    });
+
     res.status(httpStatus.CREATED).json({
       success: true,
-      collection: entity
+      collection: entity,
+      message: _MSG.OBJ_CREATED,
+      data: foundMaintainer
     });
   } catch (error) {
-    logger.error(error.message || error);
-    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+    console.error(error.stack || error);
+    res.status(error.code || 500).json({
       message: error.message || error,
       success: false
     });
@@ -67,14 +222,14 @@ export const sendMaintainersWithPaginationToClient = async (req: RequestCustom, 
     const maintainers = await Maintainer.find();
     // const maintainers = await Maintainer.find({ _id: { $in: queryMaintainer } });
 
-    for (const maintainer of maintainers) {
-      typeof maintainer.avatar === 'object' && (await maintainer.avatar.setUrl());
-      typeof maintainer.cover === 'object' && (await maintainer.cover.setUrl());
+    // for (const maintainer of maintainers) {
+    //   typeof maintainer.avatar === 'object' && (await maintainer.avatar.setUrl());
+    //   typeof maintainer.cover === 'object' && (await maintainer.cover.setUrl());
 
-      if (maintainer.spaces.includes(req.cookies.spaceId)) {
-        // maintainer.isInSpace = true;
-      }
-    }
+    //   // if (maintainer.spaces.includes(req.cookies.spaceId)) {
+    //   //   // maintainer.isInSpace = true;
+    //   // }
+    // }
 
     res.status(httpStatus.OK).json({
       success: true,
@@ -83,7 +238,8 @@ export const sendMaintainersWithPaginationToClient = async (req: RequestCustom, 
       totalDocuments: maintainers.length
     });
   } catch (err) {
-    res.status(err).json({
+    logger.error(err.stack || err);
+    res.status(err.code || 500).json({
       message: err.message || err
     });
   }
@@ -91,59 +247,9 @@ export const sendMaintainersWithPaginationToClient = async (req: RequestCustom, 
 
 export const sendMaintainersToClient = async (req: RequestCustom, res: Response) => {
   try {
-    const matchStage = req.user.isSuperAdmin
-      ? []
-      : [
-          {
-            $match: {
-              'userRegistry.isPublic': true
-            }
-          }
-        ];
+    const matchStage = req.user.isSuperAdmin ? {} : { 'userRegistry.isPublic': true };
 
-    const maintainers = await User.aggregate([
-      {
-        $lookup: {
-          from: 'userregistries', // This should match the actual collection name of user registries in MongoDB
-          localField: '_id',
-          foreignField: 'user',
-          as: 'userRegistry'
-        }
-      },
-      {
-        $unwind: '$userRegistry'
-      },
-      ...matchStage,
-      {
-        $lookup: {
-          from: 'roles', // This should match the actual collection name of roles in MongoDB
-          localField: 'userRegistry.role',
-          foreignField: '_id',
-          as: 'userRole'
-        }
-      },
-      {
-        $unwind: '$userRole'
-      },
-      {
-        $match: {
-          'userRole.name': 'Maintainer' // Filter by the role name, e.g., "maintainer"
-        }
-      },
-      {
-        $project: {
-          // Specify the fields you want to include in the final output
-          _id: 1,
-          name: 1,
-          surname: 1,
-          email: 1,
-          role: '$userRole.name',
-          isPublicProfile: '$userRegistry.isPublic',
-          cover: 1,
-          avatar: 1
-        }
-      }
-    ]);
+    const maintainers = await Maintainer.find(matchStage);
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity,
@@ -151,7 +257,8 @@ export const sendMaintainersToClient = async (req: RequestCustom, res: Response)
       totalDocuments: maintainers.length
     });
   } catch (err) {
-    res.status(err).json({
+    logger.error(err.stack || err);
+    res.status(err.code || 500).json({
       message: err.message || err
     });
   }
@@ -181,9 +288,10 @@ export const sendSingleMaintainerBySlug = async (req: RequestCustom, res: Respon
   try {
     const entity = 'maintainers';
     req.params.entity = entity;
-    const data: Record<string, object | string | Date | number | IUpload> = await Maintainer.findOne({ slug: req.params.slug });
-    data.avatar && (await (data.avatar as IUpload).setUrl());
-    data.cover && (await (data.cover as IUpload).setUrl());
+    const data = await Maintainer.findOne({ slug: req.params.slug });
+    // data.avatar && (await (data.avatar as IUpload).setUrl());
+    // data.cover && (await (data.cover as IUpload).setUrl());
+    console.log(data);
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity,
@@ -191,6 +299,7 @@ export const sendSingleMaintainerBySlug = async (req: RequestCustom, res: Respon
       count: data.length
     });
   } catch (err) {
+    logger.error(err.stack || err);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
       message: err.message || err
     });
@@ -201,12 +310,12 @@ export async function updateMaintainerById(req: RequestCustom, res: Response) {
   try {
     const { idMongoose } = req.params;
     const entity = 'maintainers';
-    const foundModel = await Maintainer.findById(idMongoose);
+    const foundModel = await User.findById(idMongoose);
 
     foundModel.set(req.body);
-    if (req.body.spaces?.length) {
-      foundModel.spaces.push(...req.body.spaces);
-    }
+    // if (req.body.spaces?.length) {
+    //   foundModel.spaces.push(...req.body.spaces);
+    // }
 
     const updatedModel = await foundModel.save();
 

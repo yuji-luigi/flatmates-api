@@ -29,6 +29,8 @@ import { initSeed, seedRoles } from './seed/mongoose-seeder';
 import { initCache } from './mongoose-cache';
 import AccessPermission from '../../models/AccessPermission';
 import UserRegistry from '../../models/UserRegistry';
+import { ICollectionAware, createSlug } from '../../api/helpers/mongoose.helper';
+import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 
 // Set mongoose Promise to Bluebird
 // eslint-disable-next-line no-undef
@@ -77,6 +79,7 @@ const mongooseConnector = {
     await initSeed();
     await initCache();
     await initUserRegistry();
+    // await play();
   },
   close: () => mongoose.connection.close()
 };
@@ -112,5 +115,20 @@ async function initUserRegistry() {
 
   if (filteredOperations.length > 0) {
     await UserRegistry.bulkWrite(filteredOperations);
+  }
+}
+
+async function play() {
+  try {
+    const users = await User.find<IUser & ICollectionAware>();
+    for (const user of users) {
+      //
+      const slug = await createSlug(user);
+      console.log(slug);
+      user.slug = slug;
+      // await user.save();
+    }
+  } catch (error) {
+    logger.error(error.stack);
   }
 }

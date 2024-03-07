@@ -14,6 +14,9 @@ export const userRegistrySchema = new Schema(
       ref: 'roles',
       required: true
     },
+    jobTitle: {
+      type: String
+    },
     isPublic: {
       type: Boolean,
       default: false
