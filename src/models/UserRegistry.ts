@@ -17,6 +17,16 @@ export const userRegistrySchema = new Schema(
     jobTitle: {
       type: String
     },
+    // avatar: {
+    //   type: Schema.Types.ObjectId,
+    //   ref: 'uploads',
+    //   autopopulate: true
+    // },
+    // cover: {
+    //   type: Schema.Types.ObjectId,
+    //   ref: 'uploads',
+    //   autopopulate: true
+    // },
     isPublic: {
       type: Boolean,
       default: false

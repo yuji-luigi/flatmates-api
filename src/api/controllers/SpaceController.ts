@@ -14,11 +14,8 @@ import { ObjectId } from 'mongodb';
 import { LOOKUP_PIPELINE_STAGES } from '../aggregation-helpers/lookups';
 import { JWTPayload, signJwt } from '../../lib/jwt/jwtUtils';
 import { checkAdminOfSpace } from '../../middlewares/auth-middlewares';
-import { Maintainer } from './MaintainerController';
+import { Maintainer } from '../../models/util-models/Maintainer';
 const entity = 'spaces';
-// import MSG from '../../utils/messages';
-// import { runInNewContext } from 'vm';
-// import { deleteEmptyFields, getEntity } from '../../utils/functions';
 
 //================================================================================
 // CUSTOM CONTROLLER...
@@ -137,99 +134,9 @@ export const sendSingleSpaceToClientByCookie = async (req: RequestCustom, res: R
   }
 };
 
-// export const checkIsAdminOfSpaceForClient = async (req: RequestCustom, res: Response) => {
-//   try {
-
-//     res.status(httpStatus.OK).json({
-//       success: true,
-//       collection: entity,
-//       data: data,
-//       totalDocuments: 1
-//     });
-//   } catch (err) {
-//     res.status(err).json({
-//       success: false,
-//       collection: entity,
-//       message: err.message || err
-//     });
-//   }
-// };
-
-// export const sendDataForHomeDashboard = async (req: RequestCustom, res: Response) => {
-//   try {
-//     const entity = 'spaces';
-
-//     // const limit = 10;
-
-//     //  TODO: use req.query for querying in find method and paginating. maybe need to delete field to query in find method
-//     let { query } = req;
-//     let maintainerQuery = {};
-
-//     let space: Partial<ISpace> = {};
-
-//     if (req.user?.spaceId) {
-//       space = await Space.findById(req.user.spaceId);
-//       query = { space: req.user.spaceId };
-//       maintainerQuery = { spaces: { $in: [req.user._id] } };
-//     }
-//     // case only for super_admin. selected only organization.
-//     if (req.user?.organizationId && !req.user?.spaceId) {
-//       const spaces = await Space.find({ organization: req.user.organizationId, isMain: true });
-//       maintainerQuery = { spaces: { $in: spaces.map((s) => s._id) } };
-//     }
-
-//     const threads = await Thread.find(query).limit(10);
-//     const maintenances = await Maintenance.find(query).limit(10);
-//     const maintainers = await Maintainer.find(maintainerQuery);
-
-//     // space?.avatar && (await space.cover.setUrl());
-//     space.cover && (await space.cover.setUrl());
-
-//     res.status(httpStatus.OK).json({
-//       success: true,
-//       collection: entity,
-//       data: {
-//         space,
-//         threads,
-//         maintenances,
-//         maintainers
-//       },
-//       totalDocuments: 1
-//     });
-//   } catch (err) {
-//     logger.error(err.message || err);
-//     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-//       success: false,
-//       message: _MSG.ERRORS.GENERIC
-//     });
-//   }
-// };
-
 export const sendSpaceDataForSSG = async (req: RequestCustom, res: Response) => {
   try {
     const entity = 'spaces';
-
-    // const limit = 10;
-
-    //  TODO: use req.query for querying in find method and paginating. maybe need to delete field to query in find method
-    // let { query } = req;
-    // let maintainerQuery = {};
-
-    // if (req.user?.spaceId) {
-    //   query = { space: req.user.spaceId };
-    //   maintainerQuery = { spaces: { $in: [req.user._id] } };
-    // }
-    // // case only for super_admin. selected only organization.
-    // if (req.user?.organizationId && !req.user?.spaceId) {
-    //   const spaces = await Space.find({ organization: req.user.organizationId, isMain: true });
-    //   maintainerQuery = { spaces: { $in: spaces.map((s) => s._id) } };
-    // }
-
-    // const threads = await Thread.find(query).limit(10);
-    // const maintenances = await Maintenance.find(query).limit(10);
-    // const maintainers = await Maintainer.find(maintainerQuery);
-
-    // space.cover && (await space.cover.setUrl());
 
     res.status(httpStatus.OK).json({
       success: true,
@@ -254,7 +161,6 @@ export const getLinkedChildrenSpaces = async (req: RequestCustom, res: Response)
   try {
     //! set pagination logic here and next > parentId page set the pagination logic
     const { parentId } = req.params;
-    // const children = await mongoose.model(entity).find({parentId: parentId});x
     req.query.parentId = parentId;
     const lookups = LOOKUP_PIPELINE_STAGES.spaces;
 
@@ -316,12 +222,6 @@ export const sendSpaceSettingPageDataToClient = async (req: RequestCustom, res: 
 
 export const createLinkedChildSpace = async (req: RequestCustom, res: Response) => {
   try {
-    /**
-     * find model
-     * create model with parentId in the correct field
-     * save
-     * send the data array to handle in redux
-     */
     const { parentId } = req.params;
     const entity = 'spaces';
     req.body = deleteEmptyFields(req.body);
@@ -331,16 +231,11 @@ export const createLinkedChildSpace = async (req: RequestCustom, res: Response) 
     // get the model
 
     const Model = mongoose.model(entity);
-    // const organizationOfUser = req.user.role !== 'super_admin' ? req.user.organization : null;
-
-    // const parentDocument = await Model.findById(parentId); // find parentDocument
 
     const childDoc = new Model({ ...req.body });
     const newChildDoc = await childDoc.save();
     logger.debug(newChildDoc._doc);
-    // parentDocument.isTail = false; // set isTail to false
-    // await parentDocument.save(); // save
-    // sendCrudObjectsWithPaginationToClient(req, res);
+
     req.query = { ...req.query, parentId };
     const data = await aggregateWithPagination(req.query, entity);
 
@@ -350,12 +245,6 @@ export const createLinkedChildSpace = async (req: RequestCustom, res: Response) 
       data: data[0].paginatedResult || [],
       totalDocuments: data[0].counts[0]?.total || 0
     });
-    // res.status(httpStatus.CREATED).json({
-    //   success: true,
-    //   collection: 'spaces',
-    //   data: newModel,
-    //   count: 1
-    // });
   } catch (err) {
     logger.error(err.message || err);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: err.message || err });
@@ -365,9 +254,7 @@ export const createLinkedChildSpace = async (req: RequestCustom, res: Response) 
 export const sendHeadSpaces = async (req: Request, res: Response) => {
   try {
     const entity = 'spaces';
-    // entity = cutQuery(entity);
-    // without pagination
-    // const children = await mongoose.model(entity).find({isHead: true});
+
     const query = { ...req.query, isHead: true };
     const data = await aggregateWithPagination(query, entity);
     res.status(httpStatus.OK).json({
@@ -376,12 +263,6 @@ export const sendHeadSpaces = async (req: Request, res: Response) => {
       data: data[0].paginatedResult || [],
       totalDocuments: data[0].counts[0]?.total || 0
     });
-    // res.status(httpStatus.CREATED).json({
-    //   success: true,
-    //   collection: 'spaces',
-    //   data: children,
-    //   count: 1
-    // });
   } catch (err) {
     logger.error(err.message || err);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: err.message || err });
@@ -410,12 +291,6 @@ export const sendSpaceSelectionToClient = async (req: RequestCustom, res: Respon
 //! TODO: from next chose to call generic parameter route
 export const deleteLinkedChildSpace = async (req: Request, res: Response) => {
   try {
-    /**
-     * find model
-     * create model with parentId in the correct field
-     * save
-     * send the data array to handle in redux
-     */
     let { entity } = req.params;
     const { id } = req.params;
     id;
@@ -465,12 +340,6 @@ export const deleteHeadSpaceWithPagination = async (req: Request, res: Response)
       data: data[0].paginatedResult || [],
       totalDocuments: data[0].counts[0]?.total || 0
     });
-    // res.status(httpStatus.OK).json({
-    //   success: true,
-    //   collection: 'spaces',
-    //   // data: data[0].paginatedResult || [],
-    //   // totalDocuments: data[0].counts[0]?.total || 0
-    // });
   } catch (err) {
     logger.error(err.message || err);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: err.message || err });

@@ -8,162 +8,9 @@ import { roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
 import User from '../../models/User';
 import AccessPermission from '../../models/AccessPermission';
 import { ErrorCustom } from '../../lib/ErrorCustom';
+import { Maintainer } from '../../models/util-models/Maintainer';
 
-// placeholder for the deprecated mongoose model
-export class Maintainer {
-  // public static findOne()
-
-  static async findOne(matchStage: any = {}) {
-    const [maintainer] = await User.aggregate([
-      {
-        $lookup: {
-          from: 'userregistries', // This should match the actual collection name of user registries in MongoDB
-          localField: '_id',
-          foreignField: 'user',
-          as: 'userRegistry'
-        }
-      },
-      {
-        $unwind: '$userRegistry'
-      },
-      {
-        $match: matchStage
-      },
-      {
-        $lookup: {
-          from: 'uploads', // This should match the actual collection name of roles in MongoDB
-          localField: 'avatar',
-          foreignField: '_id',
-          as: 'avatar'
-        }
-      },
-      {
-        $unwind: '$avatar'
-      },
-      {
-        $lookup: {
-          from: 'uploads', // This should match the actual collection name of roles in MongoDB
-          localField: 'cover',
-          foreignField: '_id',
-          as: 'cover'
-        }
-      },
-      {
-        $unwind: {
-          path: '$avatar',
-          preserveNullAndEmptyArrays: true // Keeps documents even if 'avatar' is null or an empty array
-        }
-      },
-      {
-        $lookup: {
-          from: 'roles',
-          localField: 'userRegistry.role',
-          foreignField: '_id',
-          as: 'userRole'
-        }
-      },
-      {
-        $unwind: {
-          path: '$avatar',
-          preserveNullAndEmptyArrays: true
-        }
-      },
-      {
-        $match: {
-          'userRole.name': 'Maintainer'
-        }
-      },
-      {
-        $project: {
-          _id: 1,
-          name: 1,
-          surname: 1,
-          email: 1,
-          role: '$userRole.name',
-          isPublicProfile: '$userRegistry.isPublic',
-          cover: {
-            url: '$avatar.url',
-            fileName: '$avatar.fileName'
-          },
-          avatar: {
-            url: '$avatar.url',
-            fileName: '$avatar.fileName'
-          },
-          slug: 1
-        }
-      }
-    ]);
-    return maintainer;
-  }
-  static async find(matchStage: any = {}) {
-    return await User.aggregate([
-      {
-        $lookup: {
-          from: 'userregistries', // This should match the actual collection name of user registries in MongoDB
-          localField: '_id',
-          foreignField: 'user',
-          as: 'userRegistry'
-        }
-      },
-      {
-        $unwind: '$userRegistry'
-      },
-      {
-        $lookup: {
-          from: 'uploads', // This should match the actual collection name of roles in MongoDB
-          localField: 'avatar',
-          foreignField: '_id',
-          as: 'avatar'
-        }
-      },
-      {
-        $unwind: {
-          path: '$avatar',
-          preserveNullAndEmptyArrays: true
-        }
-      },
-      {
-        $lookup: {
-          from: 'roles',
-          localField: 'userRegistry.role',
-          foreignField: '_id',
-          as: 'userRole'
-        }
-      },
-
-      {
-        $match: {
-          'userRole.name': 'Maintainer',
-          ...matchStage
-        }
-      },
-      {
-        $project: {
-          _id: 1,
-          name: 1,
-          surname: 1,
-          email: 1,
-          role: '$userRole.name',
-          isPublicProfile: '$userRegistry.isPublic',
-          cover: {
-            url: '$avatar.url',
-            fileName: '$avatar.fileName'
-          },
-          avatar: {
-            url: '$avatar.url',
-            fileName: '$avatar.fileName'
-          },
-          slug: 1
-        }
-      }
-    ]);
-  }
-  static findById(param?: any) {
-    console.error('Not implemented');
-    return param;
-  }
-}
-const entity = 'accessPermissions';
+const entity = 'users';
 
 export const createMaintainer = async (req: RequestCustom, res: Response) => {
   try {
@@ -218,18 +65,7 @@ export const addMaintainerToSpace = async (req: RequestCustom, res: Response) =>
 
 export const sendMaintainersWithPaginationToClient = async (req: RequestCustom, res: Response) => {
   try {
-    // const queryMaintainer = req.user.spaceId?.maintainers || req.organization?.maintainers;
     const maintainers = await Maintainer.find();
-    // const maintainers = await Maintainer.find({ _id: { $in: queryMaintainer } });
-
-    // for (const maintainer of maintainers) {
-    //   typeof maintainer.avatar === 'object' && (await maintainer.avatar.setUrl());
-    //   typeof maintainer.cover === 'object' && (await maintainer.cover.setUrl());
-
-    //   // if (maintainer.spaces.includes(req.cookies.spaceId)) {
-    //   //   // maintainer.isInSpace = true;
-    //   // }
-    // }
 
     res.status(httpStatus.OK).json({
       success: true,
@@ -266,16 +102,9 @@ export const sendMaintainersToClient = async (req: RequestCustom, res: Response)
 
 export const sendMaintainersOfBuildingToClient = async (req: RequestCustom, res: Response) => {
   try {
-    // const queryMaintainer = req.user.spaceId?.maintainers || req.organization?.maintainers;
-
-    // const maintainers = await Maintainer.find({ spaces: { $in: [req.user.spaceId] } });
-    // const maintainers = await Maintainer.find({ _id: { $in: queryMaintainer } });
-
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity
-      // data: maintainers,
-      // totalDocuments: maintainers.length
     });
   } catch (err) {
     res.status(err).json({
@@ -286,17 +115,13 @@ export const sendMaintainersOfBuildingToClient = async (req: RequestCustom, res:
 
 export const sendSingleMaintainerBySlug = async (req: RequestCustom, res: Response) => {
   try {
-    const entity = 'maintainers';
     req.params.entity = entity;
     const data = await Maintainer.findOne({ slug: req.params.slug });
-    // data.avatar && (await (data.avatar as IUpload).setUrl());
-    // data.cover && (await (data.cover as IUpload).setUrl());
-    console.log(data);
+
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity,
-      data,
-      count: data.length
+      data
     });
   } catch (err) {
     logger.error(err.stack || err);
@@ -313,9 +138,6 @@ export async function updateMaintainerById(req: RequestCustom, res: Response) {
     const foundModel = await User.findById(idMongoose);
 
     foundModel.set(req.body);
-    // if (req.body.spaces?.length) {
-    //   foundModel.spaces.push(...req.body.spaces);
-    // }
 
     const updatedModel = await foundModel.save();
 
@@ -335,17 +157,6 @@ export async function updateMaintainerById(req: RequestCustom, res: Response) {
 //! TODO: from next chose to call generic parameter route
 export const removeSpaceFromMaintainerById = async (req: RequestCustom, res: Response) => {
   try {
-    /**
-     * find model
-     * create model with parentId in the correct field
-     * save
-     * send the data array to handle in redux
-     */
-    // const { maintainer, space } = req.query;
-    // const foundMaintainer = await Maintainer.findById(maintainer);
-    // const deletedSpaces = foundMaintainer.spaces.filter((_space) => _space.toString() !== space.toString()).map((_space) => _space);
-    // foundMaintainer.spaces = deletedSpaces as any;
-    // await foundMaintainer.save();
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity,
