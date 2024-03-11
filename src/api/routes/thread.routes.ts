@@ -4,10 +4,11 @@ import { getPublicCrudObjects } from '../controllers/CrudController';
 import postController from '../controllers/ThreadController';
 import { isLoggedIn } from '../../middlewares/isLoggedIn';
 import { RequestCustom } from '../../types/custom-express/express-custom';
+import { ObjectId } from 'mongodb';
 const router = express.Router();
 router.use((req: RequestCustom, res, next) => {
   if (req.query.space) {
-    req.query.spaces = { $in: [req.query.space] };
+    req.query.spaces = req.query.space instanceof ObjectId ? { $in: [req.query.space] } : { $in: req.query.space };
     delete req.query.space;
   }
   next();

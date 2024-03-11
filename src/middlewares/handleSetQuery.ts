@@ -19,7 +19,7 @@ export function queryHandler(req: RequestCustom, res: Response, next: NextFuncti
     if (req.user.isSuperAdmin && !req.user.accessPermissions.length) {
       return next();
     }
-    req.query = { ...req.query, space: { $in: req.user.accessPermissions.map((ac) => ac.space) } };
+    req.query = { ...req.query, space: req.query.space || { $in: req.user.accessPermissions.map((ac) => ac.space) } };
 
     return next();
   } catch (error) {
