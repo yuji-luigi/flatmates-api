@@ -10,6 +10,8 @@ import {
 import { accessPermissionsCache } from '../lib/mongoose/mongoose-cache/access-permission-cache';
 import UserRegistry from './UserRegistry';
 import User from './User';
+import { ErrorCustom } from '../lib/ErrorCustom';
+import httpStatus from 'http-status';
 const { Schema } = mongoose;
 
 const permissionSchema = new Schema<PermissionInterface>({
@@ -79,12 +81,18 @@ export const accessPermissionSchema = new Schema<AccessPermissionInterface, Acce
 );
 
 accessPermissionSchema.pre('save', async function (next) {
+  if (this.isNew) {
+    const existingAP = await AccessPermission.findOne({ user: this.user, role: this.role, space: this.space });
+    if (existingAP) {
+      throw new ErrorCustom('Permission already exists', httpStatus.BAD_REQUEST);
+    }
+  }
   const userRegistry = await UserRegistry.findOne({ user: this.user, role: this.role });
   if (userRegistry) {
     return next();
   }
   await UserRegistry.create({ user: this.user, role: this.role });
-  next();
+  return next();
 });
 accessPermissionSchema.post('save', async function (doc: AccessPermissionCache) {
   const userId = doc.user instanceof User ? doc.user._id.toString() : doc.user.toString();

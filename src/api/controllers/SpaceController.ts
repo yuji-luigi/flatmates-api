@@ -197,7 +197,9 @@ export const sendSingleSpaceByIdToClient = async (req: RequestCustom, res: Respo
 export const sendSpaceSettingPageDataToClient = async (req: RequestCustom, res: Response) => {
   try {
     const data = await Space.findOne({ slug: req.params.slug });
-    const maintainers = await Maintainer.find({ spaces: { $in: [data._id] } });
+    const maintainers = await Maintainer.find({
+      matchStage: { spaces: { $in: [data._id] } }
+    });
     const isSpaceAdmin = checkAdminOfSpace({ space: data, currentUser: req.user });
     // await setUrlToSpaceImages(data);
     for (const maintainer of maintainers) {

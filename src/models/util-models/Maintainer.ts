@@ -1,4 +1,6 @@
+import { PipelineStage } from 'mongoose';
 import User from '../User';
+type FilterOptions = Record<string, any>;
 
 // placeholder for the deprecated mongoose model
 export class Maintainer {
@@ -34,10 +36,12 @@ export class Maintainer {
         }
       }
     ]);
+
     return maintainer;
   }
-  static async find(matchStage: Record<string, any> = {}) {
-    return await User.aggregate([
+  static async find(options?: { matchStage?: Record<string, any>; filterOptions?: FilterOptions }) {
+    const { matchStage = {}, filterOptions = {} } = options || {};
+    const pipeline: PipelineStage[] = [
       ...maintainerPipeline,
 
       {
@@ -62,10 +66,27 @@ export class Maintainer {
             url: '$avatar.url',
             fileName: '$avatar.fileName'
           },
+          spaces: '$accessPermissions.space',
           slug: 1
         }
       }
-    ]);
+    ];
+    Object.entries(filterOptions).forEach(([fieldPath, condition]) => {
+      const filterStage: PipelineStage = {
+        $addFields: {
+          [fieldPath]: {
+            $filter: {
+              input: `$${fieldPath}`,
+              as: fieldPath.split('.').slice(-1)[0], // Extract the field name from the path
+              cond: condition
+            }
+          }
+        }
+      };
+
+      pipeline.push(filterStage);
+    });
+    return await User.aggregate(pipeline);
   }
   static findById(param?: any) {
     console.error('Not implemented');
@@ -120,6 +141,31 @@ export const maintainerPipeline = [
       localField: 'userRegistry.role',
       foreignField: '_id',
       as: 'userRole'
+    }
+  },
+  {
+    $lookup: {
+      from: 'accesspermissions',
+      localField: '_id', // Assuming this is the root document _id that should match `user` in accessPermissions
+      foreignField: 'user',
+      as: 'accessPermissions',
+      pipeline: [
+        {
+          $lookup: {
+            from: 'spaces',
+            localField: 'space',
+            foreignField: '_id',
+            as: 'space'
+          }
+        },
+        {
+          $unwind: {
+            path: '$space',
+            preserveNullAndEmptyArrays: true // Optional: Adjust based on whether you always expect a space or not
+          }
+        }
+        // Potentially other operations on the space document
+      ]
     }
   }
 ];

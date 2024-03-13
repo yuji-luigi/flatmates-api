@@ -83,7 +83,6 @@ const updateThread = async (req: RequestCustom, res: Response) => {
 
 const sendThreadsToFrondEnd = async (req: Request, res: Response) => {
   try {
-    delete req.query.space;
     const threads = await Thread.find(req.query).sort({
       isImportant: -1,
       createdAt: -1
@@ -100,7 +99,7 @@ const sendThreadsToFrondEnd = async (req: Request, res: Response) => {
       count: 1
     });
   } catch (error) {
-    logger.error(error.message || error);
+    logger.error(error.stack || error);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
       message: error.message || error,
       success: false

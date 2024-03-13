@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   addMaintainerToSpace,
+  addSpacesToMaintainer,
   createMaintainer,
   removeSpaceFromMaintainerById,
   sendMaintainersOfBuildingToClient,
@@ -32,6 +33,7 @@ router.get('/slug/:slug', isLoggedIn(), sendSingleMaintainerBySlug);
 router.post('/with-pagination', isLoggedIn(), createMaintainer);
 router.post('/:idMaintainer/space/:idSpace', isLoggedIn(), addMaintainerToSpace);
 router.put('/:idMongoose', isLoggedIn(), updateMaintainerById);
+router.post('/:idMongoose/spaces', isLoggedIn(), addSpacesToMaintainer);
 
 router.get('/spaces', isLoggedIn(), sendMaintainersOfBuildingToClient);
 router.delete('/spaces', isLoggedIn(), removeSpaceFromMaintainerById);

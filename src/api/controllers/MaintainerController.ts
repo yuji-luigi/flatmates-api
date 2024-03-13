@@ -9,6 +9,8 @@ import User from '../../models/User';
 import AccessPermission from '../../models/AccessPermission';
 import { ErrorCustom } from '../../lib/ErrorCustom';
 import { Maintainer } from '../../models/util-models/Maintainer';
+import { ReqUser } from '../../lib/jwt/jwtTypings';
+import { accessPermissionsCache } from '../../lib/mongoose/mongoose-cache/access-permission-cache';
 
 const entity = 'users';
 
@@ -65,7 +67,11 @@ export const addMaintainerToSpace = async (req: RequestCustom, res: Response) =>
 
 export const sendMaintainersWithPaginationToClient = async (req: RequestCustom, res: Response) => {
   try {
-    const maintainers = await Maintainer.find();
+    const maintainers = await Maintainer.find({
+      filterOptions: {
+        spaces: { $in: ['$$spaces._id', accessPermissionsCache.get(req.user._id.toString()).map((ap) => ap.space)] }
+      }
+    });
 
     res.status(httpStatus.OK).json({
       success: true,
@@ -85,7 +91,7 @@ export const sendMaintainersToClient = async (req: RequestCustom, res: Response)
   try {
     const matchStage = req.user.isSuperAdmin ? {} : { 'userRegistry.isPublic': true };
 
-    const maintainers = await Maintainer.find(matchStage);
+    const maintainers = await Maintainer.find({ matchStage });
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity,
@@ -135,7 +141,7 @@ export async function updateMaintainerById(req: RequestCustom, res: Response) {
   try {
     const { idMongoose } = req.params;
     const entity = 'maintainers';
-    const foundModel = await User.findById(idMongoose);
+    const foundModel = await AccessPermission.create(idMongoose);
 
     foundModel.set(req.body);
 
@@ -146,6 +152,30 @@ export async function updateMaintainerById(req: RequestCustom, res: Response) {
       message: _MSG.OBJ_UPDATED,
       collection: entity,
       data: updatedModel,
+      count: 1
+    });
+  } catch (err) {
+    logger.error(err.message || err);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: err.message || err });
+  }
+}
+
+export async function addSpacesToMaintainer(req: RequestCustom, res: Response) {
+  try {
+    const { idMongoose } = req.params;
+    const { spaces } = req.body;
+    for (const space of spaces) {
+      const newAP = await AccessPermission.create({ user: idMongoose, space, role: roleCache.get('Maintainer')._id }).catch((error) => {
+        logger.error(error.message || error);
+      });
+      console.log(newAP);
+    }
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: _MSG.OBJ_UPDATED,
+      collection: entity,
+      data: {},
       count: 1
     });
   } catch (err) {
@@ -168,3 +198,28 @@ export const removeSpaceFromMaintainerById = async (req: RequestCustom, res: Res
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: err.message || err });
   }
 };
+
+export async function getFilteredMaintainerSpaces({ currentUser, maintainerId }: { currentUser: ReqUser; maintainerId: string }) {
+  try {
+    const userSpaces = accessPermissionsCache.get(currentUser._id.toString()).map((ap) => ap.space);
+    const spaces = await AccessPermission.find({
+      user: maintainerId,
+      role: roleCache.get('Maintainer')._id,
+      space: { $in: userSpaces }
+    });
+    return spaces;
+  } catch (err) {
+    logger.error(err.message || err);
+    throw new Error(err.message || err);
+  }
+}
+
+export async function getMaintainerAssignedSpaces(maintainerId: string) {
+  try {
+    const spaces = await AccessPermission.find({ user: maintainerId, role: roleCache.get('Maintainer')._id });
+    return spaces;
+  } catch (err) {
+    logger.error(err.message || err);
+    throw new Error(err.message || err);
+  }
+}
