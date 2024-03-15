@@ -111,11 +111,15 @@ export const sendMaintainersToClient = async (req: RequestCustom, res: Response)
 
 export const sendMaintainersOfBuildingToClient = async (req: RequestCustom, res: Response) => {
   try {
-    // const maintainer = await Maintainer.findOne({ matchStage: { _id: req.params.idMongoose } });
+    const maintainers = await Maintainer.find({
+      matchStage: {
+        accessPermissions: { $elemMatch: { 'space._id': req.query.space } }
+      }
+    });
     res.status(httpStatus.OK).json({
       success: true,
-      collection: entity
-      // data: maintainer
+      collection: entity,
+      data: maintainers
     });
   } catch (err) {
     res.status(err).json({

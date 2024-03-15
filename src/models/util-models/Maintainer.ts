@@ -49,7 +49,7 @@ export class Maintainer {
     return maintainer;
   }
   static async find(options?: { matchStage?: Record<string, any>; fieldFilterOptions?: FilterOptions }) {
-    const { matchStage = {}, fieldFilterOptions = {} } = options || {};
+    const { matchStage = {}, fieldFilterOptions } = options || {};
     const pipeline: PipelineStage[] = [
       ...maintainerPipeline,
 
@@ -76,25 +76,27 @@ export class Maintainer {
             fileName: '$avatar.fileName'
           },
           spaces: '$accessPermissions.space',
+          jobTitle: '$userRegistry.jobTitle',
           slug: 1
         }
       }
     ];
-    Object.entries(fieldFilterOptions).forEach(([fieldPath, condition]) => {
-      const filterStage: PipelineStage = {
-        $addFields: {
-          [fieldPath]: {
-            $filter: {
-              input: `$${fieldPath}`,
-              as: fieldPath.split('.').slice(-1)[0], // Extract the field name from the path
-              cond: condition
+    if (fieldFilterOptions) {
+      Object.entries(fieldFilterOptions).forEach(([fieldPath, condition]) => {
+        const filterStage: PipelineStage = {
+          $addFields: {
+            [fieldPath]: {
+              $filter: {
+                input: `$${fieldPath}`,
+                as: fieldPath.split('.').slice(-1)[0], // Extract the field name from the path
+                cond: condition
+              }
             }
           }
-        }
-      };
-
-      pipeline.push(filterStage);
-    });
+        };
+        pipeline.push(filterStage);
+      });
+    }
     return await User.aggregate(pipeline);
   }
   static findById(param?: any) {
