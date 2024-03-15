@@ -61,6 +61,6 @@ jobs:
           key: ${{ secrets.LINODE_SSH_PRIVATE_KEY }}
           script: |
             cd ${{secrets.LINODE_PROJECT_PATH}}
-            docker pull ${{secrets.DOCKER_HUB_USERNAME}}/${{secrets.IMAGE_NAME}}:latest
-            docker-compose up -d
+            docker-compose pull ${{secrets.DOCKER_HUB_USERNAME}}/${{secrets.IMAGE_NAME}}:latest
+            docker-compose up --build --force-recreate flatmates-api -d
             docker image prune -f
