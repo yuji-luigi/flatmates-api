@@ -7,7 +7,8 @@ import { createFilteredStage } from '../../api/aggregation-helpers/pipeline';
 export class Maintainer {
   // public static findOne()
 
-  static async findOne({ matchStage = {}, fieldFilterOptions }: { matchStage: Record<string, any>; fieldFilterOptions?: FilterOptions }) {
+  static async findOne(params?: { matchStage: Record<string, any>; fieldFilterOptions?: FilterOptions }) {
+    const { matchStage = {}, fieldFilterOptions } = params || {};
     let pipeline: PipelineStage[] = [
       ...maintainerPipeline,
       {

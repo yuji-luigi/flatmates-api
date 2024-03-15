@@ -23,8 +23,8 @@ export async function createNotification({
       title: payload.title,
       image: payload.images[0]?.url,
       isImportant: payload.isImportant,
-      space: payload.space,
-      organization: payload.organization,
+      // space: payload.space,
+      // organization: payload.organization,
       usersId: users
     });
 

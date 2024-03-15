@@ -3,7 +3,7 @@ import { _MSG } from '../messages';
 import logger from '../../lib/logger';
 import User from '../../models/User';
 import { passwordMatches } from './passwordMatches';
-import { Maintainer } from '../../api/controllers/MaintainerController';
+import { Maintainer } from '../../models/util-models/Maintainer';
 
 // authenticate user and maintainer at once
 export async function authLoginInstances({ email, password }: { email?: string; password?: string }) {
@@ -18,8 +18,8 @@ export async function authLoginInstances({ email, password }: { email?: string; 
       });
     }
     // can
-    const foundUser = await User.findOne({ email }).exec();
-    const foundMaintainer = await Maintainer.findOne({ email }).exec();
+    const foundUser = await User.findOne({ email });
+    const foundMaintainer = await Maintainer.findOne();
 
     // check active and password for both instances
     const registeredUser = foundUser && foundUser.active && foundUser.password;

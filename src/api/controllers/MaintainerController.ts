@@ -9,10 +9,10 @@ import { RoleCache, roleCache } from '../../lib/mongoose/mongoose-cache/role-cac
 import User from '../../models/User';
 import AccessPermission from '../../models/AccessPermission';
 import { ErrorCustom } from '../../lib/ErrorCustom';
-import { Maintainer } from '../../models/util-models/Maintainer';
 import { ReqUser } from '../../lib/jwt/jwtTypings';
 import { accessPermissionsCache } from '../../lib/mongoose/mongoose-cache/access-permission-cache';
 import { ObjectId } from 'bson';
+import { Maintainer } from '../../models/util-models/Maintainer';
 
 const entity = 'users';
 
