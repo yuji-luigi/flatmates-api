@@ -1,9 +1,15 @@
 name: ci
 
 on:
+  # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches:
-      - 'master'
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   release-please:
@@ -54,17 +60,7 @@ jobs:
           username: ${{ secrets.LINODE_USERNAME }}
           key: ${{ secrets.LINODE_SSH_PRIVATE_KEY }}
           script: |
-            cd /path/to/your/project
-            docker pull ${{secrets.DOCKER_HUB_USERNAME}}/${{secrets.IMAGE_NAME}}:tag
+            cd ${{secrets.LINODE_PROJECT_PATH}}
+            docker pull ${{secrets.DOCKER_HUB_USERNAME}}/${{secrets.IMAGE_NAME}}:latest
             docker-compose up -d
-            - name: Deploy to Linode VM
-            uses: appleboy/ssh-action@master
-            with:
-              host: ${{ secrets.LINODE_HOST }}
-              username: ${{ secrets.LINODE_USERNAME }}
-              key: ${{ secrets.LINODE_SSH_PRIVATE_KEY }}
-              script: |
-                cd ${{secrets.LINODE_PROJECT_PATH}}
-                docker pull ${{secrets.DOCKER_HUB_USERNAME}}/${{secrets.IMAGE_NAME}}:latest
-                docker-compose up -d
-                docker image prune -f
+            docker image prune -f

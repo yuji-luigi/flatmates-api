@@ -1,5 +1,5 @@
 {
-	"name": "generic-api-typescript",
+	"name": "flatmates-api",
 	"version": "1.0.0",
 	"description": "generic api per iniziare un progetto",
 	"main": "src/server.js",
