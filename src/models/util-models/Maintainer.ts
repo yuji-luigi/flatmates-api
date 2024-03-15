@@ -1,13 +1,14 @@
+import { FilterOptions } from './../../types/mongoose-types/pipelines/pipeline-type';
 import { PipelineStage } from 'mongoose';
 import User from '../User';
-type FilterOptions = Record<string, any>;
+import { createFilteredStage } from '../../api/aggregation-helpers/pipeline';
 
 // placeholder for the deprecated mongoose model
 export class Maintainer {
   // public static findOne()
 
-  static async findOne(matchStage: Record<string, any> = {}) {
-    const [maintainer] = await User.aggregate([
+  static async findOne({ matchStage = {}, fieldFilterOptions }: { matchStage: Record<string, any>; fieldFilterOptions?: FilterOptions }) {
+    let pipeline: PipelineStage[] = [
       ...maintainerPipeline,
       {
         $match: {
@@ -32,15 +33,23 @@ export class Maintainer {
             url: '$avatar.url',
             fileName: '$avatar.fileName'
           },
+          spaces: '$accessPermissions.space',
+
           slug: 1
         }
       }
-    ]);
+    ];
 
+    if (fieldFilterOptions) {
+      const filterStage = createFilteredStage(fieldFilterOptions);
+      pipeline = pipeline.concat(filterStage);
+    }
+
+    const [maintainer] = await User.aggregate(pipeline);
     return maintainer;
   }
-  static async find(options?: { matchStage?: Record<string, any>; filterOptions?: FilterOptions }) {
-    const { matchStage = {}, filterOptions = {} } = options || {};
+  static async find(options?: { matchStage?: Record<string, any>; fieldFilterOptions?: FilterOptions }) {
+    const { matchStage = {}, fieldFilterOptions = {} } = options || {};
     const pipeline: PipelineStage[] = [
       ...maintainerPipeline,
 
@@ -71,7 +80,7 @@ export class Maintainer {
         }
       }
     ];
-    Object.entries(filterOptions).forEach(([fieldPath, condition]) => {
+    Object.entries(fieldFilterOptions).forEach(([fieldPath, condition]) => {
       const filterStage: PipelineStage = {
         $addFields: {
           [fieldPath]: {
@@ -150,6 +159,11 @@ export const maintainerPipeline = [
       foreignField: 'user',
       as: 'accessPermissions',
       pipeline: [
+        {
+          $match: {
+            disabled: false // Only include accessPermissions documents where disabled is true
+          }
+        },
         {
           $lookup: {
             from: 'spaces',

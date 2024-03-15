@@ -11,3 +11,15 @@ export const initCacheRole = async () => {
     roleCache.set(role.name, role);
   });
 };
+
+export class RoleCache {
+  static get maintainer() {
+    return roleCache.get('Maintainer');
+  }
+  static get administrator() {
+    return roleCache.get('Administrator');
+  }
+  static get inhabitant() {
+    return roleCache.get('Inhabitant');
+  }
+}

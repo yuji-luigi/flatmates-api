@@ -227,7 +227,6 @@ export const sendDataForHomeDashboard = async (req: RequestCustom, res: Response
     // const checksByDate = await sumUpChecksByDate(query);
     // console.log(threads);
     const checksByMonth = await sumUpChecksByMonth(query);
-    // const maintainers = await Maintainer.find(maintainerQuery);
 
     // space?.avatar && (await space.cover.setUrl());
     space.cover && (await space.cover.setUrl());

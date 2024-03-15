@@ -41,6 +41,7 @@ export type ACtrlDtoDashboard = {
 export interface AccessPermissionBase extends MongooseBaseModel {
   user: ObjectId | IUser;
   space: ObjectId | ISpace;
+  disabled: boolean;
   role: ObjectId | RoleInterface;
   permissions: PermissionInterface[];
 }

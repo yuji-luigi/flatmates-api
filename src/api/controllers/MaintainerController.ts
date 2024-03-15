@@ -1,22 +1,24 @@
+import { FilterOptions } from './../../types/mongoose-types/pipelines/pipeline-type';
 import httpStatus from 'http-status';
 import logger from '../../lib/logger';
 import { Response } from 'express';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { _MSG } from '../../utils/messages';
 import Space from '../../models/Space';
-import { roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
+import { RoleCache, roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
 import User from '../../models/User';
 import AccessPermission from '../../models/AccessPermission';
 import { ErrorCustom } from '../../lib/ErrorCustom';
 import { Maintainer } from '../../models/util-models/Maintainer';
 import { ReqUser } from '../../lib/jwt/jwtTypings';
 import { accessPermissionsCache } from '../../lib/mongoose/mongoose-cache/access-permission-cache';
+import { ObjectId } from 'bson';
 
 const entity = 'users';
 
 export const createMaintainer = async (req: RequestCustom, res: Response) => {
   try {
-    const foundMaintainer = await Maintainer.findOne({ email: req.body.email });
+    const foundMaintainer = await Maintainer.findOne({ matchStage: { email: req.body.email } });
     if (foundMaintainer) {
       throw new Error(_MSG.MAINTAINER_EXISTS);
     }
@@ -64,14 +66,15 @@ export const addMaintainerToSpace = async (req: RequestCustom, res: Response) =>
     });
   }
 };
-
+function getFilterOptions(currentUserId: ObjectId) {
+  return {
+    spaces: { $in: ['$$spaces._id', accessPermissionsCache.get(currentUserId.toString()).map((ap) => ap.space)] }
+  };
+}
 export const sendMaintainersWithPaginationToClient = async (req: RequestCustom, res: Response) => {
   try {
-    const maintainers = await Maintainer.find({
-      filterOptions: {
-        spaces: { $in: ['$$spaces._id', accessPermissionsCache.get(req.user._id.toString()).map((ap) => ap.space)] }
-      }
-    });
+    const fieldFilterOptions = getFilterOptions(req.user._id);
+    const maintainers = await Maintainer.find({ fieldFilterOptions });
 
     res.status(httpStatus.OK).json({
       success: true,
@@ -108,9 +111,11 @@ export const sendMaintainersToClient = async (req: RequestCustom, res: Response)
 
 export const sendMaintainersOfBuildingToClient = async (req: RequestCustom, res: Response) => {
   try {
+    // const maintainer = await Maintainer.findOne({ matchStage: { _id: req.params.idMongoose } });
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity
+      // data: maintainer
     });
   } catch (err) {
     res.status(err).json({
@@ -122,7 +127,14 @@ export const sendMaintainersOfBuildingToClient = async (req: RequestCustom, res:
 export const sendSingleMaintainerBySlug = async (req: RequestCustom, res: Response) => {
   try {
     req.params.entity = entity;
-    const data = await Maintainer.findOne({ slug: req.params.slug });
+    const fieldFilterOptions = getFilterOptions(req.user._id);
+
+    const data = await Maintainer.findOne({
+      matchStage: {
+        slug: req.params.slug
+      },
+      fieldFilterOptions
+    });
 
     res.status(httpStatus.OK).json({
       success: true,
@@ -164,18 +176,85 @@ export async function addSpacesToMaintainer(req: RequestCustom, res: Response) {
   try {
     const { idMongoose } = req.params;
     const { spaces } = req.body;
+
     for (const space of spaces) {
-      const newAP = await AccessPermission.create({ user: idMongoose, space, role: roleCache.get('Maintainer')._id }).catch((error) => {
+      await AccessPermission.create({ user: idMongoose, space, role: roleCache.get('Maintainer')._id }).catch((error) => {
         logger.error(error.message || error);
       });
-      console.log(newAP);
     }
+    const filter = getFilterOptions(req.user._id);
+    const maintainer = await Maintainer.findOne({ matchStage: { _id: new ObjectId(idMongoose) }, fieldFilterOptions: filter });
 
     res.status(httpStatus.OK).json({
       success: true,
       message: _MSG.OBJ_UPDATED,
       collection: entity,
-      data: {},
+      data: maintainer,
+      count: 1
+    });
+  } catch (err) {
+    logger.error(err.message || err);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: err.message || err });
+  }
+}
+
+// ADD MAINTAINER TO SPACE
+export async function favoriteMaintainerToSpaceAndSendToClient(req: RequestCustom, res: Response) {
+  try {
+    const { idMongoose } = req.params;
+    const { space } = req.body;
+    const foundAP = await AccessPermission.findOne({
+      role: RoleCache.maintainer._id,
+      space
+    });
+
+    if (foundAP) {
+      foundAP.disabled = false;
+      await foundAP.save();
+    } else {
+      await AccessPermission.create({ user: idMongoose, space, role: roleCache.get('Maintainer')._id }).catch((error) => {
+        logger.error(error.message || error);
+      });
+    }
+
+    const filter = getFilterOptions(req.user._id);
+    const maintainer = await Maintainer.findOne({ matchStage: { _id: new ObjectId(idMongoose) }, fieldFilterOptions: filter });
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: _MSG.OBJ_UPDATED,
+      collection: entity,
+      data: maintainer,
+      count: 1
+    });
+  } catch (err) {
+    logger.error(err.message || err);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: err.message || err });
+  }
+}
+
+// REMOVE MAINTAINER FROM SPACE
+export async function removeMaintainerFromSpaceAndSendToClient(req: RequestCustom, res: Response) {
+  try {
+    const { idMongoose } = req.params;
+    const { space } = req.body;
+    const foundAP = await AccessPermission.findOne({
+      role: RoleCache.maintainer._id,
+      space
+    });
+
+    if (foundAP) {
+      foundAP.disabled = true;
+      await foundAP.save();
+    }
+    const filter = getFilterOptions(req.user._id);
+    const maintainer = await Maintainer.findOne({ matchStage: { _id: new ObjectId(idMongoose) }, fieldFilterOptions: filter });
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: _MSG.OBJ_UPDATED,
+      collection: entity,
+      data: maintainer,
       count: 1
     });
   } catch (err) {

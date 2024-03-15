@@ -43,6 +43,10 @@ export const accessPermissionSchema = new Schema<AccessPermissionInterface, Acce
       ref: 'spaces',
       required: true
     },
+    disabled: {
+      type: Boolean,
+      default: false
+    },
 
     permissions: [permissionSchema]
   },
