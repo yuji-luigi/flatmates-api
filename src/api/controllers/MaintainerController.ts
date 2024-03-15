@@ -1,4 +1,3 @@
-import { FilterOptions } from './../../types/mongoose-types/pipelines/pipeline-type';
 import httpStatus from 'http-status';
 import logger from '../../lib/logger';
 import { Response } from 'express';
