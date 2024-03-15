@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.1](https://github.com/yuji-luigi/flatmates-api/compare/flatmates-api-v1.1.0...flatmates-api-v1.1.1) (2024-03-15)
+
+
+### Bug Fixes
+
+* Refactor error message handling in error middleware ([8130345](https://github.com/yuji-luigi/flatmates-api/commit/81303459257d986204d9b108d4b367016d73b3ee))
+* type ([e4d5187](https://github.com/yuji-luigi/flatmates-api/commit/e4d518740131d970fb3aaaff775c5c5558d77eba))
+
 ## [1.1.0](https://github.com/yuji-luigi/flatmates-api/compare/flatmates-api-v1.0.0...flatmates-api-v1.1.0) (2024-03-15)
 
 
