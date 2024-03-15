@@ -19,7 +19,7 @@ export type ConverterError = APIError | expressValidation.ValidationError;
 const handler = (err: any, req: Request, res: Response) => {
   const response = {
     code: err.status,
-    message: err.message || httpStatus[err.status],
+    message: err.message || httpStatus[err.status as number],
     errors: err.errors,
     stack: err.stack
   };
