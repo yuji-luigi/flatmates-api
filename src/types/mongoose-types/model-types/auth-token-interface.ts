@@ -7,4 +7,7 @@ export interface AuthTokenInterface extends MongooseBaseModel {
   active: boolean;
   space: ObjectId;
   user: ObjectId;
+  jwt?: string;
+  refEntity: string;
+  refId: ObjectId;
 }

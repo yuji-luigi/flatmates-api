@@ -19,17 +19,23 @@ export const authTokenSchema = new Schema<AuthTokenInterface>(
       type: Boolean,
       default: true
     },
-    space: {
-      type: Schema.Types.ObjectId,
-      ref: 'spaces',
-      required: true,
-      autopopulate: true
-    },
+    // space: {
+    //   type: Schema.Types.ObjectId,
+    //   ref: 'spaces',
+    //   required: true,
+    //   autopopulate: true
+    // },
     user: {
       type: Schema.Types.ObjectId,
       ref: 'users',
       required: true,
       autopopulate: true
+    },
+    refEntity: {
+      type: String
+    },
+    refId: {
+      type: Schema.Types.ObjectId
     }
   },
   {

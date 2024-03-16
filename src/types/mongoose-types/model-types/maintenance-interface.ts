@@ -1,12 +1,12 @@
 import { MAINTAINER_TYPES } from '../../enum/enum';
 import { CheckInterface } from './check-interface';
-import { MaintainerInterface } from './maintainer-interface';
 import { IOrganization } from './organization-interface';
 import { ISpace } from './space-interface';
 import { IUpload } from './upload-interface';
 import { IUser } from './user-interface';
 import { ITag } from './tag-interface';
 import { MongooseBaseModel } from './base-types/base-model-interface';
+import { ObjectId } from 'bson';
 
 export const MAINTENANCE_STATUS = {
   INCOMPLETE: 'incomplete',
@@ -31,7 +31,7 @@ export interface IMaintenance extends MongooseBaseModel {
   type: (typeof MAINTAINER_TYPES)[number];
   organization?: IOrganization | string;
   space: ISpace;
-  maintainer: MaintainerInterface;
+  maintainer: ObjectId;
   /** decides if everyone in the world can see or only under the organization. */
   slug: string;
   invoices?: CheckInterface[];

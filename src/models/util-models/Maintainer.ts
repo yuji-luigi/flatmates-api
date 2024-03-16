@@ -2,11 +2,55 @@ import { FilterOptions } from './../../types/mongoose-types/pipelines/pipeline-t
 import { PipelineStage } from 'mongoose';
 import User from '../User';
 import { createFilteredStage } from '../../api/aggregation-helpers/pipeline';
+import { ObjectId } from 'bson';
 
 // placeholder for the deprecated mongoose model
 export class Maintainer {
   // public static findOne()
 
+  static async findById(id: ObjectId, params?: { matchStage: Record<string, any>; fieldFilterOptions?: FilterOptions }) {
+    const { matchStage = {}, fieldFilterOptions } = params || {};
+    let pipeline: PipelineStage[] = [
+      ...maintainerPipeline,
+      {
+        $match: {
+          'userRole.name': 'Maintainer',
+          _id: id,
+          ...matchStage
+        }
+      },
+      { $limit: 1 },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          surname: 1,
+          email: 1,
+          // role: '$userRole.name',
+          // isPublicProfile: '$userRegistry.isPublic',
+          cover: {
+            url: '$avatar.url',
+            fileName: '$avatar.fileName'
+          },
+          avatar: {
+            url: '$avatar.url',
+            fileName: '$avatar.fileName'
+          },
+          spaces: '$accessPermissions.space',
+
+          slug: 1
+        }
+      }
+    ];
+
+    if (fieldFilterOptions) {
+      const filterStage = createFilteredStage(fieldFilterOptions);
+      pipeline = pipeline.concat(filterStage);
+    }
+
+    const [maintainer] = await User.aggregate(pipeline);
+    return maintainer;
+  }
   static async findOne(params?: { matchStage: Record<string, any>; fieldFilterOptions?: FilterOptions }) {
     const { matchStage = {}, fieldFilterOptions } = params || {};
     let pipeline: PipelineStage[] = [
@@ -99,10 +143,6 @@ export class Maintainer {
       });
     }
     return await User.aggregate(pipeline);
-  }
-  static findById(param?: any) {
-    console.error('Not implemented');
-    return param;
   }
 }
 
