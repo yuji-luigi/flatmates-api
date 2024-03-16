@@ -52,13 +52,13 @@ jobs:
         run: |
           docker build . --file Dockerfile \
             --tag ${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.IMAGE_NAME }}:latest \
-            --tag ${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.IMAGE_NAME }}:${{ steps.release.outputs.version }}
+            --tag ${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.IMAGE_NAME }}:${{ needs.release-please.outputs.version }}
 
       - name: Push the latest tag
         run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.IMAGE_NAME }}:latest
 
       - name: Push the version tag
-        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.IMAGE_NAME }}:${{ steps.release.outputs.version }}
+        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.IMAGE_NAME }}:${{ needs.release-please.outputs.version }}
 
       # - name: Build and push
       #   uses: docker/build-push-action@v3
