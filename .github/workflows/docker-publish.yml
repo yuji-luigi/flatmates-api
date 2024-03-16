@@ -62,5 +62,5 @@ jobs:
           script: |
             cd ${{secrets.LINODE_PROJECT_PATH}}
             docker-compose pull ${{secrets.IMAGE_NAME}}
-            docker-compose up --build --force-recreate flatmates-api -d
+            docker-compose up --build --force-recreate -d ${{secrets.IMAGE_NAME}}
             docker image prune -f
