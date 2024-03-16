@@ -8,3 +8,7 @@ postman.http
 
 node_modules/
 dist/
+.github/
+.vscode/
+http/
+todo.txt
