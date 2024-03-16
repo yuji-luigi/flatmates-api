@@ -7,6 +7,6 @@ combined.log
 .history
 dist/
 demo.js
-pnpm-lock.yaml
-yarn.lock
+# pnpm-lock.yaml
+# yarn.lock
 **/assets/dev/invoice.pdf
