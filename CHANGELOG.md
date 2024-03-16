@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.6](https://github.com/yuji-luigi/flatmates-api/compare/flatmates-api-v1.1.5...flatmates-api-v1.1.6) (2024-03-16)
+
+
+### Bug Fixes
+
+* fix:  ([ddd78d1](https://github.com/yuji-luigi/flatmates-api/commit/ddd78d14dc48cf86b445f2f4a82a2a2def8ad9cb))
+
 ## [1.1.5](https://github.com/yuji-luigi/flatmates-api/compare/flatmates-api-v1.1.4...flatmates-api-v1.1.5) (2024-03-16)
 
 
