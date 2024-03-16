@@ -1,6 +1,6 @@
 {
 	"name": "flatmates-api",
-	"version": "1.1.3",
+	"version": "1.1.4",
 	"description": "generic api per iniziare un progetto",
 	"main": "src/server.js",
 	"scripts": {
