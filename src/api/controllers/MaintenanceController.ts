@@ -58,10 +58,7 @@ const createMaintenance = async (req: RequestCustom, res: Response) => {
     const maintenance = new Maintenance(reqBody);
     const authToken = new AuthToken({
       space: maintenance.space,
-      docHolder: {
-        ref: 'maintenances',
-        instanceId: maintenance._id
-      }
+      user: ''
     });
     const images = await Upload.find({ _id: { $in: maintenance.images } });
     maintenance.images = images;

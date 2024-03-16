@@ -78,11 +78,6 @@ export const maintenanceSchema = new Schema<IMaintenanceDoc, MaintenanceModel, I
       autopopulate: true,
       immutable: true
     },
-    organization: {
-      type: Schema.Types.ObjectId,
-      ref: 'organizations',
-      required: true
-    },
 
     space: {
       type: Schema.Types.ObjectId,
