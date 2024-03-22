@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.1.11](https://github.com/yuji-luigi/flatmates-api/compare/flatmates-api-v1.1.10...flatmates-api-v1.1.11) (2024-03-22)
+
+
+### Bug Fixes
+
+* Add console.log to check if user is a system admin ([5b0e4c5](https://github.com/yuji-luigi/flatmates-api/commit/5b0e4c5900ac7029654dc2a992c4ab6fd6e65db2))
+* idle fix authToken model and creation of maintenances ([0ffdb13](https://github.com/yuji-luigi/flatmates-api/commit/0ffdb1314078977b6f0e1c423fec6dd9f0f425d2))
+* packages ([740db95](https://github.com/yuji-luigi/flatmates-api/commit/740db951ff7a656e306307e1bf290759d6cae52b))
+* Update access permission names and refactor auth middleware ([b749052](https://github.com/yuji-luigi/flatmates-api/commit/b74905264e6bb48db62fcb12daa76c5e78dc5ba9))
+
 ## [1.1.10](https://github.com/yuji-luigi/flatmates-api/compare/flatmates-api-v1.1.9...flatmates-api-v1.1.10) (2024-03-16)
 
 
