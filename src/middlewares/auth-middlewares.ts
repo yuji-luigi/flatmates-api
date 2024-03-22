@@ -46,5 +46,6 @@ export function checkAdminOfSpace({ space, currentUser }: { space: ISpace | Curr
   const isSystemAdmin = accessPermissions.some((actrl) => {
     return actrl.space.toString() === space._id.toString() && actrl.role.toString() === systemAdminRoleId;
   });
+  console.log(isSystemAdmin);
   return isSystemAdmin;
 }
