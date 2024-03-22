@@ -22,7 +22,7 @@ import { accessPermissionsCache } from '../../lib/mongoose/mongoose-cache/access
 import { correctQueryForEntity } from '../helpers/mongoose.helper';
 import { RegisterData } from '../../types/auth/formdata';
 import { AccessPermissionCache } from '../../types/mongoose-types/model-types/access-permission-interface';
-import { checkAdminOfSpace } from '../../middlewares/auth-middlewares';
+import { isAdminOfSpace } from '../../middlewares/auth-middlewares';
 import UserRegistry from '../../models/UserRegistry';
 // import { CurrentSpace } from '../../types/mongoose-types/model-types/space-interface';
 
@@ -224,7 +224,7 @@ const me = async (req: RequestCustom, res: Response) => {
       cover: user.cover?.url,
       isSuperAdmin: user.isSuperAdmin,
       loggedAs: req.user.loggedAs.name,
-      isSystemAdmin: checkAdminOfSpace({
+      isSystemAdmin: isAdminOfSpace({
         space: req.user.currentSpace,
         currentUser: req.user
       }),

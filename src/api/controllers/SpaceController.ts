@@ -13,7 +13,7 @@ import { _MSG } from '../../utils/messages';
 import { ObjectId } from 'mongodb';
 import { LOOKUP_PIPELINE_STAGES } from '../aggregation-helpers/lookups';
 import { JWTPayload, signJwt } from '../../lib/jwt/jwtUtils';
-import { checkAdminOfSpace } from '../../middlewares/auth-middlewares';
+import { isAdminOfSpace } from '../../middlewares/auth-middlewares';
 import { Maintainer } from '../../models/util-models/Maintainer';
 const entity = 'spaces';
 
@@ -200,7 +200,7 @@ export const sendSpaceSettingPageDataToClient = async (req: RequestCustom, res: 
     const maintainers = await Maintainer.find({
       matchStage: { spaces: { $in: [data._id] } }
     });
-    const isSpaceAdmin = checkAdminOfSpace({ space: data, currentUser: req.user });
+    const isSpaceAdmin = isAdminOfSpace({ space: data, currentUser: req.user });
     // await setUrlToSpaceImages(data);
     for (const maintainer of maintainers) {
       await maintainer.avatar?.setUrl();
@@ -442,7 +442,7 @@ export async function sendMainSpacesSlug(req: RequestCustom, res: Response) {
 export async function updateSpaceAndSendToClient(req: RequestCustom, res: Response) {
   try {
     const space = await Space.findById(req.params.idMongoose);
-    if (checkAdminOfSpace({ space, currentUser: req.user })) {
+    if (!isAdminOfSpace({ space, currentUser: req.user })) {
       throw new Error(_MSG.NOT_AUTHORIZED);
     }
 
@@ -457,7 +457,7 @@ export async function updateSpaceAndSendToClient(req: RequestCustom, res: Respon
       totalDocuments: 1
     });
   } catch (error) {
-    logger.error(error.message || error);
+    logger.error(error.stack || error);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
       success: false,
       collection: entity,
@@ -469,7 +469,7 @@ export async function updateSpaceAndSendToClient(req: RequestCustom, res: Respon
 export async function sendIsAdminToClient(req: RequestCustom, res: Response) {
   try {
     const space = await Space.findById(req.params.idMongoose);
-    const isAdmin = checkAdminOfSpace({ space, currentUser: req.user });
+    const isAdmin = isAdminOfSpace({ space, currentUser: req.user });
     res.status(httpStatus.OK).json({
       success: true,
       data: isAdmin

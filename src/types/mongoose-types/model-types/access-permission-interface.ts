@@ -6,12 +6,12 @@ import { RoleFields, RoleInterface } from './role-interface';
 import { Model } from 'mongoose';
 
 export const permissions = [
-  'canCreatePost',
-  'canCreateMaintenance',
-  'canNotifyMaintainer',
-  'canDeletePost',
-  'canDeleteMaintenance',
-  'canDeleteComment',
+  'canCreatePosts',
+  'canCreateMaintenances',
+  'canNotifyMaintainers',
+  'canDeletePosts',
+  'canDeleteMaintenances',
+  'canDeleteComments',
   // new: these should create view for admin dashboard.
   'canCreateUsers',
   'canDeleteUsers',

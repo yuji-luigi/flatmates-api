@@ -53,11 +53,11 @@ export const createUserAndSendDataWithPagination = async (req: RequestCustom, re
     }
     const newUser = new User(req.body);
 
-    await newUser.save();
     for (const accessPermission of accessPermissions) {
       const newAccessController = new AccessController({ ...accessPermission, user: newUser._id });
       await newAccessController.save();
     }
+    await newUser.save();
     // case accessPermission is sent from the client, create and attach the user
 
     // modify query for user model.
@@ -75,7 +75,7 @@ export const createUserAndSendDataWithPagination = async (req: RequestCustom, re
       totalDocuments: data[0].counts[0]?.total || 0
     });
   } catch (err) {
-    logger.error(err.message || err);
+    logger.error(err.stack || err);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: err.message || err });
   }
 };

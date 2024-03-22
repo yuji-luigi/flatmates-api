@@ -3,7 +3,7 @@ import { Request } from 'express';
 import vars from '../../utils/globalVariables';
 import User from '../../models/User';
 import Space from '../../models/Space';
-import { checkAdminOfSpace } from '../../middlewares/auth-middlewares';
+import { isAdminOfSpace } from '../../middlewares/auth-middlewares';
 import { reqUserBuilder } from './reqUserBuilder';
 import { CurrentSpace, JwtSignPayload, JwtSignPayloadWithAccessCtrlAndSpaceDetail, ReqUser } from './jwtTypings';
 import { accessPermissionsCache } from '../mongoose/mongoose-cache/access-permission-cache';
@@ -98,7 +98,7 @@ const resolveUserJwt = async (resolvedJwt: JwtSignPayload | JwtSignPayloadWithAc
       currentSpace._id = space._id;
       // from selectedSpace extract admins Array then check the requiesting user is in the array.
       // if yes then set the user is admin of the space
-      leanUser.isAdminOfCurrentSpace = checkAdminOfSpace({ space, currentUser: leanUser });
+      leanUser.isAdminOfCurrentSpace = isAdminOfSpace({ space, currentUser: leanUser });
     }
 
     const currentAccessController =

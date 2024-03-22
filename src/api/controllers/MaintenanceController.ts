@@ -14,11 +14,11 @@ import { sensitiveCookieOptions } from '../../utils/globalVariables';
 import { _MSG } from '../../utils/messages';
 import { aggregateWithPagination } from '../helpers/mongoose.helper';
 import AuthToken from '../../models/AuthToken';
-import { sign } from 'jsonwebtoken';
 import { getIdString } from '../../utils/type-guard/mongoose/stringOrMongooseObject';
 import { Maintainer } from '../../models/util-models/Maintainer';
 import { JWTPayload, handleSetCookiesFromPayload } from '../../lib/jwt/jwtUtils';
 import Check from '../../models/Check';
+import { Administrator } from '../../models/util-models/Administrator';
 /**
  * POST CONTROLLERS
  */
@@ -62,29 +62,24 @@ const createMaintenance = async (req: RequestCustom, res: Response) => {
 
     const maintenance = new Maintenance(reqBody);
     const authToken = new AuthToken({
-      // space: maintenance.space,
       user: maintenance.maintainer,
       refEntity: 'maintenances',
       refId: maintenance._id
-      // jwt: sign({ maintainer: maintenance.maintainer }, vars.jwtSecret )
     });
-    const images = await Upload.find({ _id: { $in: maintenance.images } });
-    maintenance.images = images;
-
-    //!todo send email to the maintainers of the space of type of maintenance
-    //!todo log the email
     await maintenance.save();
     await authToken.save();
+
+    // TODO: first send to administrator of the space. then administrator send the notification to maintainer.
+    const admins = await Administrator.find({
+      matchStage: {
+        accessPermissions: { $elemMatch: { 'space._id': req.query.space } }
+      }
+    });
     const mailOptions = await createOptionsForMaintenance({ maintenance, authToken });
     if (mailOptions) {
       await sendEmail(mailOptions);
     }
     const maintenances = await Maintenance.find(req.query).sort({ createdAt: -1 });
-    // for (const maintenance of maintenances) {
-    //   for (const image of maintenance.images) {
-    //     await image.setUrl();
-    //   }
-    // }
 
     res.status(httpStatus.CREATED).json({
       success: true,
@@ -300,7 +295,6 @@ export async function authUserMaintenanceFiles(req: Request, res: Response) {
     const spaceId = getIdString(maintenance.space);
     const maintainer = await Maintainer.findById(maintenance.maintainer);
     const payload = new JWTPayload({ email: maintainer.email, loggedAs: 'Maintainer', spaceId: spaceId });
-    console.log(sensitiveCookieOptions);
     handleSetCookiesFromPayload(res, payload);
 
     const checks = await Check.find({ maintenance: maintenance.space._id }).populate('organization');

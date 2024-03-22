@@ -33,7 +33,7 @@ export const ADMIN = 'admin';
 export const LOGGED_USER = 'user';
 export const SUPER_ADMIN = 'super_admin';
 
-export function checkAdminOfSpace({ space, currentUser }: { space: ISpace | CurrentSpace; currentUser: ReqUser }) {
+export function isAdminOfSpace({ space, currentUser }: { space: ISpace | CurrentSpace; currentUser: ReqUser }) {
   if (currentUser.isSuperAdmin) {
     return true;
   }
@@ -46,6 +46,5 @@ export function checkAdminOfSpace({ space, currentUser }: { space: ISpace | Curr
   const isSystemAdmin = accessPermissions.some((actrl) => {
     return actrl.space.toString() === space._id.toString() && actrl.role.toString() === systemAdminRoleId;
   });
-  console.log(isSystemAdmin);
   return isSystemAdmin;
 }
