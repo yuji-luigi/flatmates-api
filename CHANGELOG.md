@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.12](https://github.com/yuji-luigi/flatmates-api/compare/flatmates-api-v1.1.11...flatmates-api-v1.1.12) (2024-03-23)
+
+
+### Bug Fixes
+
+* **role name:** toLowerCase and snake case system_admin Update role names to lowercase ([5bb1117](https://github.com/yuji-luigi/flatmates-api/commit/5bb1117621a14137bb39ca769b580d532b6374f2))
+
 ## [1.1.11](https://github.com/yuji-luigi/flatmates-api/compare/flatmates-api-v1.1.10...flatmates-api-v1.1.11) (2024-03-22)
 
 
