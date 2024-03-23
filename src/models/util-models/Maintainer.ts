@@ -14,7 +14,7 @@ export class Maintainer {
       ...maintainerPipeline,
       {
         $match: {
-          'userRole.name': 'Maintainer',
+          'userRole.name': 'maintainer',
           _id: id,
           ...matchStage
         }
@@ -57,7 +57,7 @@ export class Maintainer {
       ...maintainerPipeline,
       {
         $match: {
-          'userRole.name': 'Maintainer',
+          'userRole.name': 'maintainer',
           ...matchStage
         }
       },
@@ -100,7 +100,7 @@ export class Maintainer {
 
       {
         $match: {
-          'userRole.name': 'Maintainer',
+          'userRole.name': 'maintainer',
           ...matchStage
         }
       },

@@ -14,12 +14,12 @@ export const initCacheRole = async () => {
 
 export class RoleCache {
   static get maintainer() {
-    return roleCache.get('Maintainer');
+    return roleCache.get('maintainer');
   }
   static get administrator() {
-    return roleCache.get('Administrator');
+    return roleCache.get('administrator');
   }
   static get inhabitant() {
-    return roleCache.get('Inhabitant');
+    return roleCache.get('inhabitant');
   }
 }

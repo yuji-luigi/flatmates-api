@@ -2,16 +2,16 @@ import Role from '../../../models/Role';
 
 const roles = [
   // {
-  //   name: 'Inhabitant'
+  //   name: 'inhabitant'
   // },
   // {
-  //   name: 'Maintainer'
+  //   name: 'maintainer'
   // },
   // {
-  //   name: 'Administrator'
+  //   name: 'administrator'
   // },
   {
-    name: 'System Admin'
+    name: 'system_admin'
   }
 ];
 export async function initSeed() {

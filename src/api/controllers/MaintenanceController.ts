@@ -294,7 +294,7 @@ export async function authUserMaintenanceFiles(req: Request, res: Response) {
     // todo!!
     const spaceId = getIdString(maintenance.space);
     const maintainer = await Maintainer.findById(maintenance.maintainer);
-    const payload = new JWTPayload({ email: maintainer.email, loggedAs: 'Maintainer', spaceId: spaceId });
+    const payload = new JWTPayload({ email: maintainer.email, loggedAs: 'maintainer', spaceId: spaceId });
     handleSetCookiesFromPayload(res, payload);
 
     const checks = await Check.find({ maintenance: maintenance.space._id }).populate('organization');

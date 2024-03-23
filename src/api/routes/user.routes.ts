@@ -20,7 +20,7 @@ const router = express.Router();
 
 router.use((req: RequestCustom, response: Response, next: NextFunction) => {
   try {
-    if (!req.user.isSuperAdmin && req.user.loggedAs.name === 'Inhabitant') {
+    if (!req.user.isSuperAdmin && req.user.loggedAs.name === 'inhabitant') {
       if (!req.user.currentSpace._id) {
         throw new Error('User must select a space first.');
       }

@@ -1,5 +1,5 @@
 ### SUPER ADMIN 
-POST {{host}}/api/v1/auth/login/Inhabitant HTTP/1.1
+POST {{host}}/api/v1/auth/login/inhabitant HTTP/1.1
 content-type: application/json
 
 {
@@ -7,7 +7,7 @@ content-type: application/json
   "password": "{{password}}"
 }
 ### INHABITANT CONTARDO
-POST {{host}}/api/v1/auth/login/Inhabitant HTTP/1.1
+POST {{host}}/api/v1/auth/login/inhabitant HTTP/1.1
 content-type: application/json
 
 {
@@ -15,7 +15,7 @@ content-type: application/json
   "password": "{{inhabitantPassword}}"
 }
 ### INHABITANT GIORNO SYSTEM ADMIN
-POST {{host}}/api/v1/auth/login/Inhabitant HTTP/1.1
+POST {{host}}/api/v1/auth/login/inhabitant HTTP/1.1
 content-type: application/json
 
 {

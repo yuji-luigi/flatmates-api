@@ -90,7 +90,7 @@ export const verifyPinAndSendUserToClient = async (req: RequestCustom, res: Resp
     // const space = await Space.findById(authToken.space._id).lean().populate({ path: 'cover', select: 'url' });
     const jwtObj: JwtSignPayload = {
       email: '',
-      loggedAs: 'Inhabitant'
+      loggedAs: 'inhabitant'
     };
     const jwt = signJwt(jwtObj);
 

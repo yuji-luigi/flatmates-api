@@ -115,7 +115,7 @@ const resolveUserJwt = async (resolvedJwt: JwtSignPayload | JwtSignPayloadWithAc
     // You can attach space and organization to the user object if you like
     return done(null, reqUser);
   } catch (error) {
-    logger.error(error.message || error);
+    logger.error(error.stack || error);
     return done(error, null); // todo: find out why user parameter is undefined in handleUserFromRequest function after this
   }
 };

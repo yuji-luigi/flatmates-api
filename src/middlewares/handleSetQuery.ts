@@ -13,7 +13,7 @@ export function queryHandler(req: RequestCustom, res: Response, next: NextFuncti
       req.query = { ...req.query, space: req.user.currentSpace._id };
     }
     // todo: set the query to req.query
-    if (!req.user.isSuperAdmin && !req.user.accessPermissions.length && req.user.loggedAs.name !== 'Maintainer') {
+    if (!req.user.isSuperAdmin && !req.user.accessPermissions.length && req.user.loggedAs.name !== 'maintainer') {
       throw new Error('User without accessPermission.');
     }
     if (req.user.isSuperAdmin && !req.user.accessPermissions.length) {

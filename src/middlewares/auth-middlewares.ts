@@ -42,7 +42,7 @@ export function isAdminOfSpace({ space, currentUser }: { space: ISpace | Current
     return false;
   }
   const accessPermissions = accessPermissionsCache.get(currentUser._id.toString());
-  const systemAdminRoleId = roleCache.get('System Admin')._id.toString();
+  const systemAdminRoleId = roleCache.get('system_admin')._id.toString();
   const isSystemAdmin = accessPermissions.some((actrl) => {
     return actrl.space.toString() === space._id.toString() && actrl.role.toString() === systemAdminRoleId;
   });

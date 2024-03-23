@@ -39,7 +39,7 @@ export function handleGenerateTokenByRoleAfterLogin(user: ReqUser): JwtSignPaylo
 //users
 export function generatePayloadUser(user: IUser) {
   const payload: JwtSignPayload = {
-    loggedAs: 'Inhabitant',
+    loggedAs: 'inhabitant',
     email: user.email
     // organizationId: user.organizations[0]?._id.toString()
   };

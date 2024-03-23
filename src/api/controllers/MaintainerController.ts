@@ -48,7 +48,7 @@ export const addMaintainerToSpace = async (req: RequestCustom, res: Response) =>
     await AccessPermission.create({
       user: foundMaintainer,
       space,
-      role: roleCache.get('Maintainer')._id
+      role: roleCache.get('maintainer')._id
     });
 
     res.status(httpStatus.CREATED).json({
@@ -181,7 +181,7 @@ export async function addSpacesToMaintainer(req: RequestCustom, res: Response) {
     const { spaces } = req.body;
 
     for (const space of spaces) {
-      await AccessPermission.create({ user: idMongoose, space, role: roleCache.get('Maintainer')._id }).catch((error) => {
+      await AccessPermission.create({ user: idMongoose, space, role: roleCache.get('maintainer')._id }).catch((error) => {
         logger.error(error.message || error);
       });
     }
@@ -215,7 +215,7 @@ export async function favoriteMaintainerToSpaceAndSendToClient(req: RequestCusto
       foundAP.disabled = false;
       await foundAP.save();
     } else {
-      await AccessPermission.create({ user: idMongoose, space, role: roleCache.get('Maintainer')._id }).catch((error) => {
+      await AccessPermission.create({ user: idMongoose, space, role: roleCache.get('maintainer')._id }).catch((error) => {
         logger.error(error.message || error);
       });
     }
@@ -286,7 +286,7 @@ export async function getFilteredMaintainerSpaces({ currentUser, maintainerId }:
     const userSpaces = accessPermissionsCache.get(currentUser._id.toString()).map((ap) => ap.space);
     const spaces = await AccessPermission.find({
       user: maintainerId,
-      role: roleCache.get('Maintainer')._id,
+      role: roleCache.get('maintainer')._id,
       space: { $in: userSpaces }
     });
     return spaces;
@@ -298,7 +298,7 @@ export async function getFilteredMaintainerSpaces({ currentUser, maintainerId }:
 
 export async function getMaintainerAssignedSpaces(maintainerId: string) {
   try {
-    const spaces = await AccessPermission.find({ user: maintainerId, role: roleCache.get('Maintainer')._id });
+    const spaces = await AccessPermission.find({ user: maintainerId, role: roleCache.get('maintainer')._id });
     return spaces;
   } catch (err) {
     logger.error(err.message || err);

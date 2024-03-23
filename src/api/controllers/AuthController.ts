@@ -50,7 +50,7 @@ const { cookieDomain } = vars;
 
 const register = async (req: Request, res: Response) => {
   try {
-    const { email, password, password2, name, surname, space, role = 'Inhabitant', isPublic = false } = req.body as RegisterData;
+    const { email, password, password2, name, surname, space, role = 'inhabitant', isPublic = false } = req.body as RegisterData;
 
     if (password !== password2) {
       throw new Error('Password non corrispondenti');
@@ -65,9 +65,9 @@ const register = async (req: Request, res: Response) => {
 
     const accessToken = newUser.token();
 
-    const newRootSpace = role !== 'Maintainer' && (await createNewSpaceAtRegister({ space, user: newUser }));
+    const newRootSpace = role !== 'maintainer' && (await createNewSpaceAtRegister({ space, user: newUser }));
 
-    if (role !== 'Maintainer') {
+    if (role !== 'maintainer') {
       // create accessPermission for the user and space as system admin
       await AccessController.create({
         role: roleCache.get(role)._id,
@@ -78,7 +78,7 @@ const register = async (req: Request, res: Response) => {
       await AccessController.create({
         space: newRootSpace._id,
         user: newUser._id,
-        role: roleCache.get('System Admin')._id
+        role: roleCache.get('system_admin')._id
       });
     }
     await newUser.save();
@@ -145,7 +145,10 @@ const loginByRole = async (req: Request<{ role: RoleFields }>, res: Response) =>
     });
 
     accessPermissionsCache.set(user._id.toString(), accessPermissions);
-    const userRegistry = await UserRegistry.findOne({ user: user._id, role: roleCache.get(role)._id });
+    const userRegistry = await UserRegistry.findOne({
+      user: user._id,
+      role: roleCache.get(role)._id
+    });
     if (!user.isSuperAdmin && !userRegistry) {
       return res.status(httpStatus.UNAUTHORIZED).json({
         message: 'User not registered as ' + role
@@ -159,14 +162,13 @@ const loginByRole = async (req: Request<{ role: RoleFields }>, res: Response) =>
     // res.cookie('jwt', token, sensitiveCookieOptions);
     // res.cookie('loggedAs', role, { ...sensitiveCookieOptions, httpOnly: false, sameSite: false }); // js in browser needs this
 
-    res.status(httpStatus.OK).json({
+    return res.status(httpStatus.OK).json({
       success: true,
       data: {
         message: `login succeeded as ${user.name} ${user.surname} as ${role}`,
         accessLength: accessPermissions.length
       }
     });
-    return;
   } catch (error) {
     logger.error(error.message || error);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ ...error, message: error.message || error });
