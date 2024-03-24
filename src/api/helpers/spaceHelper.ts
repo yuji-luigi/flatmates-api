@@ -5,6 +5,7 @@ import { _MSG } from '../../utils/messages';
 import { CurrentSpace, ISpace } from '../../types/mongoose-types/model-types/space-interface';
 import { ReqUser } from '../../lib/jwt/jwtTypings';
 import { accessPermissionsCache } from '../../lib/mongoose/mongoose-cache/access-permission-cache';
+import { RoleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
 
 /**  searches only root spaces of user */
 export function userHasSpace(user: ReqUser, currentSpaceId: string | ObjectId): boolean {
@@ -71,7 +72,7 @@ export async function userHasSpaceBFS(user: ReqUser, selectedSpace: ISpace): Pro
   return false;
 }
 
-export async function aggregateDescendantIds(spaceId: string, user: ReqUser): Promise<string[]> {
+export async function aggregateDescendantIds(spaceId: string | ObjectId, user: ReqUser): Promise<string[]> {
   try {
     const space = await Space.findById(spaceId);
     if (!user.isSuperAdmin && !(await userHasSpaceBFS(user, space))) {
@@ -168,6 +169,24 @@ export function formatCurrentSpaceToJSON(space: ISpace): string {
     slug: space.slug
   };
   return JSON.stringify(currentSpace);
+}
+
+// TODO: TEST THIS FUNCTION AND CREATE TEST
+export async function updateSpaceHasPropertyManagerRecursively(spaceId: ObjectId) {
+  const superAdminObject: ReqUser = {
+    isSuperAdmin: true,
+    _id: new ObjectId(),
+    name: '',
+    password: '',
+    slug: '',
+    role: new ObjectId(),
+    adminOf: [],
+    active: false,
+    cover: undefined,
+    loggedAs: RoleCache.property_manager
+  };
+  const descendants = await aggregateDescendantIds(spaceId, superAdminObject);
+  await Space.updateMany({ _id: { $in: descendants.map((d) => new ObjectId(d)) } }, { hasPropertyManager: true });
 }
 
 // export async function buildHierarchy({ spaces, space }: { spaces: ISpace[]; rootSpaceId: string }) {

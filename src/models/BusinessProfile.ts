@@ -66,7 +66,7 @@ export const BusinessProfileSchema = new Schema<BusinessProfileInterface>(
     },
     _role: {
       type: String,
-      enum: ['maintainer', 'administrator'],
+      enum: ['maintainer', 'property_manager'],
       required: true
     },
     user: {

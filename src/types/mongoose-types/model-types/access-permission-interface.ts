@@ -1,8 +1,6 @@
 import { ObjectId } from 'bson';
 import { MongooseBaseModel } from './base-types/base-model-interface';
-import { ISpace } from './space-interface';
-import { IUser } from './user-interface';
-import { RoleFields, RoleInterface } from './role-interface';
+import { RoleFields } from './role-interface';
 import { Model } from 'mongoose';
 
 export const permissions = [
@@ -39,15 +37,15 @@ export type ACtrlDtoDashboard = {
 };
 
 export interface AccessPermissionBase extends MongooseBaseModel {
-  user: ObjectId | IUser;
-  space: ObjectId | ISpace;
+  user: ObjectId;
+  space: ObjectId;
   disabled: boolean;
-  role: ObjectId | RoleInterface;
+  role: ObjectId;
   permissions: PermissionInterface[];
 }
 export interface AccessPermissionCache extends MongooseBaseModel {
-  user: ObjectId | IUser;
-  space: ObjectId | ISpace;
+  user: ObjectId;
+  space: ObjectId;
   role: ObjectId;
   permissions: PermissionInterface[];
 }

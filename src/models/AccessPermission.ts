@@ -4,14 +4,17 @@ import {
   AccessPermissionInterface,
   AccessControllerModel,
   PermissionInterface,
-  permissions,
-  AccessPermissionCache
+  permissions
 } from '../types/mongoose-types/model-types/access-permission-interface';
 import { accessPermissionsCache } from '../lib/mongoose/mongoose-cache/access-permission-cache';
 import UserRegistry from './UserRegistry';
 import User from './User';
 import { ErrorCustom } from '../lib/ErrorCustom';
 import httpStatus from 'http-status';
+import { RoleCache } from '../lib/mongoose/mongoose-cache/role-cache';
+import { updateSpaceHasPropertyManagerRecursively } from '../api/helpers/spaceHelper';
+const { property_manager } = RoleCache;
+
 const { Schema } = mongoose;
 
 const permissionSchema = new Schema<PermissionInterface>({
@@ -98,7 +101,8 @@ accessPermissionSchema.pre('save', async function (next) {
   await UserRegistry.create({ user: this.user, role: this.role });
   return next();
 });
-accessPermissionSchema.post('save', async function (doc: AccessPermissionCache) {
+
+accessPermissionSchema.post('save', async function (doc: AccessPermissionInterface) {
   const userId = doc.user instanceof User ? doc.user._id.toString() : doc.user.toString();
   const cached = accessPermissionsCache.get(userId);
   if (cached) {
@@ -106,7 +110,13 @@ accessPermissionSchema.post('save', async function (doc: AccessPermissionCache) 
     accessPermissionsCache.set(userId, cached);
     return;
   }
-  const permissions = await AccessPermission.find<AccessPermissionCache>({ user: userId });
+  const permissions = await AccessPermission.find({ user: userId });
+  if (this.role.toString() === property_manager._id.toString()) {
+    const foundPropM = await AccessPermission.findOne({ space: this.space, role: property_manager._id });
+    if (foundPropM) {
+      updateSpaceHasPropertyManagerRecursively(this.space);
+    }
+  }
   accessPermissionsCache.set(userId, permissions);
 });
 

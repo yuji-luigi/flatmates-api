@@ -8,7 +8,7 @@ const roles = [
   //   name: 'maintainer'
   // },
   // {
-  //   name: 'administrator'
+  //   name: 'property_manager'
   // },
   {
     name: 'system_admin'

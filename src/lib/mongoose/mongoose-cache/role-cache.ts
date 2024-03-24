@@ -16,8 +16,8 @@ export class RoleCache {
   static get maintainer() {
     return roleCache.get('maintainer');
   }
-  static get administrator() {
-    return roleCache.get('administrator');
+  static get property_manager() {
+    return roleCache.get('property_manager');
   }
   static get inhabitant() {
     return roleCache.get('inhabitant');

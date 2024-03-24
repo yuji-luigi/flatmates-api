@@ -8,7 +8,7 @@ import autoPopulate from 'mongoose-autopopulate';
 // import urlSlug from 'mongoose-slug-generator';
 import { generateWord, replaceSpecialCharsWith } from '../utils/functions';
 import { ISpace, ISpaceMethods, spaceTypes } from '../types/mongoose-types/model-types/space-interface';
-import { createSlug, ICollectionAware } from '../api/helpers/mongoose.helper';
+import { ICollectionAware } from '../api/helpers/mongoose.helper';
 
 // const { jwtSecret } = vars;
 
@@ -56,7 +56,10 @@ export const spacesSchema = new Schema<ISpace, SpaceModel, ISpaceMethods>(
       type: Boolean,
       default: false
     },
-
+    hasPropertyManager: {
+      type: Boolean,
+      default: false
+    },
     slug: {
       type: String,
       unique: true
@@ -157,6 +160,8 @@ spacesSchema.pre('save', async function (this: ISpace & ICollectionAware, next) 
     // If the slug is not unique, append a unique suffix
     if (this.parentId) {
       const parent = await Space.findById(this.parentId);
+      //TODO: NEED TO LISTEN TO THE PARENT AND ACCESS PERMISSIONS MODEL.
+      this.hasPropertyManager = parent.hasPropertyManager;
       if (parent.isTail) {
         parent.isTail = false;
         await parent.save();

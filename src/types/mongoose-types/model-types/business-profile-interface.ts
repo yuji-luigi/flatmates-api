@@ -16,6 +16,6 @@ export interface BusinessProfileInterface {
   street1?: string;
   street2?: string;
   zipCode?: string;
-  _role: 'maintainer' | 'administrator';
+  _role: 'maintainer' | 'property_manager';
   user: ObjectId; // todo: can be a string??
 }

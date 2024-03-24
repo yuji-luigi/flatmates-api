@@ -1,6 +1,5 @@
 import { ObjectId } from 'bson';
 import { MongooseBaseModel } from './base-types/base-model-interface';
-import { IOrganization } from './organization-interface';
 import { IUpload } from './upload-interface';
 
 export const spaceTypes = ['country', 'street', 'building', 'area', 'house', 'room', 'floor'] as const;
@@ -36,6 +35,7 @@ export interface ISpace extends MongooseBaseModel {
   /** reference id to query. users can't see other organizations data.(space fund users... etc) */
   /** decides if everyone in the world can see or only under the organization. */
   isPublic: boolean;
+  hasPropertyManager: boolean;
   slug: string;
   // maintainers: MaintainerInterface[];
   // user?: IUser;

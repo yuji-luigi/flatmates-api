@@ -10,6 +10,11 @@ export const roleSchema = new Schema<RoleInterface>(
       type: String,
       required: true,
       unique: true
+    },
+    label: {
+      type: String
+      // required: true,
+      // unique: true
     }
   },
   {

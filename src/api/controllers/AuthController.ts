@@ -139,7 +139,6 @@ const loginByRole = async (req: Request<{ role: RoleFields }>, res: Response) =>
     if (!(await user.passwordMatches(password))) {
       throw new Error('Password non corrispondenti');
     }
-
     const accessPermissions: AccessPermissionCache[] = await AccessController.find({
       user: user._id
     });

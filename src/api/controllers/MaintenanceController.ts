@@ -69,7 +69,7 @@ const createMaintenance = async (req: RequestCustom, res: Response) => {
     await maintenance.save();
     await authToken.save();
 
-    // TODO: first send to administrator of the space. then administrator send the notification to maintainer.
+    // TODO: first send to property_manager of the space. then property_manager send the notification to maintainer.
     const admins = await Administrator.find({
       matchStage: {
         accessPermissions: { $elemMatch: { 'space._id': req.query.space } }
