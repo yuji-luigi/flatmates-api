@@ -60,12 +60,6 @@ export function handleSetCookiesFromSpace(res: Response, space: ISpace) {
   res.cookie('spaceImage', space.cover?.url);
 }
 
-// function hasSpaceDetails(payload: JwtSignPayloadWithAccessCtrlAndSpaceDetail): payload is SpaceDetails & JwtSignPayloadWithAccessCtrlAndSpaceDetail {
-//   if ('spaceId' in payload) {
-//     return payload.spaceId !== undefined;
-//   }
-// }
-
 export function resetSpaceCookies(res: Response) {
   res.clearCookie('spaceId', { domain: vars.cookieDomain });
   res.clearCookie('spaceName', { domain: vars.cookieDomain });

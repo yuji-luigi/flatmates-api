@@ -2,11 +2,7 @@ import Maintenance from '../../models/Maintenance';
 import httpStatus from 'http-status';
 import logger from '../../lib/logger';
 import { Response } from 'express';
-import { deleteEmptyFields } from '../../utils/functions';
-import Upload from '../../models/Upload';
 import { RequestCustom } from '../../types/custom-express/express-custom';
-import { sendEmail } from '../helpers/nodemailerHelper';
-import { createOptionsForMaintenance } from '../helpers/maintenanceHelper';
 import Thread from '../../models/Thread';
 
 export async function sendNotificationsToClient(req: RequestCustom, res: Response) {

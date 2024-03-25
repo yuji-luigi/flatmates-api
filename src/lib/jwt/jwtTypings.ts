@@ -25,12 +25,12 @@ export type ReqUser = UserBase & {
 //   organizationId?: string;
 // };
 export type SpaceDataInCookieFull = {
-  spaceName: string;
   spaceId: string;
-  spaceSlug: string;
-  spaceAddress: string;
-  organizationId: string;
-  spaceImage?: string;
+  // spaceName: string;
+  // spaceSlug: string;
+  // spaceAddress: string;
+  // organizationId: string;
+  // spaceImage?: string;
 };
 
 export type JwtSignPayloadWithAccessCtrlAndSpaceDetail =
