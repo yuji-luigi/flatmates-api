@@ -1,5 +1,5 @@
 import { UserByRole } from './UserByRole';
 
-export class Administrator extends UserByRole {
+export class PropertyManager extends UserByRole {
   protected static roleName = 'property_manager' as const;
 }

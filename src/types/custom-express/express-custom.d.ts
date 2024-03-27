@@ -1,6 +1,7 @@
 import { Request } from 'express';
 import { UploadedFile } from 'express-fileupload';
 import { ReqUser } from '../../lib/jwt/jwtTypings';
+import { Entities } from '../mongoose-types/model-types/Entities';
 
 interface TypedRequestBody<T, U> extends Request {
   params: { [key: string]: string };
@@ -89,7 +90,7 @@ export interface QueryCustom {
 }
 
 export interface RequestCustom<
-  P = core.ParamsDictionary,
+  P = core.ParamsDictionary & { entity: Entities },
   ResBody = any,
   ReqBody = any,
   ReqQuery = QueryCustom,

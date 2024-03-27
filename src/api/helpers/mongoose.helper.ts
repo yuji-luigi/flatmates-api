@@ -186,13 +186,7 @@ export function getValidFields({ entity }: { entity: Entities }) {
 }
 
 // pure function...
-export function getValidFieldsAndConvertToBoolean({
-  entity,
-  query
-}: {
-  entity: Entities;
-  query: Record<string, string | boolean | number | ObjectId>;
-}) {
+export function getCorrectQuery({ entity, query }: { entity: Entities; query: Record<string, string | boolean | number | ObjectId> }) {
   const validFields = getValidFields({ entity });
   const clonedQuery = cloneDeep(query);
   for (const key in clonedQuery) {
@@ -286,7 +280,7 @@ export function getValidFieldsAndConvertToBooleanAndObjectId({
   query: Record<string, string | boolean | number | ObjectId>;
 }) {
   const validFields = getValidFields({ entity });
-  const clonedQuery = getValidFieldsAndConvertToBoolean({ entity, query });
+  const clonedQuery = getCorrectQuery({ entity, query });
   for (const key in clonedQuery) {
     if (!validFields.includes(key)) {
       delete clonedQuery[key];

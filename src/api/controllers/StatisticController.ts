@@ -4,14 +4,14 @@ import { sumUpChecksByMonth } from '../aggregation-helpers/checkPipelines';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { Response } from 'express';
 import { handleCreateStatistics } from '../helpers/customHelper';
-import { getValidFieldsAndConvertToBoolean } from '../helpers/mongoose.helper';
+import { getCorrectQuery } from '../helpers/mongoose.helper';
 
 export async function sendStatisticsByMonthToClient(req: RequestCustom, res: Response) {
   try {
     const { from, to } = req.query;
     const fromToQuery = formatFromToQuery({ from, to });
     req.query = { ...req.query, ...fromToQuery };
-    const query = getValidFieldsAndConvertToBoolean({ entity: 'checks', query: req.query });
+    const query = getCorrectQuery({ entity: 'checks', query: req.query });
     const checksByMonth = await sumUpChecksByMonth(query);
 
     res.status(httpStatus.OK).json({

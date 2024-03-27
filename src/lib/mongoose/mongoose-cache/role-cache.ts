@@ -22,4 +22,7 @@ export class RoleCache {
   static get inhabitant() {
     return roleCache.get('inhabitant');
   }
+  static get system_admin() {
+    return roleCache.get('system_admin');
+  }
 }

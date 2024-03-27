@@ -7,7 +7,7 @@ import { ObjectId } from 'mongodb';
 import { ISpace } from '../types/mongoose-types/model-types/space-interface';
 import { CurrentSpace, ReqUser } from '../lib/jwt/jwtTypings';
 import { accessPermissionsCache } from '../lib/mongoose/mongoose-cache/access-permission-cache';
-import { roleCache } from '../lib/mongoose/mongoose-cache/role-cache';
+import { RoleCache } from '../lib/mongoose/mongoose-cache/role-cache';
 
 export function clearQueriesForSAdmin(req: RequestCustom, res: Response, next: NextFunction) {
   if (req.user.isSuperAdmin) {
@@ -42,9 +42,15 @@ export function isAdminOfSpace({ space, currentUser }: { space: ISpace | Current
     return false;
   }
   const accessPermissions = accessPermissionsCache.get(currentUser._id.toString());
-  const systemAdminRoleId = roleCache.get('system_admin')._id.toString();
-  const isSystemAdmin = accessPermissions.some((actrl) => {
-    return actrl.space.toString() === space._id.toString() && actrl.role.toString() === systemAdminRoleId;
-  });
+  const isSystemAdmin = !!accessPermissions.find(
+    (actrl) => actrl.space.toString() === space._id.toString() && actrl.role.toString() === RoleCache.system_admin._id.toString()
+  );
+  // const isSystemAdmin = currentAccessPermission && currentAccessPermission.role.toString() === RoleCache.system_admin._id.toString();
+  console.log('isSystemAdmin', isSystemAdmin);
   return isSystemAdmin;
+  // const systemAdminRoleId = roleCache.get('system_admin')._id.toString();
+  // const isSystemAdmin = accessPermissions.some((actrl) => {
+  //   return actrl.space.toString() === space._id.toString() && actrl.role.toString() === systemAdminRoleId;
+  // });
+  // return isSystemAdmin;
 }

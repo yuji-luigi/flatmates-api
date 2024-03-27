@@ -18,7 +18,6 @@ import { getIdString } from '../../utils/type-guard/mongoose/stringOrMongooseObj
 import { Maintainer } from '../../models/util-models/Maintainer';
 import { JWTPayload, handleSetCookiesFromPayload } from '../../lib/jwt/jwtUtils';
 import Check from '../../models/Check';
-import { Administrator } from '../../models/util-models/Administrator';
 /**
  * POST CONTROLLERS
  */
@@ -57,7 +56,6 @@ const createMaintenance = async (req: RequestCustom, res: Response) => {
   try {
     const reqBody = deleteEmptyFields(req.body);
     reqBody.createdBy = req.user;
-    reqBody.organization = req.query.organization;
     reqBody.space = req.query.space;
 
     const maintenance = new Maintenance(reqBody);
@@ -66,16 +64,12 @@ const createMaintenance = async (req: RequestCustom, res: Response) => {
       refEntity: 'maintenances',
       refId: maintenance._id
     });
-    await maintenance.save();
-    await authToken.save();
+    // await maintenance.save();
+    // await authToken.save();
 
     // TODO: first send to property_manager of the space. then property_manager send the notification to maintainer.
-    const admins = await Administrator.find({
-      matchStage: {
-        accessPermissions: { $elemMatch: { 'space._id': req.query.space } }
-      }
-    });
-    const mailOptions = await createOptionsForMaintenance({ maintenance, authToken });
+
+    const mailOptions = await createOptionsForMaintenance({ maintenance, authToken, user: req.user });
     if (mailOptions) {
       await sendEmail(mailOptions);
     }

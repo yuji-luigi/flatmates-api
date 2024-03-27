@@ -8,6 +8,7 @@ import { cutQuery, deleteEmptyFields, getEntity, getEntityFromOriginalUrl, getSp
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { MongooseBaseModel } from '../../types/mongoose-types/model-types/base-types/base-model-interface';
 import { IUpload } from '../../types/mongoose-types/model-types/upload-interface';
+import { getCorrectQuery } from '../helpers/mongoose.helper';
 //= ===============================================================================
 // CRUD GENERIC CONTROLLER METHODS
 //= ===============================================================================
@@ -43,14 +44,13 @@ export const getPublicCrudObjects = async (req: Request, res: Response) => {
   }
 };
 
-export const sendCrudDocumentsToClient = async (req: Request, res: Response) => {
+export const sendCrudDocumentsToClient = async (req: RequestCustom, res: Response) => {
   try {
     const entity = req.params.entity || getSplittedPath(cutQuery(req.url))[2];
-    // req.params.entity = entity;
-
     const Model = mongoose.model(entity);
 
-    const data = await Model.find<MongooseBaseModel>(req.query)
+    const correctedQuery = getCorrectQuery({ entity, query: req.query });
+    const data = await Model.find<MongooseBaseModel>(correctedQuery)
       .sort({
         createdAt: -1
       })

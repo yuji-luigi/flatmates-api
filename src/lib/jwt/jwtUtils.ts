@@ -52,13 +52,13 @@ export function handleSetCookiesFromPayload(res: Response, payload: JWTPayload, 
 }
 /**
  * @description sign payload({spaceId, spaceImage...etc}) then res.cookie with type checking. set jwt and space + organization cookie*/
-export function handleSetCookiesFromSpace(res: Response, space: ISpace) {
-  res.cookie('spaceId', space._id, basicCookieOptions);
-  res.cookie('spaceName', space.name, basicCookieOptions);
-  res.cookie('spaceSlug', space.slug, basicCookieOptions);
-  res.cookie('spaceAddress', space.address, basicCookieOptions);
-  res.cookie('spaceImage', space.cover?.url);
-}
+// export function handleSetCookiesFromSpace(res: Response, space: ISpace) {
+//   res.cookie('spaceId', space._id, basicCookieOptions);
+//   res.cookie('spaceName', space.name, basicCookieOptions);
+//   res.cookie('spaceSlug', space.slug, basicCookieOptions);
+//   res.cookie('spaceAddress', space.address, basicCookieOptions);
+//   res.cookie('spaceImage', space.cover?.url);
+// }
 
 export function resetSpaceCookies(res: Response) {
   res.clearCookie('spaceId', { domain: vars.cookieDomain });
