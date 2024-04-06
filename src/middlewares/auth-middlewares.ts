@@ -37,7 +37,6 @@ export function isAdminOfSpace({ space, currentUser }: { space: ISpace | Current
   if (currentUser.isSuperAdmin) {
     return true;
   }
-  // case user not yet select the current space
   if (!space._id) {
     return false;
   }
@@ -45,12 +44,6 @@ export function isAdminOfSpace({ space, currentUser }: { space: ISpace | Current
   const isSystemAdmin = !!accessPermissions.find(
     (actrl) => actrl.space.toString() === space._id.toString() && actrl.role.toString() === RoleCache.system_admin._id.toString()
   );
-  // const isSystemAdmin = currentAccessPermission && currentAccessPermission.role.toString() === RoleCache.system_admin._id.toString();
-  console.log('isSystemAdmin', isSystemAdmin);
+
   return isSystemAdmin;
-  // const systemAdminRoleId = roleCache.get('system_admin')._id.toString();
-  // const isSystemAdmin = accessPermissions.some((actrl) => {
-  //   return actrl.space.toString() === space._id.toString() && actrl.role.toString() === systemAdminRoleId;
-  // });
-  // return isSystemAdmin;
 }
