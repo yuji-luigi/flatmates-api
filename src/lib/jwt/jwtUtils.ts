@@ -40,7 +40,7 @@ export class JWTPayload implements JwtSignPayload {
 
 /** @description sign payload as jwt then res.cookie with type checking. set jwt and space + organization cookie*/
 export function handleSetCookiesFromPayload(res: Response, payload: JWTPayload, space?: ISpace) {
-  res.cookie('jwt', signJwt({ ...payload }), { ...sensitiveCookieOptions, httpOnly: false, sameSite: false });
+  res.cookie('jwt', signJwt({ ...payload }), { ...sensitiveCookieOptions, httpOnly: true, sameSite: false });
   res.cookie('loggedAs', payload.loggedAs, basicCookieOptions);
   if (space) {
     res.cookie('spaceId', space._id.toString(), basicCookieOptions);
@@ -50,15 +50,6 @@ export function handleSetCookiesFromPayload(res: Response, payload: JWTPayload, 
     res.cookie('spaceImage', space.cover?.url, basicCookieOptions);
   }
 }
-/**
- * @description sign payload({spaceId, spaceImage...etc}) then res.cookie with type checking. set jwt and space + organization cookie*/
-// export function handleSetCookiesFromSpace(res: Response, space: ISpace) {
-//   res.cookie('spaceId', space._id, basicCookieOptions);
-//   res.cookie('spaceName', space.name, basicCookieOptions);
-//   res.cookie('spaceSlug', space.slug, basicCookieOptions);
-//   res.cookie('spaceAddress', space.address, basicCookieOptions);
-//   res.cookie('spaceImage', space.cover?.url);
-// }
 
 export function resetSpaceCookies(res: Response) {
   res.clearCookie('spaceId', { domain: vars.cookieDomain });

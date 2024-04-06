@@ -6,7 +6,7 @@ import { JwtSignPayload, ReqUser } from '../../lib/jwt/jwtTypings';
 
 // const { jwtSecret /* , jwtExpirationInterval  */ } = vars;
 
-export async function handleGenerateTokenByRoleAtLogin({
+export function handleGenerateTokenByRoleAtLogin({
   selectedRole,
   user
 }: {
@@ -20,7 +20,7 @@ export async function handleGenerateTokenByRoleAtLogin({
       'findAndGenerateToken'
     > &
     IUserStatics;
-}): Promise<JwtSignPayload> {
+}): JwtSignPayload {
   return {
     loggedAs: selectedRole,
     email: user.email

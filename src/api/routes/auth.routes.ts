@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 
 const router = express.Router();
 import authCtrl, {
+  checkSystemAdmin,
   sendMainOrganizationSelectionsToClient,
   sendRootSpaceSelectionsToClient,
   setSpaceAndOrgInJwt
@@ -33,6 +34,9 @@ router.use(handleUserFromRequest);
 router.get('/space-selections', isLoggedIn(), sendRootSpaceSelectionsToClient);
 router.put('/space-selections/:idMongoose', isLoggedIn(), setSpaceAndOrgInJwt);
 router.get('/organization-selections', isLoggedIn(), sendMainOrganizationSelectionsToClient);
+
+router.get('/system-admin/:idMongoose', isLoggedIn(), checkSystemAdmin);
+
 // set jwt and send space
 router.get('/space-selections/:idMongoose', isLoggedIn(), setSpaceAndOrgInJwt);
 router.delete('/space-selections', isLoggedIn(), deleteSpaceCookie);

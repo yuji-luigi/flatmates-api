@@ -17,13 +17,14 @@ import { resetSpaceCookies, handleSetCookiesFromPayload, JWTPayload } from '../.
 import { handleGenerateTokenByRoleAtLogin } from '../../utils/login-instance-utils/generateTokens';
 import { RoleFields } from '../../types/mongoose-types/model-types/role-interface';
 import AccessController from '../../models/AccessPermission';
-import { roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
+import { RoleCache, roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
 import { accessPermissionsCache } from '../../lib/mongoose/mongoose-cache/access-permission-cache';
 import { correctQueryForEntity } from '../helpers/mongoose.helper';
 import { RegisterData } from '../../types/auth/formdata';
 import { AccessPermissionCache } from '../../types/mongoose-types/model-types/access-permission-interface';
 import { isAdminOfSpace } from '../../middlewares/auth-middlewares';
 import UserRegistry from '../../models/UserRegistry';
+import { ErrorCustom } from '../../lib/ErrorCustom';
 // import { CurrentSpace } from '../../types/mongoose-types/model-types/space-interface';
 
 const { cookieDomain } = vars;
@@ -133,8 +134,7 @@ const loginByRole = async (req: Request<{ role: RoleFields }>, res: Response) =>
   try {
     const { email, password } = req.body;
     const { role } = req.params as { role: RoleFields };
-    // const { user, accessToken: token } = await User.findAndGenerateToken(req.body);
-    // const { user, maintainer } = await authLoginInstances({ email, password });
+
     const user = await User.findOne({ email });
     if (!(await user.passwordMatches(password))) {
       throw new Error('Password non corrispondenti');
@@ -153,13 +153,11 @@ const loginByRole = async (req: Request<{ role: RoleFields }>, res: Response) =>
         message: 'User not registered as ' + role
       });
     }
-    const payload = await handleGenerateTokenByRoleAtLogin({ selectedRole: role, user });
+    const payload = handleGenerateTokenByRoleAtLogin({ selectedRole: role, user });
     //clear all spaceCookies
     resetSpaceCookies(res);
 
     handleSetCookiesFromPayload(res, payload);
-    // res.cookie('jwt', token, sensitiveCookieOptions);
-    // res.cookie('loggedAs', role, { ...sensitiveCookieOptions, httpOnly: false, sameSite: false }); // js in browser needs this
 
     return res.status(httpStatus.OK).json({
       success: true,
@@ -288,6 +286,28 @@ export const sendMainOrganizationSelectionsToClient = async (req: RequestCustom,
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: _MSG.ERRORS.GENERIC
+    });
+  }
+};
+
+export const checkSystemAdmin = async (req: RequestCustom, res: Response) => {
+  try {
+    const { idMongoose } = req.params;
+    const foundSystemAdmin = req.user.accessPermissions.find(
+      (actrl) => actrl.space.toString() === idMongoose && actrl.role.toString() === roleCache.get('system_admin')._id.toString()
+    );
+    if (!foundSystemAdmin) {
+      throw new ErrorCustom('You are not system admin of this space', httpStatus.UNAUTHORIZED);
+    }
+
+    const payload = new JWTPayload({ email: req.user.email, loggedAs: RoleCache.system_admin.name, spaceId: idMongoose });
+    handleSetCookiesFromPayload(res, payload);
+    res.status(httpStatus.OK).json({ success: true, data: 'ok' });
+  } catch (error) {
+    logger.error(error.stack || error);
+    res.status(error.code || 500).json({
+      success: false,
+      message: error.message || error
     });
   }
 };
