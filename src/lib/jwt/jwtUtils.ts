@@ -2,10 +2,8 @@ import jwt from 'jsonwebtoken';
 import vars, { basicCookieOptions, sensitiveCookieOptions } from '../../utils/globalVariables';
 import { Response } from 'express';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
-import { JwtSignPayload } from './jwtTypings';
-import { RoleFields } from '../../types/mongoose-types/model-types/role-interface';
-import { ObjectId } from 'bson';
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
+import { JWTPayload } from './JwtPayload';
 const baseUrl = vars.frontendUrl + '/auth-tokens';
 
 export const generateTokenUrl = {
@@ -13,30 +11,6 @@ export const generateTokenUrl = {
 };
 
 export const signJwt = (payload: string | Record<string, any>) => jwt.sign(payload, vars.jwtSecret, { expiresIn: vars.jwtExpirationInterval });
-
-export class JWTPayload implements JwtSignPayload {
-  email: string;
-  loggedAs: RoleFields;
-  spaceId?: string;
-  accessControllerId?: string;
-
-  constructor({ email, loggedAs, spaceId }: { email: string; loggedAs: RoleFields; spaceId: string | ObjectId }) {
-    this.email = email;
-    this.loggedAs = loggedAs;
-    this.spaceId = spaceId.toString();
-  }
-
-  static simple({ email, loggedAs, spaceId }: { email: string; loggedAs: RoleFields; spaceId?: string | ObjectId }): JWTPayload {
-    if (spaceId instanceof ObjectId) {
-      spaceId = spaceId.toString();
-    }
-    return {
-      email,
-      loggedAs,
-      spaceId
-    };
-  }
-}
 
 /** @description sign payload as jwt then res.cookie with type checking. set jwt and space + organization cookie*/
 export function handleSetCookiesFromPayload(res: Response, payload: JWTPayload, space?: ISpace) {

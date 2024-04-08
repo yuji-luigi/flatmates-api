@@ -7,60 +7,28 @@ export type CurrentSpace = {
   name?: string;
   _id?: ObjectId;
   organizationId?: ObjectId;
-  /** check from selected space.admins and requesting user id */
+  // set value in runtime. set in check function
   isAdminOfSpace: boolean;
 };
 
 // not jwt this is type of the req.user
 export type ReqUser = UserBase & {
   loggedAs: RoleInterface;
+  was?: RoleInterface;
   accessPermissions?: AccessPermissionCache[];
   currentAccessController?: AccessPermissionCache;
   isAdminOfCurrentSpace?: boolean;
 } & { currentSpace?: CurrentSpace };
 
-// export type JsonObjPayload = {
-//   space?: Partial<ISpace> | null;
-//   user: ReqUser | null;
-//   organizationId?: string;
-// };
-export type SpaceDataInCookieFull = {
-  spaceId: string;
-  // spaceName: string;
-  // spaceSlug: string;
-  // spaceAddress: string;
-  // organizationId: string;
-  // spaceImage?: string;
-};
-
-export type JwtSignPayloadWithAccessCtrlAndSpaceDetail =
-  | SpaceDetails & {
-      email: string;
-      loggedAs: RoleFields;
-      spaceId?: string;
-      accessControllerId?: string; // superAdmin does not need this
-    };
-export interface JwtSignPayload {
+export type JwtSignPayload = {
   email: string;
   loggedAs: RoleFields;
+  was?: RoleFields;
   spaceId?: string;
   accessControllerId?: string; // superAdmin does not need this
-}
+};
 
-export type __JwtSignPayload =
-  | (SpaceDetails & {
-      email: string;
-      loggedAs: RoleFields;
-      spaceId?: string;
-      organizationId?: string;
-    })
-  | {
-      email: string;
-      loggedAs: RoleFields;
-      organizationId?: string;
-    };
-
-export type DecodedJwtPayload = ReqUser;
+export type JwtSignPayloadWithAccessCtrlAndSpaceDetail = SpaceDetails & JwtSignPayload;
 
 export type SpaceDetails = {
   spaceId: string;

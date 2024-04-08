@@ -40,17 +40,9 @@ const cookieExtractor = (req: Request) => {
   return jwt || extractToken(req);
 };
 
-/** created for other than user auth cookie  * */
-// const cookieExtractorEx = (req: Request) => {
-//   return (headerKey: string) => {
-//     return req.cookies[headerKey] || req.headers[headerKey] || '';
-//   };
-// };
-
 const jwtOptions = {
   secretOrKey: jwtSecret,
   jwtFromRequest: cookieExtractor
-  // jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('Bearer'),
 };
 
 const resolveUserJwt = async (resolvedJwt: JwtSignPayload | JwtSignPayloadWithAccessCtrlAndSpaceDetail, done: UserResolverReturnType) => {
@@ -104,10 +96,11 @@ const resolveUserJwt = async (resolvedJwt: JwtSignPayload | JwtSignPayloadWithAc
     const currentAccessController =
       accessPermissions.length && accessPermissions.find((aCtrl) => aCtrl.space.toString() === currentSpace._id?.toString());
 
-    const reqUser = await reqUserBuilder({
+    const reqUser = reqUserBuilder({
       user: leanUser,
       currentSpace,
       loggedAs: resolvedJwt.loggedAs,
+      was: resolvedJwt.was,
       accessPermissions,
       currentAccessController
     });
