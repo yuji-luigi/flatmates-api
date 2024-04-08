@@ -16,7 +16,8 @@ import { aggregateWithPagination } from '../helpers/mongoose.helper';
 import AuthToken from '../../models/AuthToken';
 import { getIdString } from '../../utils/type-guard/mongoose/stringOrMongooseObject';
 import { Maintainer } from '../../models/util-models/Maintainer';
-import { JWTPayload, handleSetCookiesFromPayload } from '../../lib/jwt/jwtUtils';
+import { handleSetCookiesFromPayload } from '../../lib/jwt/jwtUtils';
+import { JWTPayload } from '../../lib/jwt/JwtPayload';
 import Check from '../../models/Check';
 /**
  * POST CONTROLLERS

@@ -8,7 +8,8 @@ import { aggregateWithPagination } from '../helpers/mongoose.helper';
 import vars, { sensitiveCookieOptions } from '../../utils/globalVariables';
 import { _MSG } from '../../utils/messages';
 import { deleteEmptyFields } from '../../utils/functions';
-import { JWTPayload, handleSetCookiesFromPayload, signJwt } from '../../lib/jwt/jwtUtils';
+import { handleSetCookiesFromPayload, signJwt } from '../../lib/jwt/jwtUtils';
+import { JWTPayload } from '../../lib/jwt/JwtPayload';
 import { handleGenerateTokenByRoleAfterLogin } from '../../utils/login-instance-utils/generateTokens';
 
 export async function sendOrganizations(req: RequestCustom, res: Response) {

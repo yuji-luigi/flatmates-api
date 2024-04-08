@@ -13,7 +13,8 @@ import Space from '../../models/Space';
 import Organization from '../../models/Organization';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { userHasSpace } from '../helpers/spaceHelper';
-import { resetSpaceCookies, handleSetCookiesFromPayload, JWTPayload } from '../../lib/jwt/jwtUtils';
+import { resetSpaceCookies, handleSetCookiesFromPayload } from '../../lib/jwt/jwtUtils';
+import { JWTPayload } from '../../lib/jwt/JwtPayload';
 import { handleGenerateTokenByRoleAtLogin } from '../../utils/login-instance-utils/generateTokens';
 import { RoleFields } from '../../types/mongoose-types/model-types/role-interface';
 import AccessController from '../../models/AccessPermission';
@@ -300,7 +301,39 @@ export const checkSystemAdmin = async (req: RequestCustom, res: Response) => {
       throw new ErrorCustom('You are not system admin of this space', httpStatus.UNAUTHORIZED);
     }
 
-    const payload = new JWTPayload({ email: req.user.email, loggedAs: RoleCache.system_admin.name, spaceId: idMongoose });
+    const payload = new JWTPayload({
+      email: req.user.email,
+      loggedAs: RoleCache.system_admin.name,
+      spaceId: idMongoose,
+      was: req.user.loggedAs.name
+    });
+    handleSetCookiesFromPayload(res, payload);
+    res.status(httpStatus.OK).json({ success: true, data: 'ok' });
+  } catch (error) {
+    logger.error(error.stack || error);
+    res.status(error.code || 500).json({
+      success: false,
+      message: error.message || error
+    });
+  }
+};
+
+export const exitSystemAdmin = async (req: RequestCustom, res: Response) => {
+  try {
+    const { idMongoose } = req.params;
+    const foundSystemAdmin = req.user.accessPermissions.find(
+      (actrl) => actrl.space.toString() === idMongoose && actrl.role.toString() === roleCache.get('system_admin')._id.toString()
+    );
+    if (!foundSystemAdmin) {
+      throw new ErrorCustom('You are not system admin of this space', httpStatus.UNAUTHORIZED);
+    }
+
+    const payload = new JWTPayload({
+      email: req.user.email,
+      loggedAs: RoleCache.system_admin.name,
+      spaceId: idMongoose,
+      was: req.user.loggedAs.name
+    });
     handleSetCookiesFromPayload(res, payload);
     res.status(httpStatus.OK).json({ success: true, data: 'ok' });
   } catch (error) {

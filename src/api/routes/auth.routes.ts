@@ -35,7 +35,8 @@ router.get('/space-selections', isLoggedIn(), sendRootSpaceSelectionsToClient);
 router.put('/space-selections/:idMongoose', isLoggedIn(), setSpaceAndOrgInJwt);
 router.get('/organization-selections', isLoggedIn(), sendMainOrganizationSelectionsToClient);
 
-router.get('/system-admin/:idMongoose', isLoggedIn(), checkSystemAdmin);
+router.get('/system-admin/check-by-space/:idMongoose', isLoggedIn(), checkSystemAdmin);
+router.get('/system-admin/exit', isLoggedIn(), checkSystemAdmin);
 
 // set jwt and send space
 router.get('/space-selections/:idMongoose', isLoggedIn(), setSpaceAndOrgInJwt);
