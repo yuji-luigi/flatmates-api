@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.1.12](https://github.com/yuji-luigi/flatmates-api/compare/flatmates-api-v1.1.11...flatmates-api-v1.1.12) (2024-04-10)
+
+
+### Bug Fixes
+
+* Add new files and update query handling ([10bbfc6](https://github.com/yuji-luigi/flatmates-api/commit/10bbfc6b93f36e8dd3807cd9ef58d12af21d5c3b))
+* **comments:** delete commented codes ([587f6b5](https://github.com/yuji-luigi/flatmates-api/commit/587f6b58d59a48416ee3ffeb31d386abece65eb6))
+* **refactoring:** Add new user-by-user-type models and update query handling ([f50cfa5](https://github.com/yuji-luigi/flatmates-api/commit/f50cfa57e83b6b5e0f13167ab99fd37516ac991c))
+* **refactor:** Refactor user-by-user-type models and update query handling ([e688a6e](https://github.com/yuji-luigi/flatmates-api/commit/e688a6e56db48e30d7cb7dbfb356f58ce1b1f0d6))
+* **role name:** toLowerCase and snake case system_admin Update role names to lowercase ([5bb1117](https://github.com/yuji-luigi/flatmates-api/commit/5bb1117621a14137bb39ca769b580d532b6374f2))
+* space cookies refactoring, only space Id in cookie. Remove unused imports and commented code ([37205c2](https://github.com/yuji-luigi/flatmates-api/commit/37205c262169e3316885970196fc34b4eefc326e))
+* **system admin menu:** exit system admin + switch to system admin route+controller ([935d7df](https://github.com/yuji-luigi/flatmates-api/commit/935d7df7f8a8a7416c04f2ab9f6fa4d2c6f93654))
+* **system admin menu:** save prevLoggedAs in Jwt and resolve in resolve function. typings updated ([bac0f64](https://github.com/yuji-luigi/flatmates-api/commit/bac0f64758867f8d7afa2b5a8e35d91b64fd47bc))
+* **system_admin:** system_admin checkroute /auth/system-admin/:idSpace mongoose ([619347f](https://github.com/yuji-luigi/flatmates-api/commit/619347f544600cd7b5452a167bcd55a660e33e8e))
+* Update role names and labels ([bbeadf0](https://github.com/yuji-luigi/flatmates-api/commit/bbeadf0a8abb0a0be547d4fee0607813b106704f))
+
 ## [1.1.11](https://github.com/yuji-luigi/flatmates-api/compare/flatmates-api-v1.1.10...flatmates-api-v1.1.11) (2024-03-22)
 
 
