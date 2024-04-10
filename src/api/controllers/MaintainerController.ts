@@ -11,7 +11,7 @@ import { ErrorCustom } from '../../lib/ErrorCustom';
 import { ReqUser } from '../../lib/jwt/jwtTypings';
 import { accessPermissionsCache } from '../../lib/mongoose/mongoose-cache/access-permission-cache';
 import { ObjectId } from 'bson';
-import { Maintainer } from '../../models/util-models/Maintainer';
+import { Maintainer } from '../../models/util-models/user-by-user-type/Maintainer';
 
 const entity = 'users';
 

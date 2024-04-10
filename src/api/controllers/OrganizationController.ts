@@ -63,7 +63,11 @@ export async function sendAllOrganizations(req: RequestCustom, res: Response) {
 export async function organizationSelected(req: RequestCustom, res: Response) {
   try {
     const spaces = await Space.find({ organization: req.params.organizationId, isMain: true }).populate({ path: 'cover', select: 'url' }).lean();
-    const jwtPayload = JWTPayload.simple({ email: req.user.email, loggedAs: req.user.loggedAs.name });
+    const jwtPayload = JWTPayload.simple({
+      email: req.user.email,
+      loggedAs: req.user.loggedAs.name,
+      userType: req.user.loggedAs.name
+    });
     handleSetCookiesFromPayload(res, jwtPayload);
     res.status(httpStatus.OK).json({
       success: true,

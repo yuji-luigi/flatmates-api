@@ -3,6 +3,7 @@ import express, { Request, Response } from 'express';
 const router = express.Router();
 import authCtrl, {
   checkSystemAdmin,
+  exitSystemAdmin,
   sendMainOrganizationSelectionsToClient,
   sendRootSpaceSelectionsToClient,
   setSpaceAndOrgInJwt
@@ -36,7 +37,7 @@ router.put('/space-selections/:idMongoose', isLoggedIn(), setSpaceAndOrgInJwt);
 router.get('/organization-selections', isLoggedIn(), sendMainOrganizationSelectionsToClient);
 
 router.get('/system-admin/check-by-space/:idMongoose', isLoggedIn(), checkSystemAdmin);
-router.get('/system-admin/exit', isLoggedIn(), checkSystemAdmin);
+router.get('/system-admin/exit', isLoggedIn(), exitSystemAdmin);
 
 // set jwt and send space
 router.get('/space-selections/:idMongoose', isLoggedIn(), setSpaceAndOrgInJwt);

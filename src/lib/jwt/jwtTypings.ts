@@ -14,16 +14,16 @@ export type CurrentSpace = {
 // not jwt this is type of the req.user
 export type ReqUser = UserBase & {
   loggedAs: RoleInterface;
-  was?: RoleInterface;
+  userType?: RoleInterface;
   accessPermissions?: AccessPermissionCache[];
-  currentAccessController?: AccessPermissionCache;
+  currentAccessPermission?: AccessPermissionCache;
   isAdminOfCurrentSpace?: boolean;
 } & { currentSpace?: CurrentSpace };
 
 export type JwtSignPayload = {
   email: string;
   loggedAs: RoleFields;
-  was?: RoleFields;
+  userType?: RoleFields;
   spaceId?: string;
   accessControllerId?: string; // superAdmin does not need this
 };

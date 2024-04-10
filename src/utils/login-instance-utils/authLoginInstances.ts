@@ -3,7 +3,7 @@ import { _MSG } from '../messages';
 import logger from '../../lib/logger';
 import User from '../../models/User';
 import { passwordMatches } from './passwordMatches';
-import { Maintainer } from '../../models/util-models/Maintainer';
+import { Maintainer } from '../../models/util-models/user-by-user-type/Maintainer';
 
 // authenticate user and maintainer at once
 export async function authLoginInstances({ email, password }: { email?: string; password?: string }) {

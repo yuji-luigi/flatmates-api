@@ -72,40 +72,33 @@ const resolveUserJwt = async (resolvedJwt: JwtSignPayload | JwtSignPayloadWithAc
       }
     }
 
-    //Todo: set SpaceId[] in req.user and use it for querying. when selected one space from frontend (AppBar) then only one space array.
-    //! Actually use directly the accessPermissions array for querying.
-    // Fetch space and organization if they're in the resolvedJwt
     const currentSpace: CurrentSpace = {
       isAdminOfSpace: false
     };
-    // if spaceId key in resolvedJwt
+    // case space exist in jwt. prepare set space info in req.user
     if ('spaceId' in resolvedJwt) {
       if (accessPermissions.length && !accessPermissions.map((aCtrl) => aCtrl.space.toString()).includes(resolvedJwt.spaceId)) {
         return done(null, false);
       }
-      // get selected space(space organization input)
-      // const space = await Space.findById(resolvedJwt.spaceId).lean();
+
       const space = spaceCache.get(resolvedJwt.spaceId);
       currentSpace.name = space.name;
       currentSpace._id = space._id;
-      // from selectedSpace extract admins Array then check the requiesting user is in the array.
-      // if yes then set the user is admin of the space
       leanUser.isAdminOfCurrentSpace = isAdminOfSpace({ space, currentUser: leanUser });
     }
 
-    const currentAccessController =
+    const currentAccessPermission =
       accessPermissions.length && accessPermissions.find((aCtrl) => aCtrl.space.toString() === currentSpace._id?.toString());
 
     const reqUser = reqUserBuilder({
       user: leanUser,
       currentSpace,
       loggedAs: resolvedJwt.loggedAs,
-      was: resolvedJwt.was,
+      userType: resolvedJwt.userType,
       accessPermissions,
-      currentAccessController
+      currentAccessPermission
     });
 
-    // You can attach space and organization to the user object if you like
     return done(null, reqUser);
   } catch (error) {
     logger.error(error.stack || error);

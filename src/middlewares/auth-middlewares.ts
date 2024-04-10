@@ -8,6 +8,7 @@ import { ISpace } from '../types/mongoose-types/model-types/space-interface';
 import { CurrentSpace, ReqUser } from '../lib/jwt/jwtTypings';
 import { accessPermissionsCache } from '../lib/mongoose/mongoose-cache/access-permission-cache';
 import { RoleCache } from '../lib/mongoose/mongoose-cache/role-cache';
+import { IUser } from '../types/mongoose-types/model-types/user-interface';
 
 export function clearQueriesForSAdmin(req: RequestCustom, res: Response, next: NextFunction) {
   if (req.user.isSuperAdmin) {
@@ -33,7 +34,7 @@ export const ADMIN = 'admin';
 export const LOGGED_USER = 'user';
 export const SUPER_ADMIN = 'super_admin';
 
-export function isAdminOfSpace({ space, currentUser }: { space: ISpace | CurrentSpace; currentUser: ReqUser }) {
+export function isAdminOfSpace({ space, currentUser }: { space: ISpace | CurrentSpace; currentUser: ReqUser | IUser }) {
   if (currentUser.isSuperAdmin) {
     return true;
   }

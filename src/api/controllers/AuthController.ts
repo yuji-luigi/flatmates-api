@@ -26,29 +26,9 @@ import { AccessPermissionCache } from '../../types/mongoose-types/model-types/ac
 import { isAdminOfSpace } from '../../middlewares/auth-middlewares';
 import UserRegistry from '../../models/UserRegistry';
 import { ErrorCustom } from '../../lib/ErrorCustom';
-// import { CurrentSpace } from '../../types/mongoose-types/model-types/space-interface';
+import { MeUser } from '../../lib/MeUser';
 
 const { cookieDomain } = vars;
-
-/**
- * Returns a formatted object with tokens
- * @private
- */
-// function generateTokenResponse(user: any, accessToken: string) {
-//   const tokenType = 'Bearer';
-//   const expiresIn = moment().add(jwtExpirationInterval, 'seconds');
-//   return {
-//     tokenType,
-//     accessToken,
-//     expiresIn
-//   };
-// }
-
-// const TypeofSpaceFromPurpose = {
-//   condoAdmin: 'condominium',
-//   flatAdmin: 'flat',
-//   companyAdmin: 'officeBuilding'
-// };
 
 const register = async (req: Request, res: Response) => {
   try {
@@ -87,7 +67,12 @@ const register = async (req: Request, res: Response) => {
 
     await UserRegistry.create({ user: newUser, role: roleCache.get(role)._id, isPublic });
 
-    const jwt = JWTPayload.simple({ email: newUser.email, loggedAs: role, ...(newRootSpace ? { spaceId: newRootSpace._id } : {}) });
+    const jwt = JWTPayload.simple({
+      email: newUser.email,
+      loggedAs: role,
+      userType: role,
+      ...(newRootSpace ? { spaceId: newRootSpace._id } : {})
+    });
     handleSetCookiesFromPayload(res, jwt, newRootSpace);
 
     res.status(httpStatus.CREATED).send({
@@ -154,7 +139,12 @@ const loginByRole = async (req: Request<{ role: RoleFields }>, res: Response) =>
         message: 'User not registered as ' + role
       });
     }
-    const payload = handleGenerateTokenByRoleAtLogin({ selectedRole: role, user });
+    const payload = JWTPayload.simple({
+      email: user.email,
+      loggedAs: role,
+      userType: role
+    });
+    // const payload = handleGenerateTokenByRoleAtLogin({ selectedRole: role, user });
     //clear all spaceCookies
     resetSpaceCookies(res);
 
@@ -193,45 +183,12 @@ const removeSpaceToken = (req: Request, res: Response) => {
   res.status(httpStatus.OK).json({ message: 'SpaceToken removed' });
 };
 
-type MeUser = {
-  _id: string;
-  name: string;
-  surname: string;
-  email: string;
-  avatar: string;
-  loggedAs: string;
-  cover: string;
-  isSuperAdmin: boolean;
-  isSystemAdmin: boolean;
-  phone: string;
-  active: boolean;
-  accessPermission: AccessPermissionCache;
-};
-
 const me = async (req: RequestCustom, res: Response) => {
   // set last login
   try {
-    const user = await User.findOne({ _id: req.user._id.toString() });
+    const { user, meUser } = await MeUser.fromReqUserToUserMeUser(req.user);
     user.lastLogin = new Date(Date.now());
-    // define transform function here. now only used from me call.
     await user.save();
-    const meUser: MeUser = {
-      _id: user._id.toString(),
-      name: user.name,
-      surname: user.surname,
-      avatar: user.avatar?.url,
-      email: user.email,
-      cover: user.cover?.url,
-      isSuperAdmin: user.isSuperAdmin,
-      loggedAs: req.user.loggedAs.name,
-      isSystemAdmin: isAdminOfSpace({
-        space: req.user.currentSpace,
-        currentUser: req.user
-      }),
-      phone: user.phone,
-      active: user.active,
-      accessPermission: req.user.currentAccessController
-    };
 
     return res.send({
       success: true,
@@ -305,10 +262,14 @@ export const checkSystemAdmin = async (req: RequestCustom, res: Response) => {
       email: req.user.email,
       loggedAs: RoleCache.system_admin.name,
       spaceId: idMongoose,
-      was: req.user.loggedAs.name
+      userType: req.user.userType.name
     });
+
     handleSetCookiesFromPayload(res, payload);
-    res.status(httpStatus.OK).json({ success: true, data: 'ok' });
+    const meUser = await MeUser.fromJwtPayloadUser(payload);
+    // const meUser = await MeUser.fromReqUser({ ...req.user, loggedAs: roleCache.get('system_admin') });
+
+    res.status(httpStatus.OK).json({ success: true, data: meUser });
   } catch (error) {
     logger.error(error.stack || error);
     res.status(error.code || 500).json({
@@ -321,21 +282,22 @@ export const checkSystemAdmin = async (req: RequestCustom, res: Response) => {
 export const exitSystemAdmin = async (req: RequestCustom, res: Response) => {
   try {
     const { idMongoose } = req.params;
-    const foundSystemAdmin = req.user.accessPermissions.find(
-      (actrl) => actrl.space.toString() === idMongoose && actrl.role.toString() === roleCache.get('system_admin')._id.toString()
-    );
-    if (!foundSystemAdmin) {
-      throw new ErrorCustom('You are not system admin of this space', httpStatus.UNAUTHORIZED);
+    if (!req.user.userType) {
+      throw new ErrorCustom('Authorization problem.', httpStatus.UNAUTHORIZED);
     }
+    const userType = roleCache.get(req.user.userType.name);
+
+    // const meUser = await MeUser.fromReqUser({ ...req.user, loggedAs: userType });
 
     const payload = new JWTPayload({
       email: req.user.email,
-      loggedAs: RoleCache.system_admin.name,
-      spaceId: idMongoose,
-      was: req.user.loggedAs.name
+      loggedAs: userType.name,
+      spaceId: req.user.currentSpace._id,
+      userType: req.user.userType.name
     });
+    const meUser = await MeUser.fromJwtPayloadUser(payload);
     handleSetCookiesFromPayload(res, payload);
-    res.status(httpStatus.OK).json({ success: true, data: 'ok' });
+    res.status(httpStatus.OK).json({ success: true, data: meUser });
   } catch (error) {
     logger.error(error.stack || error);
     res.status(error.code || 500).json({
@@ -353,7 +315,12 @@ export const setSpaceAndOrgInJwt = async (req: RequestCustom, res: Response) => 
     }
     // user is super admin or has the root space.
     const space = await Space.findById(req.params.idMongoose);
-    const payload = new JWTPayload({ loggedAs: req.user.loggedAs.name, email: req.user.email, spaceId: space._id });
+    const payload = new JWTPayload({
+      loggedAs: req.user.loggedAs.name,
+      email: req.user.email,
+      spaceId: space._id,
+      userType: req.user.userType.name
+    });
 
     res.clearCookie('jwt', { domain: vars.cookieDomain });
     handleSetCookiesFromPayload(res, payload, space);

@@ -15,7 +15,7 @@ import { LOOKUP_PIPELINE_STAGES } from '../aggregation-helpers/lookups';
 import { signJwt } from '../../lib/jwt/jwtUtils';
 import { JWTPayload } from '../../lib/jwt/JwtPayload';
 import { isAdminOfSpace } from '../../middlewares/auth-middlewares';
-import { Maintainer } from '../../models/util-models/Maintainer';
+import { Maintainer } from '../../models/util-models/user-by-user-type/Maintainer';
 const entity = 'spaces';
 
 //================================================================================
@@ -354,7 +354,8 @@ export const deleteSpaceCookie = async (req: RequestCustom, res: Response) => {
     deleteSpaceCookies(res);
     const payload = JWTPayload.simple({
       email: req.user.email,
-      loggedAs: req.user.loggedAs.name
+      loggedAs: req.user.loggedAs.name,
+      userType: req.user.loggedAs.name
     });
     const jwt = signJwt(payload);
 

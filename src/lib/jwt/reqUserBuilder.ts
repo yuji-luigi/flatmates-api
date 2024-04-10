@@ -7,27 +7,27 @@ import { roleCache } from '../mongoose/mongoose-cache/role-cache';
 export const reqUserBuilder = ({
   user,
   currentSpace,
-  was,
+  userType,
   loggedAs,
   accessPermissions,
-  currentAccessController
+  currentAccessPermission
 }: {
   user: UserBase;
   currentSpace: CurrentSpace;
-  was?: RoleFields;
+  userType?: RoleFields;
   accessPermissions: AccessPermissionCache[];
-  currentAccessController?: AccessPermissionCache;
+  currentAccessPermission?: AccessPermissionCache;
   loggedAs: RoleFields;
 }): ReqUser => {
   const currentRole = roleCache.get(loggedAs);
-  const prevRole = roleCache.get(was);
+  const prevRole = roleCache.get(userType);
   const jwtReturnObject: ReqUser = {
     ...user,
     currentSpace,
     accessPermissions,
-    currentAccessController,
+    currentAccessPermission,
     loggedAs: currentRole,
-    was: prevRole
+    userType: prevRole
   };
   return jwtReturnObject;
 };

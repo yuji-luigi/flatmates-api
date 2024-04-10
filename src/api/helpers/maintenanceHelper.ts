@@ -6,8 +6,8 @@ import { IMaintenance } from '../../types/mongoose-types/model-types/maintenance
 import { MaintainerInterface } from '../../types/mongoose-types/model-types/maintainer-interface';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 import { AuthTokenInterface } from 'mongoose-types/model-types/auth-token-interface';
-import { Maintainer } from '../../models/util-models/Maintainer';
-import { PropertyManager } from '../../models/util-models/PropertyManager';
+import { Maintainer } from '../../models/util-models/user-by-user-type/Maintainer';
+import { PropertyManager } from '../../models/util-models/user-by-user-type/PropertyManager';
 import { ReqUser } from '../../lib/jwt/jwtTypings';
 
 export async function createOptionsForMaintenance({

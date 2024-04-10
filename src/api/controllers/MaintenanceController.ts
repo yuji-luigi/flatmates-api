@@ -15,10 +15,11 @@ import { _MSG } from '../../utils/messages';
 import { aggregateWithPagination } from '../helpers/mongoose.helper';
 import AuthToken from '../../models/AuthToken';
 import { getIdString } from '../../utils/type-guard/mongoose/stringOrMongooseObject';
-import { Maintainer } from '../../models/util-models/Maintainer';
+import { Maintainer } from '../../models/util-models/user-by-user-type/Maintainer';
 import { handleSetCookiesFromPayload } from '../../lib/jwt/jwtUtils';
 import { JWTPayload } from '../../lib/jwt/JwtPayload';
 import Check from '../../models/Check';
+import { RoleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
 /**
  * POST CONTROLLERS
  */
@@ -275,7 +276,7 @@ export async function authUserMaintenanceFiles(req: Request, res: Response) {
 
     if (!authToken) throw new Error('pin is not correct');
     res.cookie('maintenanceNonce', req.body.pin, sensitiveCookieOptions);
-    // Todo: create authToken field to determine which entity it is referring to. prev version was using docHolder
+    // Todo: create authToken field to determine which entity it is referring to. prev version userType using docHolder
     const maintenance = await Maintenance.findById(authToken.refId).populate({
       path: 'space',
       select: 'name address admins cover',
@@ -289,7 +290,12 @@ export async function authUserMaintenanceFiles(req: Request, res: Response) {
     // todo!!
     const spaceId = getIdString(maintenance.space);
     const maintainer = await Maintainer.findById(maintenance.maintainer);
-    const payload = new JWTPayload({ email: maintainer.email, loggedAs: 'maintainer', spaceId: spaceId });
+    const payload = new JWTPayload({
+      email: maintainer.email,
+      loggedAs: RoleCache.maintainer.name,
+      spaceId: spaceId,
+      userType: RoleCache.maintainer.name
+    });
     handleSetCookiesFromPayload(res, payload);
 
     const checks = await Check.find({ maintenance: maintenance.space._id }).populate('organization');
