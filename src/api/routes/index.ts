@@ -13,6 +13,7 @@ import notificationRoutes from './notification.routes';
 import authTokenRoutes from './auth-token.routes';
 import organizationRoutes from './organization.routes';
 import maintainerRoutes from './maintainer.routes';
+import userByTypeRoutes from './userByUserType.routes';
 import accessControllerRoutes from './access-permission.routes';
 // import dataTableRoutes from './data-table.routes';
 import maintenanceRoutes from './maintenance.routes';
@@ -42,8 +43,11 @@ router.use('/maintenances', maintenanceRoutes);
 router.use('/threads', threadRoutes);
 router.use('/spaces', spaceRoutes);
 router.use('/organizations', organizationRoutes);
-router.use('/maintainers', maintainerRoutes);
 router.use('/users', userRoutes);
+
+router.use('/maintainers', maintainerRoutes);
+router.use('/', userByTypeRoutes);
+
 // router.use('/with-pagination', dataTableRoutes);
 
 router.use('/', customRoutes);

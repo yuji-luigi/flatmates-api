@@ -16,7 +16,7 @@ import { Entities } from '../../types/mongoose-types/model-types/Entities';
 
 export const sendCrudObjectsWithPaginationToClient = async (req: RequestCustom, res: Response) => {
   try {
-    const entity: Entities = req.params.entity || getEntityFromOriginalUrl(req.originalUrl);
+    const entity: Entities = req.params.entity || (getEntityFromOriginalUrl(req.originalUrl) as Entities);
     req.params.entity = entity;
 
     // const limit = 10;
@@ -75,7 +75,7 @@ export const createCrudObjectAndSendDataWithPagination = async (req: LoggedInReq
 export const deleteCrudObjectByIdAndSendDataWithPagination = async (req: RequestCustom, res: Response) => {
   try {
     const { idMongoose } = req.params;
-    const entity: Entities = req.params.entity || getEntityFromOriginalUrl(req.originalUrl);
+    const entity: Entities = req.params.entity || (getEntityFromOriginalUrl(req.originalUrl) as Entities);
     const { deletedCount } = await mongoose.model(entity).deleteOne({ _id: idMongoose });
     if (deletedCount === 0) {
       return res.status(httpStatus.NO_CONTENT).json({
@@ -124,7 +124,7 @@ export const sendLinkedChildrenWithPaginationToClient = async (req: RequestCusto
 };
 
 //! TODO: from next chose to call generic parameter route
-export const deleteLinkedChildByIdWithPagination = async (req: Request, res: Response) => {
+export const deleteLinkedChildByIdWithPagination = async (req: RequestCustom, res: Response) => {
   try {
     /**
      * find model

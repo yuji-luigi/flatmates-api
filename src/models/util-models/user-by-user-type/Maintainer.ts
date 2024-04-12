@@ -1,6 +1,6 @@
-import { UserByUserType } from './UserByUserType';
+import { AbstractUserByUserType } from './AbstractUserByUserType';
 
-export class Maintainer extends UserByUserType {
+export class Maintainer extends AbstractUserByUserType {
   protected static roleName = 'maintainer' as const;
 }
 

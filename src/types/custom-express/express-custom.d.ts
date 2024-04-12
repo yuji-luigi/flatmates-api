@@ -82,7 +82,12 @@ interface ParamsInterface {
   [key: string]: string;
   idMongoose?: string;
   id?: string;
+  entity: Entities;
+  userType?: 'maintainers' | 'property_managers';
   userId?: string;
+  parentId?: string;
+  spaceId?: string;
+  slug?: string;
 }
 
 export interface QueryCustom {
@@ -90,13 +95,14 @@ export interface QueryCustom {
 }
 
 export interface RequestCustom<
-  P = core.ParamsDictionary & { entity: Entities },
+  P = core.ParamsDictionary,
   ResBody = any,
   ReqBody = any,
   ReqQuery = QueryCustom,
   Locals extends Record<string, any> = Record<string, any>
 > extends Request<P, ResBody, ReqBody, ReqQuery, Locals> {
   user?: ReqUser | undefined;
+  params: ParamsInterface;
   // user?: (IUser & { spaceId?: ObjectId; spaceName?: string; organizationId: ObjectId }) | undefined;
   // space?: ISpace | null;
   // organization: IOrganization;

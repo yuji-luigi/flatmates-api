@@ -141,7 +141,7 @@ export const sendHeadDocuments = async (req: Request, res: Response) => {
 };
 
 //! TODO: from next chose to call generic parameter route
-export const deleteLinkedChild = async (req: Request, res: Response) => {
+export const deleteLinkedChild = async (req: RequestCustom, res: Response) => {
   try {
     /**
      * find model

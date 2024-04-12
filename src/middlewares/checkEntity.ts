@@ -1,13 +1,14 @@
 import httpStatus from 'http-status';
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Response } from 'express';
 import { getEntity } from '../utils/functions';
 import logger from '../lib/logger';
 import { Entities } from '../types/mongoose-types/model-types/Entities';
 import { entities } from '../types/mongoose-types/model-types/Entities';
+import { RequestCustom } from '../types/custom-express/express-custom';
 
 const invalidEntities = ['auth-tokens', 'spaces', 'uploads', 'users'];
 
-export const checkEntity = (req: Request, res: Response, next: NextFunction) => {
+export const checkEntity = (req: RequestCustom, res: Response, next: NextFunction) => {
   // next();
   const entity = req.params.entity || getEntity(req.url);
   // req.params.entity = entity;

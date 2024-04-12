@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import httpStatus from 'http-status';
 import logger from '../../lib/logger';
 
@@ -9,13 +9,14 @@ import { RequestCustom } from '../../types/custom-express/express-custom';
 import { MongooseBaseModel } from '../../types/mongoose-types/model-types/base-types/base-model-interface';
 import { IUpload } from '../../types/mongoose-types/model-types/upload-interface';
 import { getCorrectQuery } from '../helpers/mongoose.helper';
+import { Entities } from '../../types/mongoose-types/model-types/Entities';
 //= ===============================================================================
 // CRUD GENERIC CONTROLLER METHODS
 //= ===============================================================================
 
-export const getPublicCrudObjects = async (req: Request, res: Response) => {
+export const getPublicCrudObjects = async (req: RequestCustom, res: Response) => {
   try {
-    const entity = req.params.entity || getSplittedPath(cutQuery(req.url))[2];
+    const entity = req.params.entity || (getSplittedPath(cutQuery(req.url))[2] as Entities);
     req.params.entity = entity;
 
     const Model = mongoose.model(entity);
@@ -46,7 +47,7 @@ export const getPublicCrudObjects = async (req: Request, res: Response) => {
 
 export const sendCrudDocumentsToClient = async (req: RequestCustom, res: Response) => {
   try {
-    const entity = req.params.entity || getSplittedPath(cutQuery(req.url))[2];
+    const entity = req.params.entity || (getSplittedPath(cutQuery(req.url))[2] as Entities);
     const Model = mongoose.model(entity);
 
     const correctedQuery = getCorrectQuery({ entity, query: req.query });
@@ -74,7 +75,7 @@ export const sendCrudObjectToLoggedClient = async (req: RequestCustom, res: Resp
     if (!req.user) {
       throw new Error(_MSG.NOT_AUTHORIZED);
     }
-    const entity = req.params.entity || getEntityFromOriginalUrl(req.originalUrl);
+    const entity = req.params.entity || (getEntityFromOriginalUrl(req.originalUrl) as Entities);
     req.params.entity = entity;
 
     //  TODO: use req.query for querying in find method and paginating. maybe need to delete field to query in find method
@@ -95,9 +96,9 @@ export const sendCrudObjectToLoggedClient = async (req: RequestCustom, res: Resp
   }
 };
 
-export const getSingleCrudObject = async (req: Request, res: Response) => {
+export const getSingleCrudObject = async (req: RequestCustom, res: Response) => {
   try {
-    const entity = req.params.entity || getEntity(req.url);
+    const entity = req.params.entity || (getEntity(req.url) as Entities);
     req.params.entity = entity;
     const data: Record<string, object | string | Date | number | IUpload> = await mongoose.model(entity).findById(req.params.idMongoose);
     data.avatar && (await (data.avatar as IUpload).setUrl());
@@ -141,7 +142,7 @@ export const createCrudObject = async (req: RequestCustom, res: Response) => {
 };
 
 // update is universal. API response back without pagination. always res back with updated object.
-export const updateCrudObjectById = async (req: Request, res: Response) => {
+export const updateCrudObjectById = async (req: RequestCustom, res: Response) => {
   try {
     const { idMongoose } = req.params;
     const entity = req.params.entity || getEntityFromOriginalUrl(req.originalUrl);
@@ -166,7 +167,7 @@ export const updateCrudObjectById = async (req: Request, res: Response) => {
  * TODO: response new 10 data array of that page
  * Need to know: "pageNumber", "skip", like normal get route.
  */
-export const deleteCrudObjectById = async (req: Request, res: Response) => {
+export const deleteCrudObjectById = async (req: RequestCustom, res: Response) => {
   try {
     const { idMongoose } = req.params;
     const entity: string = req.params.entity || getEntityFromOriginalUrl(req.originalUrl);
@@ -205,7 +206,7 @@ export default {
   getSingleCrudObject
 };
 
-export const sendNotImplemented = (req: Request, res: Response) => {
+export const sendNotImplemented = (req: RequestCustom, res: Response) => {
   res.status(httpStatus.NOT_IMPLEMENTED).json({
     message: _MSG.NOT_IMPLEMENTED
   });
