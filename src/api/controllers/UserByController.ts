@@ -64,21 +64,26 @@ export const addUserByUserTypeToSpace = async (req: RequestCustom, res: Response
     });
   }
 };
+/**
+ * @description remove duplication of spaceIds using Set
+ */
 function getFilterOptions(currentUserId: ObjectId) {
+  const cleanedSpaces = [...new Set(accessPermissionsCache.get(currentUserId.toString()).map((ap) => ap.space.toString()))].map(
+    (s) => new ObjectId(s)
+  );
   return {
-    spaces: { $in: ['$$spaces._id', accessPermissionsCache.get(currentUserId.toString()).map((ap) => ap.space)] }
+    spaces: { $in: ['$$spaces._id', cleanedSpaces] }
   };
 }
 export const sendUserByUserTypesWithPaginationToClient = async (req: RequestCustom, res: Response) => {
   try {
     const fieldFilterOptions = getFilterOptions(req.user._id);
-    const maintainers = await UserByUserType[req.params.userType].find({ fieldFilterOptions });
-
+    const userByUserType = await UserByUserType[req.params.userType].find({ fieldFilterOptions });
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity,
-      data: maintainers,
-      totalDocuments: maintainers.length
+      data: userByUserType,
+      totalDocuments: userByUserType.length
     });
   } catch (err) {
     logger.error(err.stack || err);
@@ -92,12 +97,12 @@ export const sendUserByUserTypesToClient = async (req: RequestCustom, res: Respo
   try {
     const matchStage = req.user.isSuperAdmin ? {} : { 'userRegistry.isPublic': true };
 
-    const maintainers = await UserByUserType[req.params.userType].find({ matchStage });
+    const userByUserType = await UserByUserType[req.params.userType].find({ matchStage });
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity,
-      data: maintainers,
-      totalDocuments: maintainers.length
+      data: userByUserType,
+      totalDocuments: userByUserType.length
     });
   } catch (err) {
     logger.error(err.stack || err);
@@ -109,7 +114,7 @@ export const sendUserByUserTypesToClient = async (req: RequestCustom, res: Respo
 
 export const sendUserByUserTypesOfBuildingToClient = async (req: RequestCustom, res: Response) => {
   try {
-    const maintainers = await UserByUserType[req.params.userType].find({
+    const userByUserType = await UserByUserType[req.params.userType].find({
       matchStage: {
         accessPermissions: { $elemMatch: { 'space._id': req.query.space } }
       }
@@ -117,7 +122,7 @@ export const sendUserByUserTypesOfBuildingToClient = async (req: RequestCustom, 
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity,
-      data: maintainers
+      data: userByUserType
     });
   } catch (err) {
     res.status(err).json({
@@ -154,7 +159,7 @@ export const sendSingleUserByUserTypeBySlug = async (req: RequestCustom, res: Re
 export async function updateUserByUserTypeById(req: RequestCustom, res: Response) {
   try {
     const { idMongoose } = req.params;
-    const entity = 'maintainers';
+    const entity = 'userByUserType';
     const foundModel = await AccessPermission.create(idMongoose);
 
     foundModel.set(req.body);
