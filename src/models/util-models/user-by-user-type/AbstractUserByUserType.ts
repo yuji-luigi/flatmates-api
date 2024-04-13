@@ -227,3 +227,73 @@ export const commonPipeline = [
     }
   }
 ];
+
+export const accessPermissionPipeline = [
+  {
+    $lookup: {
+      from: 'accesspermissions',
+      localField: '_id',
+      foreignField: 'user',
+      as: 'accessPermissions'
+    }
+  },
+  {
+    $lookup: {
+      from: 'uploads',
+      localField: 'avatar',
+      foreignField: '_id',
+      as: 'avatar'
+    }
+  },
+  {
+    $unwind: {
+      path: '$avatar',
+      preserveNullAndEmptyArrays: true
+    }
+  },
+  {
+    $lookup: {
+      from: 'uploads',
+      localField: 'cover',
+      foreignField: '_id',
+      as: 'cover'
+    }
+  },
+  {
+    $unwind: {
+      path: '$cover',
+      preserveNullAndEmptyArrays: true
+    }
+  },
+
+  {
+    $lookup: {
+      from: 'accesspermissions',
+      localField: '_id', // Assuming this is the root document _id that should match `user` in accessPermissions
+      foreignField: 'user',
+      as: 'accessPermissions',
+      pipeline: [
+        {
+          $match: {
+            disabled: false // Only include accessPermissions documents where disabled is true
+          }
+        },
+        {
+          $lookup: {
+            from: 'spaces',
+            localField: 'space',
+            foreignField: '_id',
+            as: 'space'
+          }
+        },
+        {
+          $unwind: {
+            path: '$space',
+            preserveNullAndEmptyArrays: true // Optional: Adjust based on whether you always expect a space or not
+          }
+        }
+        // Potentially other operations on the space document
+      ]
+    }
+  }
+];

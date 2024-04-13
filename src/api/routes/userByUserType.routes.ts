@@ -26,11 +26,6 @@ router.use('/:userType', (req: RequestCustom, res, next) => {
   }
   next('router');
 });
-router.use((req: RequestCustom, res, next) => {
-  console.log(req.params.userType);
-
-  next();
-});
 router.get('/test/test', (req, res) => res.send('API is working: maintainer.routes.tsd'));
 
 router.get('/:userType', isLoggedIn(), sendUserByUserTypesToClient);

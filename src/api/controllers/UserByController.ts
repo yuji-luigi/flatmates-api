@@ -78,12 +78,12 @@ function getFilterOptions(currentUserId: ObjectId) {
 export const sendUserByUserTypesWithPaginationToClient = async (req: RequestCustom, res: Response) => {
   try {
     const fieldFilterOptions = getFilterOptions(req.user._id);
-    const userByUserType = await UserByUserType[req.params.userType].find({ fieldFilterOptions });
+    const usersByUserType = await UserByUserType[req.params.userType].find({ fieldFilterOptions });
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity,
-      data: userByUserType,
-      totalDocuments: userByUserType.length
+      data: usersByUserType,
+      totalDocuments: usersByUserType.length
     });
   } catch (err) {
     logger.error(err.stack || err);

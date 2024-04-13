@@ -15,7 +15,6 @@ import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { userHasSpace } from '../helpers/spaceHelper';
 import { resetSpaceCookies, handleSetCookiesFromPayload } from '../../lib/jwt/jwtUtils';
 import { JWTPayload } from '../../lib/jwt/JwtPayload';
-import { handleGenerateTokenByRoleAtLogin } from '../../utils/login-instance-utils/generateTokens';
 import { RoleFields } from '../../types/mongoose-types/model-types/role-interface';
 import AccessController from '../../models/AccessPermission';
 import { RoleCache, roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
@@ -23,7 +22,6 @@ import { accessPermissionsCache } from '../../lib/mongoose/mongoose-cache/access
 import { correctQueryForEntity } from '../helpers/mongoose.helper';
 import { RegisterData } from '../../types/auth/formdata';
 import { AccessPermissionCache } from '../../types/mongoose-types/model-types/access-permission-interface';
-import { isAdminOfSpace } from '../../middlewares/auth-middlewares';
 import UserRegistry from '../../models/UserRegistry';
 import { ErrorCustom } from '../../lib/ErrorCustom';
 import { MeUser } from '../../lib/MeUser';
@@ -144,8 +142,6 @@ const loginByRole = async (req: Request<{ role: RoleFields }>, res: Response) =>
       loggedAs: role,
       userType: role
     });
-    // const payload = handleGenerateTokenByRoleAtLogin({ selectedRole: role, user });
-    //clear all spaceCookies
     resetSpaceCookies(res);
 
     handleSetCookiesFromPayload(res, payload);
@@ -158,7 +154,7 @@ const loginByRole = async (req: Request<{ role: RoleFields }>, res: Response) =>
       }
     });
   } catch (error) {
-    logger.error(error.message || error);
+    logger.error(error.stack || error);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ ...error, message: error.message || error });
   }
 };
@@ -281,7 +277,6 @@ export const checkSystemAdmin = async (req: RequestCustom, res: Response) => {
 
 export const exitSystemAdmin = async (req: RequestCustom, res: Response) => {
   try {
-    const { idMongoose } = req.params;
     if (!req.user.userType) {
       throw new ErrorCustom('Authorization problem.', httpStatus.UNAUTHORIZED);
     }
