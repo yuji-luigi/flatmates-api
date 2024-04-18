@@ -28,16 +28,16 @@ router.use((req: RequestCustom, res, next) => {
 });
 router.get('/test/test', (req, res) => res.send('API is working: maintainer.routes.tsd'));
 
-router.get('/', isLoggedIn(), sendMaintainersToClient);
-router.get('/with-pagination', isLoggedIn(), sendMaintainersWithPaginationToClient);
-router.get('/slug/:slug', isLoggedIn(), sendSingleMaintainerBySlug);
+// router.get('/', isLoggedIn(), sendMaintainersToClient);
+// router.get('/with-pagination', isLoggedIn(), sendMaintainersWithPaginationToClient);
+// router.get('/slug/:slug', isLoggedIn(), sendSingleMaintainerBySlug);
 
-router.post('/with-pagination', isLoggedIn(), createMaintainer);
-router.post('/:idMaintainer/space/:idSpace', isLoggedIn(), addMaintainerToSpace);
-router.put('/:idMongoose', isLoggedIn(), updateMaintainerById);
-router.post('/:idMongoose/spaces', isLoggedIn(), addSpacesToMaintainer);
-router.delete('/:idMongoose/space', isLoggedIn(), removeMaintainerFromSpaceAndSendToClient);
-router.post('/:idMongoose/space', isLoggedIn(), favoriteMaintainerToSpaceAndSendToClient);
+// router.post('/with-pagination', isLoggedIn(), createMaintainer);
+// router.post('/:idMaintainer/space/:idSpace', isLoggedIn(), addMaintainerToSpace);
+// router.put('/:idMongoose', isLoggedIn(), updateMaintainerById);
+// router.post('/:idMongoose/spaces', isLoggedIn(), addSpacesToMaintainer);
+// router.delete('/:idMongoose/space', isLoggedIn(), removeMaintainerFromSpaceAndSendToClient);
+// router.post('/:idMongoose/space', isLoggedIn(), favoriteMaintainerToSpaceAndSendToClient);
 
 router.get('/spaces', isLoggedIn(), sendMaintainersOfBuildingToClient);
 router.delete('/spaces', isLoggedIn(), removeSpaceFromMaintainerById);

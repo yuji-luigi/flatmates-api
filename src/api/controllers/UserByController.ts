@@ -112,8 +112,14 @@ export const sendUserByUserTypesWithPaginationToClient = async (req: RequestCust
 export const sendUserByUserTypesToClient = async (req: RequestCustom, res: Response) => {
   try {
     const matchStage = req.user.isSuperAdmin ? {} : { 'userRegistry.isPublic': true };
+    const fieldFilterOptions = getFilterOptionsCurrentSpace(req.user.currentSpace._id);
 
-    const userByUserType = await UserByUserType[req.params.userType].find({ matchStage, additionalPipelines: [{ $match: { space: { $ne: [] } } }] });
+    const userByUserType = await UserByUserType[req.params.userType].find({
+      matchStage,
+      fieldFilterOptions,
+      additionalPipelines: [{ $match: { spaces: { $ne: [] } } }]
+    });
+    console.log({ [req.params.userType]: userByUserType });
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity,

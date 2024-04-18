@@ -14,4 +14,3 @@ export class UserByUserType {
     return Inhabitant;
   }
 }
-console.log(UserByUserType.maintainers);

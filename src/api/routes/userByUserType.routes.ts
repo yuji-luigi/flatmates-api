@@ -16,7 +16,7 @@ import {
 } from '../controllers/UserByController';
 const router = express.Router();
 
-const userTypes = ['property_managers', 'inhabitants', 'system_admins'];
+const userTypes = ['property_managers', 'inhabitants', 'system_admins', 'maintainers'];
 
 router.use('/:userType', (req: RequestCustom, res, next) => {
   console.log(req.params.userType);

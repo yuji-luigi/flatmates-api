@@ -172,7 +172,6 @@ async function findDuplicateUserRegistries() {
         }
       }
     ]);
-    console.log(duplicates.flatMap((dup) => dup.allIdsToDelete));
 
     await UserRegistry.deleteMany({ _id: { $in: duplicates.flatMap((dup) => dup.allIdsToDelete) } });
   } catch (error) {
