@@ -64,21 +64,37 @@ export const addUserByUserTypeToSpace = async (req: RequestCustom, res: Response
     });
   }
 };
+
 /**
  * @description remove duplication of spaceIds using Set
  */
-function getFilterOptions(currentUserId: ObjectId) {
-  const cleanedSpaces = [...new Set(accessPermissionsCache.get(currentUserId.toString()).map((ap) => ap.space.toString()))].map(
-    (s) => new ObjectId(s)
-  );
+const getUserSpaceIds = (currentUserId: ObjectId) =>
+  [...new Set(accessPermissionsCache.get(currentUserId.toString()).map((ap) => ap.space.toString()))].map((s) => new ObjectId(s));
+
+/**
+ * @description this pipeline filter out all the spaces that does not associated with the current user.
+ */
+function getFilterOptionsAllSpacesOfUser(currentUserId: ObjectId) {
+  const cleanedSpaces = getUserSpaceIds(currentUserId);
   return {
     spaces: { $in: ['$$spaces._id', cleanedSpaces] }
   };
 }
+
+function getFilterOptionsCurrentSpace(currentSpaceId: ObjectId) {
+  if (!currentSpaceId) throw new ErrorCustom('Select the space first to get the users of the space', httpStatus.UNAUTHORIZED);
+  return {
+    spaces: { $in: ['$$spaces._id', [currentSpaceId]] }
+  };
+}
+
 export const sendUserByUserTypesWithPaginationToClient = async (req: RequestCustom, res: Response) => {
   try {
-    const fieldFilterOptions = getFilterOptions(req.user._id);
-    const usersByUserType = await UserByUserType[req.params.userType].find({ fieldFilterOptions });
+    const fieldFilterOptions = getFilterOptionsCurrentSpace(req.user.currentSpace._id);
+    const usersByUserType = await UserByUserType[req.params.userType].find({
+      fieldFilterOptions,
+      additionalPipelines: [{ $match: { spaces: { $ne: [] } } }]
+    });
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity,
@@ -97,7 +113,7 @@ export const sendUserByUserTypesToClient = async (req: RequestCustom, res: Respo
   try {
     const matchStage = req.user.isSuperAdmin ? {} : { 'userRegistry.isPublic': true };
 
-    const userByUserType = await UserByUserType[req.params.userType].find({ matchStage });
+    const userByUserType = await UserByUserType[req.params.userType].find({ matchStage, additionalPipelines: [{ $match: { space: { $ne: [] } } }] });
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity,
@@ -134,7 +150,7 @@ export const sendUserByUserTypesOfBuildingToClient = async (req: RequestCustom, 
 export const sendSingleUserByUserTypeBySlug = async (req: RequestCustom, res: Response) => {
   try {
     req.params.entity = entity;
-    const fieldFilterOptions = getFilterOptions(req.user._id);
+    const fieldFilterOptions = getFilterOptionsAllSpacesOfUser(req.user._id);
 
     const data = await UserByUserType[req.params.userType].findOne({
       matchStage: {
@@ -189,7 +205,7 @@ export async function addSpacesToUserByUserType(req: RequestCustom, res: Respons
         logger.error(error.message || error);
       });
     }
-    const filter = getFilterOptions(req.user._id);
+    const filter = getFilterOptionsAllSpacesOfUser(req.user._id);
     const maintainer = await UserByUserType[req.params.userType].findOne({
       matchStage: { _id: new ObjectId(idMongoose) },
       fieldFilterOptions: filter
@@ -227,7 +243,7 @@ export async function favoriteUserByUserTypeToSpaceAndSendToClient(req: RequestC
       });
     }
 
-    const filter = getFilterOptions(req.user._id);
+    const filter = getFilterOptionsAllSpacesOfUser(req.user._id);
     const maintainer = await UserByUserType[req.params.userType].findOne({
       matchStage: { _id: new ObjectId(idMongoose) },
       fieldFilterOptions: filter
@@ -260,7 +276,7 @@ export async function removeUserByUserTypeFromSpaceAndSendToClient(req: RequestC
       foundAP.disabled = true;
       await foundAP.save();
     }
-    const filter = getFilterOptions(req.user._id);
+    const filter = getFilterOptionsAllSpacesOfUser(req.user._id);
     const maintainer = await UserByUserType[req.params.userType].findOne({
       matchStage: { _id: new ObjectId(idMongoose) },
       fieldFilterOptions: filter

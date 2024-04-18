@@ -1,5 +1,5 @@
 import { IUser, IUserStatics } from '../../types/mongoose-types/model-types/user-interface';
-import { RoleFields } from '../../types/mongoose-types/model-types/role-interface';
+import { RoleName } from '../../types/mongoose-types/model-types/role-interface';
 import { ObjectId } from 'mongodb';
 import { Document } from 'mongoose';
 import { JwtSignPayload, ReqUser } from '../../lib/jwt/jwtTypings';
@@ -10,7 +10,7 @@ export function handleGenerateTokenByRoleAtLogin({
   selectedRole,
   user
 }: {
-  selectedRole: RoleFields;
+  selectedRole: RoleName;
   user: Document<unknown, object, IUser> &
     Omit<
       IUser &

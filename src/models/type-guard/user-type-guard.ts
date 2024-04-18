@@ -1,7 +1,7 @@
-import { RoleFields } from '../../types/mongoose-types/model-types/role-interface';
+import { RoleName } from '../../types/mongoose-types/model-types/role-interface';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 
-export function getPopulatedRoleField({ role, user }: { role: RoleFields; user: IUser }) {
+export function getPopulatedRoleField({ role, user }: { role: RoleName; user: IUser }) {
   // if (user.role instanceof ObjectId) {
   //   throw new Error('Role not populated');
   // }

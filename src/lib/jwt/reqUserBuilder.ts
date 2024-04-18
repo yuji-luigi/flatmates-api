@@ -1,5 +1,5 @@
 import { CurrentSpace, ReqUser } from './jwtTypings';
-import { RoleFields } from '../../types/mongoose-types/model-types/role-interface';
+import { RoleName } from '../../types/mongoose-types/model-types/role-interface';
 import { UserBase } from '../../types/mongoose-types/model-types/user-interface';
 import { AccessPermissionCache } from '../../types/mongoose-types/model-types/access-permission-interface';
 import { roleCache } from '../mongoose/mongoose-cache/role-cache';
@@ -14,10 +14,10 @@ export const reqUserBuilder = ({
 }: {
   user: UserBase;
   currentSpace: CurrentSpace;
-  userType?: RoleFields;
+  userType?: RoleName;
   accessPermissions: AccessPermissionCache[];
   currentAccessPermission?: AccessPermissionCache;
-  loggedAs: RoleFields;
+  loggedAs: RoleName;
 }): ReqUser => {
   const currentRole = roleCache.get(loggedAs);
   const prevRole = roleCache.get(userType);

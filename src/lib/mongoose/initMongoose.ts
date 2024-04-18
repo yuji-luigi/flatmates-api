@@ -79,6 +79,7 @@ const mongooseConnector = {
     await initSeed();
     await initCache();
     await initUserRegistry();
+
     // await play();
   },
   close: () => mongoose.connection.close()
@@ -132,3 +133,51 @@ async function play() {
     logger.error(error.stack);
   }
 }
+
+async function findDuplicateUserRegistries() {
+  try {
+    const duplicates = await UserRegistry.aggregate([
+      {
+        $group: {
+          _id: { user: '$user', role: '$role' }, // Group by both user and role
+          duplicatedId: { $addToSet: '$_id' }, // Collect all unique _id's for each group
+          count: { $sum: 1 } // Count the number of documents in each group
+        }
+      },
+      {
+        $match: {
+          count: { $gt: 1 } // Having more than one document means duplicates exist
+        }
+      },
+      {
+        $project: {
+          _id: 0, // Do not project the group _id
+          idsToDelete: { $slice: ['$duplicatedId', 1, { $subtract: ['$count', 1] }] }, // Skip the first ID
+          duplicatedId: 1 // Keep the array of IDs
+        }
+      },
+      {
+        $group: {
+          _id: 0, // Group all documents together
+          allIdsToDelete: { $push: '$idsToDelete' } // Collect all IDs into a single array
+        }
+      },
+      {
+        $unwind: '$allIdsToDelete' // Now unwind the array to flatten it
+      },
+      {
+        $project: {
+          _id: 0, // Exclude the artificial null _id
+          allIdsToDelete: 1 // Use $first to collapse the array of arrays
+        }
+      }
+    ]);
+    console.log(duplicates.flatMap((dup) => dup.allIdsToDelete));
+
+    await UserRegistry.deleteMany({ _id: { $in: duplicates.flatMap((dup) => dup.allIdsToDelete) } });
+  } catch (error) {
+    throw new Error(error.stack);
+  }
+}
+
+findDuplicateUserRegistries();

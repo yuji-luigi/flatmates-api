@@ -18,6 +18,7 @@ import { entities } from './types/mongoose-types/model-types/Entities';
 import { getSchemaPathTypes } from './api/helpers/mongoose.helper';
 // import { seedRoles } from './lib/mongoose/seed/mongoose-seeder';
 
+mongooseConnector.init();
 const { port, env } = vars;
 const app = express();
 // request logging. dev: console | production: file
@@ -45,7 +46,6 @@ passport.use('jwt', strategies.jwt);
 // mount api v1 routes
 app.use('/api/v1', routes);
 // open mongoose connection
-mongooseConnector.init();
 
 app.listen(port, async () => {
   console.log(`server started on port ${port} (${env})`);

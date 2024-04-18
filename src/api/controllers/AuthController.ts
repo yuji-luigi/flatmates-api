@@ -15,7 +15,7 @@ import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { userHasSpace } from '../helpers/spaceHelper';
 import { resetSpaceCookies, handleSetCookiesFromPayload } from '../../lib/jwt/jwtUtils';
 import { JWTPayload } from '../../lib/jwt/JwtPayload';
-import { RoleFields } from '../../types/mongoose-types/model-types/role-interface';
+import { RoleName } from '../../types/mongoose-types/model-types/role-interface';
 import AccessController from '../../models/AccessPermission';
 import { RoleCache, roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
 import { accessPermissionsCache } from '../../lib/mongoose/mongoose-cache/access-permission-cache';
@@ -114,10 +114,10 @@ async function createNewSpaceAtRegister({
  * Returns jwt token if valid username and password is provided
  * @public
  */
-const loginByRole = async (req: Request<{ role: RoleFields }>, res: Response) => {
+const loginByRole = async (req: Request<{ role: RoleName }>, res: Response) => {
   try {
     const { email, password } = req.body;
-    const { role } = req.params as { role: RoleFields };
+    const { role } = req.params as { role: RoleName };
 
     const user = await User.findOne({ email });
     if (!(await user.passwordMatches(password))) {

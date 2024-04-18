@@ -16,7 +16,7 @@ import {
 } from '../controllers/UserByController';
 const router = express.Router();
 
-const userTypes = ['maintainers', 'property_managers', 'inhabitants', 'system_admins'];
+const userTypes = ['property_managers', 'inhabitants', 'system_admins'];
 
 router.use('/:userType', (req: RequestCustom, res, next) => {
   console.log(req.params.userType);
@@ -26,7 +26,8 @@ router.use('/:userType', (req: RequestCustom, res, next) => {
   }
   next('router');
 });
-router.get('/test/test', (req, res) => res.send('API is working: maintainer.routes.tsd'));
+
+router.get('/test/test', (req, res) => res.send('API is working: userByUserType.routes.ts'));
 
 router.get('/:userType', isLoggedIn(), sendUserByUserTypesToClient);
 router.get('/:userType/with-pagination', isLoggedIn(), sendUserByUserTypesWithPaginationToClient);

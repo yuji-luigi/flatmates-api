@@ -17,16 +17,7 @@ export const userRegistrySchema = new Schema(
     jobTitle: {
       type: String
     },
-    // avatar: {
-    //   type: Schema.Types.ObjectId,
-    //   ref: 'uploads',
-    //   autopopulate: true
-    // },
-    // cover: {
-    //   type: Schema.Types.ObjectId,
-    //   ref: 'uploads',
-    //   autopopulate: true
-    // },
+    // other profile fields when necessary
     isPublic: {
       type: Boolean,
       default: false
@@ -48,5 +39,6 @@ userRegistrySchema.pre('save', async function (next) {
   }
   next();
 });
+
 const UserRegistry = mongoose.model('userRegistry', userRegistrySchema);
 export default UserRegistry;

@@ -1,4 +1,4 @@
-import { RoleFields } from './../types/mongoose-types/model-types/role-interface';
+import { RoleName } from './../types/mongoose-types/model-types/role-interface';
 import { Schema, model } from 'mongoose';
 import bcrypt from 'bcrypt';
 import httpStatus from 'http-status';
@@ -129,7 +129,7 @@ userSchema.method({
     });
     return transformed;
   },
-  toJWTPayload(loggedAs: RoleFields): JwtSignPayload {
+  toJWTPayload(loggedAs: RoleName): JwtSignPayload {
     return {
       email: this.email,
       loggedAs

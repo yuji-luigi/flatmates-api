@@ -1,6 +1,6 @@
 import { ObjectId } from 'bson';
 import { MongooseBaseModel } from './base-types/base-model-interface';
-import { RoleFields } from './role-interface';
+import { RoleName } from './role-interface';
 import { Model } from 'mongoose';
 
 export const permissions = [
@@ -30,7 +30,7 @@ export interface PermissionInterface {
 
 export type ACtrlDtoDashboard = {
   space: string;
-  roleName: RoleFields;
+  roleName: RoleName;
   user: string;
 } & {
   [key in Permission]: boolean;

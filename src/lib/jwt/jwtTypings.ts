@@ -1,6 +1,6 @@
 import { ObjectId } from 'bson';
 import { UserBase } from '../../types/mongoose-types/model-types/user-interface';
-import { RoleFields, RoleInterface } from '../../types/mongoose-types/model-types/role-interface';
+import { RoleName, RoleInterface } from '../../types/mongoose-types/model-types/role-interface';
 import { AccessPermissionCache } from '../../types/mongoose-types/model-types/access-permission-interface';
 
 export type CurrentSpace = {
@@ -22,8 +22,8 @@ export type ReqUser = UserBase & {
 
 export type JwtSignPayload = {
   email: string;
-  loggedAs: RoleFields;
-  userType?: RoleFields;
+  loggedAs: RoleName;
+  userType?: RoleName;
   spaceId?: string;
   accessControllerId?: string; // superAdmin does not need this
 };

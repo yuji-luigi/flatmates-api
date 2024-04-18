@@ -1,4 +1,4 @@
-import { RoleFields } from '../mongoose-types/model-types/role-interface';
+import { RoleName } from '../mongoose-types/model-types/role-interface';
 
 type ActionEnum = 'LOGIN' | 'REGISTER' | 'LOGOUT' | 'INITIALIZE';
 
@@ -45,7 +45,7 @@ interface RegisterData extends LoginData {
   name: string;
   space: SpaceData;
   surname: string;
-  role: RoleFields;
+  role: RoleName;
   isPublic: boolean;
 }
 type PurposeUser = 'condoAdmin' | 'flatAdmin' | 'companyAdmin';

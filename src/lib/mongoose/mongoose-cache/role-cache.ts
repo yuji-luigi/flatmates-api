@@ -1,9 +1,9 @@
 import Role from '../../../models/Role';
-import { RoleFields, RoleInterface } from '../../../types/mongoose-types/model-types/role-interface';
+import { RoleName, RoleInterface } from '../../../types/mongoose-types/model-types/role-interface';
 /**
  * @description key is Name of role
  *  */
-export const roleCache = new Map<RoleFields, RoleInterface>();
+export const roleCache = new Map<RoleName, RoleInterface>();
 
 export const initCacheRole = async () => {
   const roles = await Role.find();

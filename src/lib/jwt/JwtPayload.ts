@@ -1,15 +1,15 @@
 import { ObjectId } from 'bson';
-import { RoleFields } from '../../types/mongoose-types/model-types/role-interface';
+import { RoleName } from '../../types/mongoose-types/model-types/role-interface';
 import { JwtSignPayload } from './jwtTypings';
 
 export class JWTPayload implements JwtSignPayload {
   email: string;
-  loggedAs: RoleFields;
-  userType?: RoleFields;
+  loggedAs: RoleName;
+  userType?: RoleName;
   spaceId?: string;
   accessControllerId?: string;
 
-  constructor({ email, loggedAs, spaceId, userType }: { email: string; loggedAs: RoleFields; spaceId: string | ObjectId; userType: RoleFields }) {
+  constructor({ email, loggedAs, spaceId, userType }: { email: string; loggedAs: RoleName; spaceId: string | ObjectId; userType: RoleName }) {
     if (userType === 'system_admin') {
       throw new Error('system_admin cannot be set as userType in JWT payload');
     }
@@ -26,9 +26,9 @@ export class JWTPayload implements JwtSignPayload {
     userType
   }: {
     email: string;
-    loggedAs: RoleFields;
+    loggedAs: RoleName;
     spaceId?: string | ObjectId;
-    userType: RoleFields;
+    userType: RoleName;
   }): JWTPayload {
     if (spaceId instanceof ObjectId) {
       spaceId = spaceId.toString();

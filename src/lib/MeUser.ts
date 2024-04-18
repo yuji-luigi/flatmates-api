@@ -2,7 +2,7 @@ import { isAdminOfSpace } from '../middlewares/auth-middlewares';
 import Space from '../models/Space';
 import User from '../models/User';
 import { AccessPermissionCache } from '../types/mongoose-types/model-types/access-permission-interface';
-import { RoleFields, RoleInterface } from '../types/mongoose-types/model-types/role-interface';
+import { RoleName, RoleInterface } from '../types/mongoose-types/model-types/role-interface';
 import { ISpace } from '../types/mongoose-types/model-types/space-interface';
 import { IUser } from '../types/mongoose-types/model-types/user-interface';
 import { JWTPayload } from './jwt/JwtPayload';
@@ -30,7 +30,7 @@ export class MeUser {
     currentAccessPermission
   }: {
     user: IUser | ReqUser;
-    loggedAs: RoleFields;
+    loggedAs: RoleName;
     currentSpace: ISpace | CurrentSpace;
     currentAccessPermission: AccessPermissionCache;
   }) {
