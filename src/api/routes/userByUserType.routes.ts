@@ -43,9 +43,4 @@ router.post('/:userType/:idMongoose/space', isLoggedIn(), favoriteUserByUserType
 router.get('/:userType/spaces', isLoggedIn(), sendUserByUserTypesOfBuildingToClient);
 router.delete('/:userType/spaces', isLoggedIn(), removeSpaceFromUserByUserTypeById);
 
-// router.put('/', is)
-
-// router.get('/:maintenanceId', isLoggedIn(), maintenanceCtrl.sendSingleMaintenanceToFrondEnd);
-// // todo: available only certain entities
-// router.get('/', getPublicCrudObjects);
 export default router;
