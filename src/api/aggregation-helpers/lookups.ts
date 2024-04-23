@@ -6,7 +6,7 @@ export const LOOKUPS = {
     $lookup: { from: 'users', localField: 'users', foreignField: '_id', as: 'users' }
   },
   MAINTAINERS: {
-    $lookup: { from: 'maintainers', localField: 'maintainer', foreignField: '_id', as: 'maintainer' }
+    $lookup: { from: 'users', localField: 'maintainer', foreignField: '_id', as: 'maintainer' }
   },
   ROOT_SPACES: {
     $lookup: { from: 'spaces', localField: 'spaces', foreignField: '_id', as: 'spaces' }
