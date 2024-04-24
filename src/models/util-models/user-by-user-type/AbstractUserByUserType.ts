@@ -2,7 +2,7 @@ import { FilterOptions } from '../../../types/mongoose-types/pipelines/pipeline-
 import { PipelineStage } from 'mongoose';
 import User from '../../User';
 import { createFilteredStage } from '../../../api/aggregation-helpers/pipeline';
-import { ObjectId } from 'bson';
+import { ObjectId } from 'mongodb';
 import { RoleName } from '../../../types/mongoose-types/model-types/role-interface';
 import { ErrorCustom } from '../../../lib/ErrorCustom';
 import { RoleCache } from '../../../lib/mongoose/mongoose-cache/role-cache';

@@ -49,9 +49,9 @@ app.use('/api/v1', routes);
 
 app.listen(port, async () => {
   console.log(`server started on port ${port} (${env})`);
-  entities.forEach((entity) => {
-    getSchemaPathTypes(entity);
-  });
+  // entities.forEach((entity) => {
+  //   getSchemaPathTypes(entity);
+  // });
 });
 
 /**

@@ -277,7 +277,7 @@ export async function authUserMaintenanceFiles(req: Request, res: Response) {
     if (!authToken) throw new Error('pin is not correct');
     res.cookie('maintenanceNonce', req.body.pin, sensitiveCookieOptions);
     // Todo: create authToken field to determine which entity it is referring to. prev version userType using docHolder
-    const maintenance = await Maintenance.findById(authToken.refId).populate({
+    const maintenance = await Maintenance.findOne({ authToken: authToken._id }).populate({
       path: 'space',
       select: 'name address admins cover',
       populate: [

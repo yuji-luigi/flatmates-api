@@ -9,7 +9,8 @@ import {
   sendUsersToClient,
   updateUserById,
   registerUserOnBoardingAndSendUserToClient,
-  sendAuthTokenOfUserToClient
+  sendAuthTokenOfUserToClient,
+  inviteUserToSpace
 } from '../controllers/UserController';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { deleteCrudObjectByIdAndSendDataWithPagination } from '../controllers/DataTableController';
@@ -54,6 +55,7 @@ router.get('/:idMongoose/auth-tokens', isLoggedIn(), sendAuthTokenOfUserToClient
 
 router.post('/with-pagination', isLoggedIn(), createUserAndSendDataWithPagination);
 router.post('/import-excel', isLoggedIn(), importExcelFromClient);
+router.post('/invite/:userType', isLoggedIn(), inviteUserToSpace);
 
 router.put('/:idMongoose', isLoggedIn(), compareTargetAndCurrentUser, updateUserById);
 

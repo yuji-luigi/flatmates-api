@@ -4,7 +4,6 @@ import autoPopulate from 'mongoose-autopopulate';
 import { formatDateAndTimev3 } from '../utils/functions';
 
 import { CheckInterface, checkTypes } from '../types/mongoose-types/model-types/check-interface';
-import Maintenance from './Maintenance';
 import logger from '../lib/logger';
 
 type CheckModel = Model<CheckInterface, object, object>;
@@ -28,30 +27,18 @@ export const checkSchema = new Schema<CheckInterface, CheckModel, unknown>(
         required: true
       }
     ],
-    type: {
-      type: String,
-      enum: checkTypes,
-      required: true
-    },
+    // type: {
+    //   type: String,
+    //   enum: checkTypes,
+    //   required: true
+    // },
     entity: {
       type: String,
       required: true
     },
-    // deprecate this
-    maintainer: {
-      type: Schema.Types.ObjectId
-      // ref: 'maintainers'
-      // autopopulate: true
-    },
-    // deprecate this
-    maintenance: {
-      type: Schema.Types.ObjectId,
-      ref: 'maintenances'
-    },
-    // new fields
-    of: {
+    parent: {
       entity: String,
-      ofId: Schema.Types.ObjectId
+      _id: Schema.Types.ObjectId
     },
     uploadedBy: {
       entity: String,
@@ -60,13 +47,11 @@ export const checkSchema = new Schema<CheckInterface, CheckModel, unknown>(
     organization: {
       type: Schema.Types.ObjectId,
       ref: 'organizations',
-      // autopopulate: true,
       required: true
     },
     space: {
       type: Schema.Types.ObjectId,
       ref: 'spaces',
-      // autopopulate: true,
       required: true
     }
   },
@@ -86,29 +71,29 @@ checkSchema.pre('find', async function (next) {
   next();
 });
 
-checkSchema.pre('validate', async function (next) {
-  try {
-    // save in maintenance.invoice or receipt at the creation of the check
-    const maintenance = await Maintenance.findById(this.maintenance);
-    if (maintenance) {
-      this.space = maintenance.space;
-      this.organization = maintenance.organization;
-      maintenance[this.type].push(this);
-      if (this.type === 'invoices') {
-        maintenance.invoicesTotal += this.total;
-      }
-      if (this.type === 'receipts') {
-        maintenance.receiptsTotal += this.total;
-      }
-      this.name = maintenance.title;
-      this._modifiedMaintenance = maintenance;
-    }
-    next();
-  } catch (error) {
-    logger.error(error.message || error);
-    throw new Error('error in checkSchema.pre(save)');
-  }
-});
+// checkSchema.pre('validate', async function (next) {
+//   try {
+//     // save in maintenance.invoice or receipt at the creation of the check
+//     // const maintenance = await Maintenance.findById(this.maintenance);
+//     // if (maintenance) {
+//     //   this.space = maintenance.space;
+//     //   this.organization = maintenance.organization;
+//     //   // maintenance[this.type].push(this);
+//     //   // if (this.type === 'invoices') {
+//     //   //   maintenance.invoicesTotal += this.total;
+//     //   // }
+//     //   // if (this.type === 'receipts') {
+//     //   //   maintenance.receiptsTotal += this.total;
+//     //   // }
+//     //   this.name = maintenance.title;
+//     //   this._modifiedMaintenance = maintenance;
+//     }
+//     // next();
+//   } catch (error) {
+//     logger.error(error.message || error);
+//     throw new Error('error in checkSchema.pre(save)');
+//   }
+// });
 
 // Post-validate hook
 checkSchema.post('validate', async function (doc, next) {

@@ -82,20 +82,17 @@ export const maintenanceSchema = new Schema<IMaintenanceDoc, MaintenanceModel, I
     space: {
       type: Schema.Types.ObjectId,
       ref: 'spaces'
-      // required: true,
     },
     invoices: [
       {
         type: Schema.Types.ObjectId,
         ref: 'checks'
-        // autopopulate: true
       }
     ],
     receipts: [
       {
         type: Schema.Types.ObjectId,
         ref: 'checks'
-        // autopopulate: true
       }
     ],
     invoicesTotal: {
@@ -112,6 +109,10 @@ export const maintenanceSchema = new Schema<IMaintenanceDoc, MaintenanceModel, I
     },
     cost: {
       type: Number
+    },
+    authToken: {
+      type: Schema.Types.ObjectId,
+      ref: 'authTokens'
     }
     // nonce: {
     //   type: Number,

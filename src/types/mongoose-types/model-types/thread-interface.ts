@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongoose';
+import { ObjectId } from 'mongodb';
 import { PostBaseInterface } from './base-types/post-base-interface';
 import { ISpace } from './space-interface';
 import { IUpload } from './upload-interface';

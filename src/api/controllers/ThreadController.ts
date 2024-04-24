@@ -10,7 +10,7 @@ import { correctQueryForEntity, getThreadsForPlatForm } from '../helpers/mongoos
 import mongoose from 'mongoose';
 import { UploadsThread } from '../helpers/types-uploadFileHelper';
 import { _MSG } from '../../utils/messages';
-import { ObjectId } from 'bson';
+import { ObjectId } from 'mongodb';
 
 const createThread = async (req: RequestCustom, res: Response) => {
   try {

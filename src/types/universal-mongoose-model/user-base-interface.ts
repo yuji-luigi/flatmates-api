@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson';
+import { ObjectId } from 'mongodb';
 // Define a type that either resolves to the methods or an empty object
 export type ConditionalMethods<UserType> = UserType extends null ? NonNullable<unknown> : LoginInstanceMethods<UserType>;
 export interface LoginInstance<UserType = null> extends LoginInstanceMethods<UserType>, LoginInstanceProperties {}

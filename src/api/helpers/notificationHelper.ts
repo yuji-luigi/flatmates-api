@@ -1,7 +1,7 @@
 import logger from '../../lib/logger';
 import { IMaintenance } from '../../types/mongoose-types/model-types/maintenance-interface';
 import { IThread } from '../../types/mongoose-types/model-types/thread-interface';
-import { ObjectId } from 'bson';
+import { ObjectId } from 'mongodb';
 import Notification from '../../models/Notification';
 type NotificationPayload = IMaintenance | IThread;
 

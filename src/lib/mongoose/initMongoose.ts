@@ -20,6 +20,7 @@ import Check from '../../models/Check';
 import SpaceTag from '../../models/SpaceTag';
 import AuthToken from '../../models/AuthToken';
 import BusinessProfile from '../../models/BusinessProfile';
+import Invitation from '../../models/Invitation';
 
 import vars from '../../utils/globalVariables';
 import Role from '../../models/Role';
@@ -38,6 +39,7 @@ mongoose.Promise = Promise;
 
 mongoose.set('strictQuery', false);
 
+Invitation;
 Bookmark;
 Comment;
 Fund;

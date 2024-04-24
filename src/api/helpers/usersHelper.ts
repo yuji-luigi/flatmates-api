@@ -7,7 +7,7 @@ import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { AuthTokenInterface } from 'mongoose-types/model-types/auth-token-interface';
 import { generateTokenUrl } from '../../lib/jwt/jwtUtils';
 import { checkDuplicateEmail } from './mongoose.helper';
-import { ObjectId } from 'bson';
+import { ObjectId } from 'mongodb';
 
 export type userExcelData = {
   name: string;

@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson';
+import { ObjectId } from 'mongodb';
 // not using not recursive. so only first level children
 export const headToTailPipeline = (selectedId: ObjectId) => [
   { $match: { _id: selectedId } }, // Start with the selected space

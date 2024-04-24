@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson';
+import { ObjectId } from 'mongodb';
 import { MongooseBaseModel } from './base-types/base-model-interface';
 
 export const spaceTypes = ['country', 'street', 'building', 'area', 'house', 'room', 'floor'] as const;

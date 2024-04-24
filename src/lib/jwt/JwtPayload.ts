@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson';
+import { ObjectId } from 'mongodb';
 import { RoleName } from '../../types/mongoose-types/model-types/role-interface';
 import { JwtSignPayload } from './jwtTypings';
 

@@ -6,7 +6,7 @@ import { IUpload } from './upload-interface';
 import { IUser } from './user-interface';
 import { ITag } from './tag-interface';
 import { MongooseBaseModel } from './base-types/base-model-interface';
-import { ObjectId } from 'bson';
+import { ObjectId } from 'mongodb';
 
 export const MAINTENANCE_STATUS = {
   INCOMPLETE: 'incomplete',
@@ -32,6 +32,7 @@ export interface IMaintenance extends MongooseBaseModel {
   organization?: IOrganization | string;
   space: ISpace;
   maintainer: ObjectId;
+  authToken: ObjectId;
   /** decides if everyone in the world can see or only under the organization. */
   slug: string;
   invoices?: CheckInterface[];

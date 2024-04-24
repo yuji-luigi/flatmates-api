@@ -10,7 +10,7 @@ import AccessPermission from '../../models/AccessPermission';
 import { ErrorCustom } from '../../lib/ErrorCustom';
 import { ReqUser } from '../../lib/jwt/jwtTypings';
 import { accessPermissionsCache } from '../../lib/mongoose/mongoose-cache/access-permission-cache';
-import { ObjectId } from 'bson';
+import { ObjectId } from 'mongodb';
 import { UserByUserType } from '../../models/util-models/user-by-user-type/UserByUserType';
 const entity = 'users';
 

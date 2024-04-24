@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson';
+import { ObjectId } from 'mongodb';
 import { MongooseBaseModel } from './base-types/base-model-interface';
 import { IOrganization } from './organization-interface';
 import { ISpace } from './space-interface';

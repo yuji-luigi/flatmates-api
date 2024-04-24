@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson';
+import { ObjectId } from 'mongodb';
 import { UserBase } from '../../types/mongoose-types/model-types/user-interface';
 import { RoleName, RoleInterface } from '../../types/mongoose-types/model-types/role-interface';
 import { AccessPermissionCache } from '../../types/mongoose-types/model-types/access-permission-interface';

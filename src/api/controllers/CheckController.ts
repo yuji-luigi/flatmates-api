@@ -85,7 +85,7 @@ export async function sendCheckToClient(req: RequestCustom, res: Response) {
   try {
     const check = await Check.findById(req.params.idMongoose);
 
-    const maintenance = await Maintenance.findOne({ [check.type]: { $in: [req.params.idMongoose] } });
+    const maintenance = await Maintenance.findOne({ _id: check.parent._id });
     const foundAuthToken = await AuthToken.findOne({ 'docHolder.instanceId': maintenance._id, nonce: req.cookies.maintenanceNonce });
     // const nonceIsCorrect = +req.cookies.maintenanceNonce === authToken.nonce;
 

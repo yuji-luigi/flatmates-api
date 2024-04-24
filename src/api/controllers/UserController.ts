@@ -1,5 +1,5 @@
 import httpStatus from 'http-status';
-import { Response } from 'express';
+import { NextFunction, Response } from 'express';
 import logger from '../../lib/logger';
 import Space from '../../models/Space';
 import { RequestCustom } from '../../types/custom-express/express-custom';
@@ -17,6 +17,9 @@ import { PipelineStage } from 'mongoose';
 import ErrorEx from '../../errors/extendable.error';
 import { deleteCrudObjectByIdAndSendDataWithPagination } from './DataTableController';
 import AccessController from '../../models/AccessPermission';
+import { ErrorCustom } from '../../lib/ErrorCustom';
+import AuthToken from '../../models/AuthToken';
+import Invitation from '../../models/Invitation';
 
 const entity = 'users';
 
@@ -441,4 +444,38 @@ async function findAndModifyUserBase(req: RequestCustom) {
 
   // const updatedModel = await foundUser.save();
   return foundUser;
+}
+
+export async function inviteUserToSpace(req: RequestCustom, res: Response, next: NextFunction) {
+  try {
+    const { userType } = req.params;
+    const { email, space } = req.body;
+    if (!req.user.isAdminOfCurrentSpace && !req.user.isSuperAdmin) {
+      throw new ErrorCustom('you are not allowed to invite user to space.', httpStatus.UNAUTHORIZED);
+    }
+
+    const authToken = await AuthToken.create();
+
+    const invitation = await Invitation.create({
+      email,
+      space,
+      userType,
+      authToken
+    });
+
+    const mailOptions =
+      // const authToken = await AuthToken.create({
+      //   email
+      // }).save();
+
+      // const mailOptions = await createMailOptionsForUserToken({ userId: req.params.idMongoose });
+
+      res.status(httpStatus.OK).json({
+        success: true,
+        collection: 'users',
+        data: userType
+      });
+  } catch (error) {
+    next(error);
+  }
 }
