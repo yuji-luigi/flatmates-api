@@ -20,6 +20,7 @@ import AccessController from '../../models/AccessPermission';
 import { ErrorCustom } from '../../lib/ErrorCustom';
 import AuthToken from '../../models/AuthToken';
 import Invitation from '../../models/Invitation';
+import { createInvitationEmail } from '../../lib/node-mailer/createInvitationMail';
 
 const entity = 'users';
 
@@ -454,7 +455,9 @@ export async function inviteUserToSpace(req: RequestCustom, res: Response, next:
       throw new ErrorCustom('you are not allowed to invite user to space.', httpStatus.UNAUTHORIZED);
     }
 
-    const authToken = await AuthToken.create();
+    const authToken = new AuthToken();
+
+    await authToken.save();
 
     const invitation = await Invitation.create({
       email,
@@ -463,18 +466,19 @@ export async function inviteUserToSpace(req: RequestCustom, res: Response, next:
       authToken
     });
 
-    const mailOptions =
-      // const authToken = await AuthToken.create({
-      //   email
-      // }).save();
+    const mailOptions = await createInvitationEmail({ email, space, userType, authToken });
+    const result = await sendEmail(mailOptions);
+    // const authToken = await AuthToken.create({
+    //   email
+    // }).save();
 
-      // const mailOptions = await createMailOptionsForUserToken({ userId: req.params.idMongoose });
+    // const mailOptions = await createMailOptionsForUserToken({ userId: req.params.idMongoose });
 
-      res.status(httpStatus.OK).json({
-        success: true,
-        collection: 'users',
-        data: userType
-      });
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: 'users',
+      data: userType
+    });
   } catch (error) {
     next(error);
   }

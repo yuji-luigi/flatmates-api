@@ -2,6 +2,8 @@ import { Request } from 'express';
 import { UploadedFile } from 'express-fileupload';
 import { ReqUser } from '../../lib/jwt/jwtTypings';
 import { Entities } from '../mongoose-types/model-types/Entities';
+import { RoleName } from '../mongoose-types/model-types/role-interface';
+import { UserType } from '../../models/util-models/user-by-user-type/UserByUserType';
 
 interface TypedRequestBody<T, U> extends Request {
   params: { [key: string]: string };
@@ -83,7 +85,7 @@ interface ParamsInterface {
   idMongoose?: string;
   id?: string;
   entity: Entities;
-  userType?: 'maintainers' | 'property_managers';
+  userType?: RoleName;
   userId?: string;
   parentId?: string;
   spaceId?: string;

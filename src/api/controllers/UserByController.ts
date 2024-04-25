@@ -12,6 +12,7 @@ import { ReqUser } from '../../lib/jwt/jwtTypings';
 import { accessPermissionsCache } from '../../lib/mongoose/mongoose-cache/access-permission-cache';
 import { ObjectId } from 'mongodb';
 import { UserByUserType } from '../../models/util-models/user-by-user-type/UserByUserType';
+import Invitation from '../../models/Invitation';
 const entity = 'users';
 
 export const createUserByUserType = async (req: RequestCustom, res: Response) => {
@@ -95,10 +96,30 @@ export const sendUserByUserTypesWithPaginationToClient = async (req: RequestCust
       fieldFilterOptions,
       additionalPipelines: [{ $match: { spaces: { $ne: [] } } }]
     });
+    const pendingInvites = await Invitation.aggregate([
+      {
+        $match: {
+          status: 'pending',
+          userType: req.params.userType,
+          space: new ObjectId(req.user.currentSpace._id)
+        }
+      },
+      { $addFields: { name: 'pending_invite' } },
+      { $addFields: { surname: 'Pending Invitation' } },
+      {
+        $project: {
+          _id: 0,
+          email: 1,
+          active: 1,
+          tel: 1,
+          name: 1
+        }
+      }
+    ]);
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity,
-      data: usersByUserType,
+      data: usersByUserType.concat(pendingInvites),
       totalDocuments: usersByUserType.length
     });
   } catch (err) {
@@ -119,6 +140,7 @@ export const sendUserByUserTypesToClient = async (req: RequestCustom, res: Respo
       fieldFilterOptions,
       additionalPipelines: [{ $match: { spaces: { $ne: [] } } }]
     });
+
     console.log({ [req.params.userType]: userByUserType });
     res.status(httpStatus.OK).json({
       success: true,
