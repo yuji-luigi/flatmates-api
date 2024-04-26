@@ -1,7 +1,7 @@
 // import { IUser } from './../../types/model/user.d';
 // import { RegisterData } from './../../types/auth/formdata.d';
 /** *********** User ************* */
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import httpStatus from 'http-status';
 import User from '../../models/User';
 // import { UserModel } from 'model/user';
@@ -25,6 +25,8 @@ import { AccessPermissionCache } from '../../types/mongoose-types/model-types/ac
 import UserRegistry from '../../models/UserRegistry';
 import { ErrorCustom } from '../../lib/ErrorCustom';
 import { MeUser } from '../../lib/MeUser';
+import AuthToken from '../../models/AuthToken';
+import Invitation from '../../models/Invitation';
 
 const { cookieDomain } = vars;
 
@@ -342,10 +344,28 @@ export const setSpaceAndOrgInJwt = async (req: RequestCustom, res: Response) => 
   }
 };
 
+export async function acceptInvitation(req: RequestCustom, res: Response, next: NextFunction) {
+  try {
+    const authToken = await AuthToken.findOne({ linkId: req.params.linkId });
+    if (!authToken) {
+      throw new Error('Invalid token');
+    }
+    const invitation = await Invitation.findOne({
+      status: 'pending',
+      authToken: authToken._id
+    });
+
+    res.send(invitation);
+  } catch (error) {
+    next(error);
+  }
+}
+
 export default {
   removeSpaceToken,
   loginByRole,
   logout,
+  acceptInvitation,
   me,
   register
   // completeRegisterMaintainer

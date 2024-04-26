@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 
 const router = express.Router();
 import authCtrl, {
+  acceptInvitation,
   checkSystemAdmin,
   exitSystemAdmin,
   sendMainOrganizationSelectionsToClient,
@@ -28,6 +29,7 @@ router.post('/register', authCtrl.register);
 
 router.get('/logout', authCtrl.logout);
 
+router.post('/invitation/:linkId/accept', acceptInvitation);
 // router.get('/static-props/:slug', checkSSGSecret, sendDataForHomeDashboard);
 // router.get('/ssg-paths', checkSSGSecret, sendMainSpacesSlug);
 

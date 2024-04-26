@@ -51,6 +51,6 @@ authTokenSchema.statics = {};
 
 authTokenSchema.plugin(autoPopulate);
 
-const AuthTokenSchema = mongoose.model<AuthTokenInterface>('authTokens', authTokenSchema);
-// export type AuthTokenModel = typeof AuthTokenSchema;
-export default AuthTokenSchema;
+const AuthToken = mongoose.model<AuthTokenInterface>('authTokens', authTokenSchema);
+// export type AuthTokenModel = typeof AuthToken;
+export default AuthToken;

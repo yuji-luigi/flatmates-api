@@ -459,7 +459,7 @@ export async function inviteUserToSpace(req: RequestCustom, res: Response, next:
 
     await authToken.save();
 
-    const invitation = await Invitation.create({
+    await Invitation.create({
       email,
       space,
       userType,
@@ -467,7 +467,7 @@ export async function inviteUserToSpace(req: RequestCustom, res: Response, next:
     });
 
     const mailOptions = await createInvitationEmail({ email, space, userType, authToken });
-    const result = await sendEmail(mailOptions);
+    await sendEmail(mailOptions);
     // const authToken = await AuthToken.create({
     //   email
     // }).save();

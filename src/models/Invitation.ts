@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
 import { InvitationInterface, invitationStatuses } from '../types/mongoose-types/model-types/invitation-interface';
+import { ErrorCustom } from '../lib/ErrorCustom';
+import httpStatus from 'http-status';
 
 const { Schema } = mongoose;
 
@@ -46,5 +48,13 @@ export const invitationSchema = new Schema<InvitationInterface>(
 invitationSchema.statics = {};
 
 invitationSchema.plugin(autoPopulate);
+// invitationSchema.pre('save', async function (next) {
+//   const found = await Invitation.findOne({ email: this.email, space: this.space, status: 'pending' });
+//   if (found) {
+//     throw new ErrorCustom('Invitation already exists', httpStatus.CONFLICT);
+//   }
+//   next();
+// });
 
-export default mongoose.model('invitations', invitationSchema);
+const Invitation = mongoose.model('invitations', invitationSchema);
+export default Invitation;

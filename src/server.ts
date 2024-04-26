@@ -16,6 +16,7 @@ import strategies from './lib/jwt/resolveUserJwt';
 import mongooseConnector from './lib/mongoose/initMongoose';
 import { entities } from './types/mongoose-types/model-types/Entities';
 import { getSchemaPathTypes } from './api/helpers/mongoose.helper';
+import { errorLogger, errorResponder } from './middlewares/errorHandler';
 // import { seedRoles } from './lib/mongoose/seed/mongoose-seeder';
 
 mongooseConnector.init();
@@ -46,6 +47,13 @@ passport.use('jwt', strategies.jwt);
 // mount api v1 routes
 app.use('/api/v1', routes);
 // open mongoose connection
+
+app.use(errorLogger);
+app.use((req, res, next) => {
+  console.log('req.url', req.url);
+  next();
+});
+app.use(errorResponder);
 
 app.listen(port, async () => {
   console.log(`server started on port ${port} (${env})`);
