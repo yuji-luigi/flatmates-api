@@ -34,7 +34,7 @@ router.use('/statistics', statisticRoutes);
 
 // call passport jwt strategy defined in passport.ts
 // set user in req.user
-router.((use(handleUserFromRequest);
+router.use(handleUserFromRequest);
 router.use(queryHandler);
 
 router.use('/accessPermissions', accessControllerRoutes);
