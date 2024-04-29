@@ -15,7 +15,7 @@ import { deleteSpaceCookie } from '../controllers/SpaceController';
 
 export const cache = new Map();
 
-router.get('/', (req: Request, res: Response) => {
+router.get('/', (_req: Request, res: Response) => {
   res.send('auth routes');
 });
 
@@ -29,7 +29,8 @@ router.post('/register', authCtrl.register);
 
 router.get('/logout', authCtrl.logout);
 
-router.post('/invitation/:linkId/accept', acceptInvitation);
+router.post('/invitations/:linkId/accept', acceptInvitation);
+router.get('/invitations/:linkId', authCtrl.getInvitationByLinkId);
 // router.get('/static-props/:slug', checkSSGSecret, sendDataForHomeDashboard);
 // router.get('/ssg-paths', checkSSGSecret, sendMainSpacesSlug);
 

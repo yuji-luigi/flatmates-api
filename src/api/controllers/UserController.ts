@@ -21,6 +21,7 @@ import { ErrorCustom } from '../../lib/ErrorCustom';
 import AuthToken from '../../models/AuthToken';
 import Invitation from '../../models/Invitation';
 import { createInvitationEmail } from '../../lib/node-mailer/createInvitationMail';
+import { roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
 
 const entity = 'users';
 
@@ -144,7 +145,7 @@ export async function organizationSelected(req: RequestCustom, res: Response) {
   }
 }
 
-export async function sendUsersSelectionForSuperAdmin(req: RequestCustom, res: Response) {
+export async function sendUsersSelectionForSuperAdmin(_req: RequestCustom, res: Response) {
   try {
     const data = await User.find({});
     res.clearCookie('space', { domain: vars.cookieDomain });
@@ -237,7 +238,7 @@ export async function deleteOrganizationById(req: RequestCustom, res: Response) 
   }
 }
 
-export async function deleteOrganizationCookie(req: RequestCustom, res: Response) {
+export async function deleteOrganizationCookie(_req: RequestCustom, res: Response) {
   res.clearCookie('organization', { domain: vars.cookieDomain });
   res.status(httpStatus.OK).json({
     success: true,
@@ -324,7 +325,7 @@ export async function sendTokenEmail(req: RequestCustom, res: Response) {
   }
 }
 
-export async function sendAuthTokenOfUserToClient(req: RequestCustom, res: Response) {
+export async function sendAuthTokenOfUserToClient(_req: RequestCustom, res: Response) {
   try {
     // if (!req.user.spaceId) {
     //   throw new Error('space is not set. Please select the space in the header nav first to generate the qr code.');
@@ -449,7 +450,7 @@ async function findAndModifyUserBase(req: RequestCustom) {
 
 export async function inviteUserToSpace(req: RequestCustom, res: Response, next: NextFunction) {
   try {
-    const { userType } = req.params;
+    const { userType: userTypeName } = req.params;
     const { email, space } = req.body;
     if (!req.user.isAdminOfCurrentSpace && !req.user.isSuperAdmin) {
       throw new ErrorCustom('you are not allowed to invite user to space.', httpStatus.UNAUTHORIZED);
@@ -459,10 +460,12 @@ export async function inviteUserToSpace(req: RequestCustom, res: Response, next:
 
     await authToken.save();
 
+    const userType = roleCache.get(userTypeName);
+
     await Invitation.create({
       email,
       space,
-      userType,
+      userType: userType.name,
       authToken
     });
 

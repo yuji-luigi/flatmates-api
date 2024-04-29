@@ -3,9 +3,11 @@ import httpStatus from 'http-status';
 import { RequestCustom } from '../types/custom-express/express-custom';
 import { _MSG } from '../utils/messages';
 import { USER_ROLES } from '../types/enum/enum';
+import { ErrorCustom } from '../lib/ErrorCustom';
 
 export const isLoggedIn =
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 
     (roles: USER_ROLES[] = USER_ROLES) =>
     async (req: RequestCustom, res: Response, next: NextFunction) => {
@@ -23,3 +25,11 @@ export const isLoggedIn =
       });
       // throw Error('user not authorized');
     };
+
+export function isSuperAdmin(req: RequestCustom, _res: Response, next: NextFunction) {
+  if (req.user.isSuperAdmin) {
+    return next();
+  } else {
+    next(new ErrorCustom(_MSG.NOT_AUTHORIZED, httpStatus.UNAUTHORIZED));
+  }
+}

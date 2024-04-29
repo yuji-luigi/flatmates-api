@@ -16,7 +16,6 @@ import { userHasSpace } from '../helpers/spaceHelper';
 import { resetSpaceCookies, handleSetCookiesFromPayload } from '../../lib/jwt/jwtUtils';
 import { JWTPayload } from '../../lib/jwt/JwtPayload';
 import { RoleName } from '../../types/mongoose-types/model-types/role-interface';
-import AccessController from '../../models/AccessPermission';
 import { RoleCache, roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
 import { accessPermissionsCache } from '../../lib/mongoose/mongoose-cache/access-permission-cache';
 import { correctQueryForEntity } from '../helpers/mongoose.helper';
@@ -27,6 +26,7 @@ import { ErrorCustom } from '../../lib/ErrorCustom';
 import { MeUser } from '../../lib/MeUser';
 import AuthToken from '../../models/AuthToken';
 import Invitation from '../../models/Invitation';
+import AccessPermission from '../../models/AccessPermission';
 
 const { cookieDomain } = vars;
 
@@ -51,13 +51,13 @@ const register = async (req: Request, res: Response) => {
 
     if (role !== 'maintainer') {
       // create accessPermission for the user and space as system admin
-      await AccessController.create({
+      await AccessPermission.create({
         role: roleCache.get(role)._id,
         space: newRootSpace._id,
         user: newUser._id
       });
       // create system Admin for the new space and new user
-      await AccessController.create({
+      await AccessPermission.create({
         space: newRootSpace._id,
         user: newUser._id,
         role: roleCache.get('system_admin')._id
@@ -125,7 +125,7 @@ const loginByRole = async (req: Request<{ role: RoleName }>, res: Response) => {
     if (!(await user.passwordMatches(password))) {
       throw new Error('Password non corrispondenti');
     }
-    const accessPermissions: AccessPermissionCache[] = await AccessController.find({
+    const accessPermissions: AccessPermissionCache[] = await AccessPermission.find({
       user: user._id
     });
 
@@ -161,7 +161,7 @@ const loginByRole = async (req: Request<{ role: RoleName }>, res: Response) => {
   }
 };
 
-const logout = (req: Request, res: Response) => {
+const logout = (_req: Request, res: Response) => {
   // const domain = cookieDomain;
   // cancello il cookie
   res.clearCookie('jwt', { domain: cookieDomain });
@@ -174,7 +174,7 @@ const logout = (req: Request, res: Response) => {
   res.status(httpStatus.OK).json({ message: 'Logout effettuato con successo' });
 };
 
-const removeSpaceToken = (req: Request, res: Response) => {
+const removeSpaceToken = (_req: Request, res: Response) => {
   // const domain = cookieDomain;
   // cancello il cookie
   res.clearCookie('space', { domain: cookieDomain });
@@ -346,17 +346,101 @@ export const setSpaceAndOrgInJwt = async (req: RequestCustom, res: Response) => 
 
 export async function acceptInvitation(req: RequestCustom, res: Response, next: NextFunction) {
   try {
+    if (!req.user.email) {
+      throw new Error('');
+    }
     const authToken = await AuthToken.findOne({ linkId: req.params.linkId });
     if (!authToken) {
       throw new Error('Invalid token');
     }
     const invitation = await Invitation.findOne({
       status: 'pending',
-      authToken: authToken._id
+      authToken: authToken._id,
+      email: req.user.email
+    });
+    if (!invitation) {
+      throw new Error('Invalid invitation');
+    }
+    invitation.status = 'accepted';
+    await invitation.save();
+
+    const newAccessPermission = new AccessPermission({
+      user: req.user._id,
+      role: RoleCache[invitation.userType],
+      space: invitation.space
+    });
+    await UserRegistry.create({ user: req.user, role: RoleCache[invitation.userType], isPublic: false }).catch(console.error);
+    await newAccessPermission.save();
+
+    await AuthToken.deleteOne({ _id: authToken._id });
+
+    const payload = new JWTPayload({
+      email: req.user.email,
+      loggedAs: invitation.userType,
+      userType: invitation.userType,
+      spaceId: invitation.space
     });
 
-    res.send(invitation);
+    handleSetCookiesFromPayload(res, payload);
+
+    res.status(httpStatus.OK).json({});
   } catch (error) {
+    logger.error(error.stack || error);
+    next(error);
+  }
+}
+
+export async function getInvitationByLinkId(req: RequestCustom, res: Response, next: NextFunction) {
+  try {
+    const [invitation] = await AuthToken.aggregate([
+      {
+        $match: {
+          linkId: req.params.linkId
+        }
+      },
+      {
+        $lookup: {
+          from: 'invitations',
+          localField: '_id',
+          foreignField: 'authToken',
+          as: 'invitation',
+          pipeline: [
+            {
+              $match: {
+                status: 'pending'
+              }
+            },
+            {
+              $lookup: {
+                from: 'spaces',
+                localField: 'space',
+                foreignField: '_id',
+                as: 'space'
+              }
+            },
+            { $unwind: '$space' }
+          ]
+        }
+      },
+      {
+        $unwind: { path: '$invitation', preserveNullAndEmptyArrays: true }
+      },
+      {
+        $replaceRoot: { newRoot: '$invitation' }
+      },
+      {
+        $project: {
+          _id: 1,
+          space: {
+            name: 1,
+            _id: 1
+          }
+        }
+      }
+    ]);
+    res.status(httpStatus.OK).json({ success: true, data: invitation });
+  } catch (error) {
+    logger.error(error.stack || error);
     next(error);
   }
 }
@@ -367,6 +451,7 @@ export default {
   logout,
   acceptInvitation,
   me,
-  register
+  register,
+  getInvitationByLinkId
   // completeRegisterMaintainer
 };

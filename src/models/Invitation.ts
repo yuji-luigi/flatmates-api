@@ -1,8 +1,6 @@
 import mongoose from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
 import { InvitationInterface, invitationStatuses } from '../types/mongoose-types/model-types/invitation-interface';
-import { ErrorCustom } from '../lib/ErrorCustom';
-import httpStatus from 'http-status';
 
 const { Schema } = mongoose;
 
