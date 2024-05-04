@@ -11,6 +11,7 @@ export class JWTPayload implements JwtSignPayload {
 
   constructor({ email, loggedAs, spaceId, userType }: { email: string; loggedAs: RoleName; spaceId: string | ObjectId; userType: RoleName }) {
     if (userType === 'system_admin') {
+      // NOTE: Why...?
       throw new Error('system_admin cannot be set as userType in JWT payload');
     }
     this.email = email;

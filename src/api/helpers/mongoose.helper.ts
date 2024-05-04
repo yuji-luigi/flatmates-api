@@ -1,3 +1,4 @@
+import { ParsedQs } from 'qs';
 import mongoose, { Document, Model, PipelineStage, Schema, SortOrder } from 'mongoose';
 import Thread from '../../models/Thread';
 import logger from '../../lib/logger';
@@ -8,6 +9,7 @@ import { Entities } from '../../types/mongoose-types/model-types/Entities';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import cloneDeep from 'lodash/cloneDeep';
 import { ErrorCustom } from '../../lib/ErrorCustom';
+import { QueryReturnType } from '../../types/custom-express/express-custom';
 // todo: aggregation method
 interface LookUpQueryInterface {
   [key: string]: mongoose.PipelineStage.FacetPipelineStage[];
@@ -41,10 +43,11 @@ type ResultAggregateWithPagination = PaginatedResult & Counts;
  * @returns {[Document[],Counts]}
  */
 export async function aggregateWithPagination(
-  query: Record<string, string | boolean | number | ObjectId>,
+  query: Record<string, string | boolean | number | ObjectId | object>,
   entity: string,
   customPipeline: PipelineStage.FacetPipelineStage[] = []
 ): Promise<ResultAggregateWithPagination[]> {
+  query.jj instanceof ObjectId;
   /** define skip value, then delete as follows */
   const limit = 10;
   let skip = +query.skip - 1 <= 0 ? 0 : (+query.skip - 1) * limit;
@@ -62,7 +65,7 @@ export async function aggregateWithPagination(
     if (!validFields.includes(key)) {
       delete query[key];
     } else {
-      query[key] === 'true' ? (query[key] = true) : query[key];
+      query.j === 'true' ? (query.j = true) : query[key];
       query[key] === 'false' ? (query[key] = false) : query[key];
     }
   }
@@ -106,14 +109,14 @@ export async function getThreadsForPlatForm({
 }
 /** @description not pure function it is mutating the req.query object. Since query id can be a ObjectId that canot be cloned by structuredClone
  * takes req.query object and check if there are objectId in a string type. then converts them to ObjectId of mongoDB */
-export function convert_idToMongooseId(query: Record<string, string | ObjectId>) {
+export function convert_idToMongooseId(query: ParsedQs) {
   // const req.query = structuredClone(query);
   if (query.parentId && typeof query.parentId === 'string') {
     query.parentId = new ObjectId(query.parentId);
   }
-  if (query.organization && typeof query.organization === 'string') {
-    query.organization = new ObjectId(query.organization);
-  }
+  // if (query.organization && typeof query.organization === 'string') {
+  //   query.organization = new ObjectId(query.organization);
+  // }
   if (query.space && typeof query.space === 'string') {
     query.space = new ObjectId(query.space);
   }
@@ -130,7 +133,7 @@ export type DocumentWithSlug = { slug?: string; name?: string; title?: string } 
  */
 export const getCollectionName = <T extends Document>(document: T & DocumentWithSlug) => document.constructor.collection.name;
 
-export async function createSlug<T extends Document>(document: T & DocumentWithSlug, ...otherFields: string[]): Promise<string> {
+export async function createSlug<T extends Document>(document: T & DocumentWithSlug, ..._otherFields: string[]): Promise<string> {
   // export async function createSlug(document: Document & { slug?: string; name: string } & MongooseThis): Promise<string> {
   try {
     // case the document already registered a slug. return
@@ -186,7 +189,7 @@ export function getValidFields({ entity }: { entity: Entities }) {
 }
 
 // pure function...
-export function getCorrectQuery({ entity, query }: { entity: Entities; query: Record<string, string | boolean | number | ObjectId> }) {
+export function getCorrectQuery({ entity, query }: { entity: Entities; query: Record<string, QueryReturnType> }) {
   const validFields = getValidFields({ entity });
   const clonedQuery = cloneDeep(query);
   for (const key in clonedQuery) {
@@ -242,9 +245,9 @@ export function getSchemaPathTypes<T extends Document>(entity: Entities): Record
   return pathTypes;
 }
 
-type QueryMongoose = Record<string, string | boolean | number | ObjectId>;
+type QueryMongoose = Record<string, QueryReturnType>;
 
-export function correctQueryForEntity({ entity, query }: { entity: Entities; query: Record<string, string | boolean | number> }) {
+export function correctQueryForEntity({ entity, query }: { entity: Entities; query: Record<string, QueryReturnType> }) {
   const pathTypes = getSchemaPathTypes(entity);
   const resultQuery: QueryMongoose = cloneDeep(pathTypes);
   function correctQuery(type: string, field: string) {

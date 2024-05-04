@@ -206,7 +206,7 @@ export default {
   getSingleCrudObject
 };
 
-export const sendNotImplemented = (req: RequestCustom, res: Response) => {
+export const sendNotImplemented = (_req: RequestCustom, res: Response) => {
   res.status(httpStatus.NOT_IMPLEMENTED).json({
     message: _MSG.NOT_IMPLEMENTED
   });

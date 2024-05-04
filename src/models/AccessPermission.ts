@@ -13,7 +13,6 @@ import { ErrorCustom } from '../lib/ErrorCustom';
 import httpStatus from 'http-status';
 import { RoleCache } from '../lib/mongoose/mongoose-cache/role-cache';
 import { updateSpaceHasPropertyManagerRecursively } from '../api/helpers/spaceHelper';
-const { property_manager } = RoleCache;
 
 const { Schema } = mongoose;
 
@@ -111,6 +110,7 @@ accessPermissionSchema.post('save', async function (doc: AccessPermissionInterfa
     return;
   }
   const permissions = await AccessPermission.find({ user: userId });
+  const { property_manager } = RoleCache;
   if (this.role.toString() === property_manager._id.toString()) {
     const foundPropM = await AccessPermission.findOne({ space: this.space, role: property_manager._id });
     if (foundPropM) {

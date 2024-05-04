@@ -6,20 +6,20 @@ const { Schema } = mongoose;
 
 export const invitationSchema = new Schema<InvitationInterface>(
   {
+    // data who created invitation
     createdBy: {
       type: Schema.Types.ObjectId,
-      ref: 'users',
-      autopopulate: true
+      ref: 'users'
     },
     cell: String,
+    // email of invited user
     email: {
       type: String,
       required: true
     },
     space: {
       type: Schema.Types.ObjectId,
-      ref: 'spaces',
-      autopopulate: true
+      ref: 'spaces'
     },
     userType: {
       type: String,

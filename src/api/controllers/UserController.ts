@@ -466,7 +466,8 @@ export async function inviteUserToSpace(req: RequestCustom, res: Response, next:
       email,
       space,
       userType: userType.name,
-      authToken
+      authToken,
+      createdBy: req.user._id
     });
 
     const mailOptions = await createInvitationEmail({ email, space, userType, authToken });

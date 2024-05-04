@@ -22,10 +22,12 @@ import userRoutes from './user.routes';
 import { handleUserFromRequest } from '../../middlewares/handleUserFromRequest';
 import { queryHandler } from '../../middlewares/handleSetQuery';
 import statisticRoutes from './statistic.routes';
+import invitationRoutes from './invitation-routes';
 //= ===============================================================================
 // AUTH ROUTES
 //= ===============================================================================
 router.use('/auth', authRoutes);
+router.use('/invitations', invitationRoutes);
 router.use('/space-auth', spaceAuthRoutes);
 router.use('/auth-tokens', authTokenRoutes);
 router.use('/upload-files', uploadFilesRoutes);

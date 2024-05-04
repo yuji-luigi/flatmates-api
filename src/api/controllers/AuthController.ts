@@ -27,6 +27,7 @@ import { MeUser } from '../../lib/MeUser';
 import AuthToken from '../../models/AuthToken';
 import Invitation from '../../models/Invitation';
 import AccessPermission from '../../models/AccessPermission';
+import { getInvitationByAuthTokenLinkId } from '../helpers/authTokenHelper';
 
 const { cookieDomain } = vars;
 
@@ -116,6 +117,49 @@ async function createNewSpaceAtRegister({
  * Returns jwt token if valid username and password is provided
  * @public
  */
+const loginAndAcceptInvitation = async (req: Request, res: Response) => {
+  try {
+    const { email, password }: { email: string; password: string; userType: RoleName } = req.body;
+    // const { linkId } = req.params;
+    const user = await User.findOne({ email });
+    if (!(await user.passwordMatches(password))) {
+      throw new Error('Password non corrispondenti');
+    }
+    // const userRegistry = await UserRegistry.findOne({
+    //   user: user._id,
+    //   role: roleCache.get(userType)._id
+    // });
+    // if (!user.isSuperAdmin && !userRegistry) {
+    //   return res.status(httpStatus.UNAUTHORIZED).json({
+    //     message: 'User not registered as ' + userType
+    //   });
+    // }
+    // const payload = JWTPayload.simple({
+    //   email: user.email,
+    //   loggedAs: userType,
+    //   userType: userType
+    // });
+    // resetSpaceCookies(res);
+
+    // handleSetCookiesFromPayload(res, payload);
+
+    // return res.status(httpStatus.OK).json({
+    //   success: true,
+    //   data: {
+    //     message: `login succeeded as ${user.name} ${user.surname} as ${userType}`,
+    //     accessLength: accessPermissions.length
+    //   }
+    // });
+  } catch (error) {
+    logger.error(error.stack || error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ ...error, message: error.message || error });
+  }
+};
+
+/**
+ * Returns jwt token if valid username and password is provided
+ * @public
+ */
 const loginByRole = async (req: Request<{ role: RoleName }>, res: Response) => {
   try {
     const { email, password } = req.body;
@@ -160,7 +204,6 @@ const loginByRole = async (req: Request<{ role: RoleName }>, res: Response) => {
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ ...error, message: error.message || error });
   }
 };
-
 const logout = (_req: Request, res: Response) => {
   // const domain = cookieDomain;
   // cancello il cookie
@@ -390,54 +433,58 @@ export async function acceptInvitation(req: RequestCustom, res: Response, next: 
   }
 }
 
+// function authInvitation() {}
+
+export async function registerByInvitation(req: RequestCustom, res: Response, next: NextFunction) {
+  try {
+    if (!req.user.email) {
+      throw new Error('');
+    }
+    const authToken = await AuthToken.findOne({ linkId: req.params.linkId });
+    if (!authToken) {
+      throw new Error('Invalid token');
+    }
+    const invitation = await Invitation.findOne({
+      status: 'pending',
+      authToken: authToken._id,
+      email: req.user.email
+    });
+    if (!invitation) {
+      throw new Error('Invalid invitation');
+    }
+    invitation.status = 'accepted';
+    await invitation.save();
+
+    const newAccessPermission = new AccessPermission({
+      user: req.user._id,
+      role: RoleCache[invitation.userType],
+      space: invitation.space
+    });
+    await UserRegistry.create({ user: req.user, role: RoleCache[invitation.userType], isPublic: false }).catch(console.error);
+    await newAccessPermission.save();
+
+    await AuthToken.deleteOne({ _id: authToken._id });
+
+    const payload = new JWTPayload({
+      email: req.user.email,
+      loggedAs: invitation.userType,
+      userType: invitation.userType,
+      spaceId: invitation.space
+    });
+
+    handleSetCookiesFromPayload(res, payload);
+
+    res.status(httpStatus.OK).json({});
+  } catch (error) {
+    logger.error(error.stack || error);
+    next(error);
+  }
+}
+
 export async function getInvitationByLinkId(req: RequestCustom, res: Response, next: NextFunction) {
   try {
-    const [invitation] = await AuthToken.aggregate([
-      {
-        $match: {
-          linkId: req.params.linkId
-        }
-      },
-      {
-        $lookup: {
-          from: 'invitations',
-          localField: '_id',
-          foreignField: 'authToken',
-          as: 'invitation',
-          pipeline: [
-            {
-              $match: {
-                status: 'pending'
-              }
-            },
-            {
-              $lookup: {
-                from: 'spaces',
-                localField: 'space',
-                foreignField: '_id',
-                as: 'space'
-              }
-            },
-            { $unwind: '$space' }
-          ]
-        }
-      },
-      {
-        $unwind: { path: '$invitation', preserveNullAndEmptyArrays: true }
-      },
-      {
-        $replaceRoot: { newRoot: '$invitation' }
-      },
-      {
-        $project: {
-          _id: 1,
-          space: {
-            name: 1,
-            _id: 1
-          }
-        }
-      }
-    ]);
+    const invitation = await getInvitationByAuthTokenLinkId(req.params.linkId);
+
     res.status(httpStatus.OK).json({ success: true, data: invitation });
   } catch (error) {
     logger.error(error.stack || error);
@@ -452,6 +499,7 @@ export default {
   acceptInvitation,
   me,
   register,
-  getInvitationByLinkId
+  getInvitationByLinkId,
+  loginAndAcceptInvitation
   // completeRegisterMaintainer
 };

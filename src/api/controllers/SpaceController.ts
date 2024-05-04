@@ -110,7 +110,7 @@ export const sendMainSpacesWithPaginationToClient = async (req: RequestCustom, r
   }
 };
 
-export const sendSingleSpaceToClientByCookie = async (req: RequestCustom, res: Response) => {
+export const sendSingleSpaceToClientByCookie = async (_req: RequestCustom, res: Response) => {
   try {
     const entity = 'spaces';
 
@@ -135,7 +135,7 @@ export const sendSingleSpaceToClientByCookie = async (req: RequestCustom, res: R
   }
 };
 
-export const sendSpaceDataForSSG = async (req: RequestCustom, res: Response) => {
+export const sendSpaceDataForSSG = async (_req: RequestCustom, res: Response) => {
   try {
     const entity = 'spaces';
 
@@ -257,9 +257,8 @@ export const createLinkedChildSpace = async (req: RequestCustom, res: Response) 
 export const sendHeadSpaces = async (req: Request, res: Response) => {
   try {
     const entity = 'spaces';
-
-    const query = { ...req.query, isHead: true };
-    const data = await aggregateWithPagination(query, entity);
+    req.query.isHead = 'true';
+    const data = await aggregateWithPagination(req.query, entity);
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity,
@@ -334,7 +333,7 @@ export const deleteHeadSpaceWithPagination = async (req: Request, res: Response)
 
     await Space.findByIdAndDelete({ _id: spaceId });
 
-    const query = { isHead: true };
+    const query = { isHead: 'true' };
     const data = await aggregateWithPagination(query, 'spaces');
 
     res.status(httpStatus.OK).json({
@@ -423,7 +422,7 @@ export async function sendHeadToTailToClient(req: RequestCustom, res: Response) 
     });
   }
 }
-export async function sendMainSpacesSlug(req: RequestCustom, res: Response) {
+export async function sendMainSpacesSlug(_req: RequestCustom, res: Response) {
   try {
     const mainSpaces = await Space.find({ isMain: true }).lean();
     const slugs = mainSpaces.map((space) => space.slug);

@@ -30,6 +30,8 @@ router.post('/register', authCtrl.register);
 router.get('/logout', authCtrl.logout);
 
 router.post('/invitations/:linkId/accept', acceptInvitation);
+router.post('/invitations/:linkId/login', acceptInvitation);
+router.post('/invitations/:linkId/register', acceptInvitation);
 router.get('/invitations/:linkId', authCtrl.getInvitationByLinkId);
 // router.get('/static-props/:slug', checkSSGSecret, sendDataForHomeDashboard);
 // router.get('/ssg-paths', checkSSGSecret, sendMainSpacesSlug);

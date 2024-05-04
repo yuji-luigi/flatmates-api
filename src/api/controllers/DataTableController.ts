@@ -5,7 +5,7 @@ import logger from '../../lib/logger';
 
 import MSG from '../../utils/messages';
 import { deleteEmptyFields, getEntity, getEntityFromOriginalUrl } from '../../utils/functions';
-import { LoggedInRequest, RequestCustom } from '../../types/custom-express/express-custom';
+import { RequestCustom } from '../../types/custom-express/express-custom';
 import { aggregateWithPagination, convert_idToMongooseId } from '../helpers/mongoose.helper';
 import { LOOKUP_PIPELINE_STAGES } from '../aggregation-helpers/lookups';
 import { Entities } from '../../types/mongoose-types/model-types/Entities';
@@ -39,7 +39,7 @@ export const sendCrudObjectsWithPaginationToClient = async (req: RequestCustom, 
   }
 };
 
-export const createCrudObjectAndSendDataWithPagination = async (req: LoggedInRequest, res: Response) => {
+export const createCrudObjectAndSendDataWithPagination = async (req: Request, res: Response) => {
   try {
     // get req.params.entity
     const entity = req.params.entity || getEntity(req.url);

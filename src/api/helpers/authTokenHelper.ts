@@ -7,6 +7,7 @@ import logger from '../../lib/logger';
 import { ObjectId } from 'mongodb';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
+import { RoleName } from '../../types/mongoose-types/model-types/role-interface';
 /**
  * @description verify pin from request body and return authToken document with populated space
  */
@@ -117,4 +118,77 @@ export function typeGuardAuthTokenSpaceOrg(
   // if (!isPopulatedSpace(authToken.space)) throw new Error('space is not populated');
   // if (!isObjectIdOrganization(authToken.space.organization)) throw new Error('organization is not ObjectId');
   return true;
+}
+
+export async function getInvitationByAuthTokenLinkId(linkId: string) {
+  const [invitation] = await AuthToken.aggregate([
+    {
+      $match: {
+        linkId: linkId
+      }
+    },
+    {
+      $lookup: {
+        from: 'invitations',
+        localField: '_id',
+        foreignField: 'authToken',
+        as: 'invitation',
+        pipeline: [
+          {
+            $match: {
+              status: 'pending'
+            }
+          },
+          {
+            $lookup: {
+              from: 'spaces',
+              localField: 'space',
+              foreignField: '_id',
+              as: 'space'
+            }
+          },
+          { $unwind: '$space' },
+          {
+            $lookup: {
+              from: 'users',
+              localField: 'createdBy',
+              foreignField: '_id',
+              as: 'createdBy'
+            }
+          },
+          { $unwind: { path: '$createdBy', preserveNullAndEmptyArrays: true } }
+        ]
+      }
+    },
+    {
+      $unwind: { path: '$invitation', preserveNullAndEmptyArrays: true }
+    },
+    {
+      $replaceRoot: { newRoot: '$invitation' }
+    },
+    {
+      $project: {
+        _id: 1,
+        email: 1,
+        useType: 1,
+        createdBy: {
+          name: 1,
+          surname: 1,
+          email: 1
+        },
+        space: {
+          name: 1,
+          _id: 1,
+          address: 1
+        }
+      }
+    }
+  ]);
+  return invitation as {
+    _id: ObjectId;
+    email: string;
+    userType: RoleName;
+    createdBy: { email: string; surname: string; name: string };
+    space: { _id: ObjectId; name: string; address: string };
+  };
 }

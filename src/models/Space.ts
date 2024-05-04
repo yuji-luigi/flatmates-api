@@ -56,6 +56,7 @@ export const spacesSchema = new Schema<ISpace, SpaceModel, ISpaceMethods>(
       type: Boolean,
       default: false
     },
+    // TODO: VERIFY THIS FIELD IS NEEDED
     hasPropertyManager: {
       type: Boolean,
       default: false
