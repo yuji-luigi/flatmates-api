@@ -13,7 +13,6 @@ import { uuid } from 'uuidv4';
 import { UploadsThread } from './types-uploadFileHelper';
 import Upload from '../../models/Upload';
 import { RequestCustom } from '../../types/custom-express/express-custom';
-import Organization from '../../models/Organization';
 import { Request, Response } from 'express';
 import { IUpload } from '../../types/mongoose-types/model-types/upload-interface';
 
@@ -24,8 +23,8 @@ export const s3Client = new S3({
   region: storageRegion,
   endpoint: storageEndPoint,
   credentials: {
-    accessKeyId: storageAccessKeyId,
-    secretAccessKey: storageSecretAccessKey
+    accessKeyId: storageAccessKeyId || '',
+    secretAccessKey: storageSecretAccessKey || ''
   }
 });
 
@@ -196,7 +195,7 @@ export async function deleteFileFromStorage(key: string) {
   }
 }
 
-export async function getFileDirName(req: RequestCustom) {
+export async function getFileDirName(_req: RequestCustom) {
   // todo: implement this function
   // const organization = await Organization.findById(req.user.organizationId);
   // const orgName = replaceSpecialChars(organization.name || 'super_admin');
@@ -230,7 +229,7 @@ export async function handleImagesAndAttachments(req: RequestCustom): Promise<{ 
 }
 
 // test to make all uploads public
-export async function makeAllPublic(req: Request, res: Response) {
+export async function makeAllPublic(_req: Request, res: Response) {
   try {
     // const uploads = await Upload.find();
     // for (const upload of uploads) {

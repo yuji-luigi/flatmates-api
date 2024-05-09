@@ -20,6 +20,7 @@ import { handleSetCookiesFromPayload } from '../../lib/jwt/jwtUtils';
 import { JWTPayload } from '../../lib/jwt/JwtPayload';
 import Check from '../../models/Check';
 import { RoleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
+import { ErrorCustom } from '../../lib/ErrorCustom';
 /**
  * POST CONTROLLERS
  */
@@ -287,6 +288,7 @@ export async function authUserMaintenanceFiles(req: Request, res: Response) {
         }
       ]
     });
+    if (!maintenance) throw new ErrorCustom('maintenance not found', 404);
     // todo!!
     const spaceId = getIdString(maintenance.space);
     const maintainer = await Maintainer.findById(maintenance.maintainer);

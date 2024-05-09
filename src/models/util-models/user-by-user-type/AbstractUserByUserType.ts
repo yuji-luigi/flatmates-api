@@ -162,7 +162,10 @@ export abstract class AbstractUserByUserType {
 }
 
 export const commonPipeline = ({ roleName }: { roleName: RoleName }) => {
-  const roleId = RoleCache[roleName]._id;
+  if (!RoleCache[roleName]) {
+    throw new ErrorCustom('Role cache not initialized', 500);
+  }
+  const roleId = RoleCache[roleName]?._id;
   return [
     {
       $lookup: {

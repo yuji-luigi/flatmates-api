@@ -120,11 +120,10 @@ export interface RequestCustom<
   ReqQuery = QueryCustom,
   Locals extends Record<string, any> = Record<string, any>
 > extends Request<P, ResBody, ReqBody, ReqQuery, Locals> {
-  user?: ReqUser | undefined;
+  user: ReqUser | undefined;
   params: ParamsInterface;
   maintenance?: IMaintenance;
 }
-
 export type RequestWithFiles = RequestCustom & { files: UploadedFile[] };
 
 export interface LoggedInRequest<

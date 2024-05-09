@@ -4,11 +4,12 @@ import { RoleName } from './role-interface';
 
 export const invitationStatuses = ['pending', 'accepted', 'rejected'] as const;
 
+export type invitationStatus = (typeof invitationStatuses)[number];
 export interface InvitationInterface extends MongooseBaseModel {
   email: string;
   cell?: string;
   userType: RoleName;
-  status: (typeof invitationStatuses)[number];
+  status: invitationStatus;
   space: ObjectId;
   createdBy: ObjectId;
   authToken: ObjectId;

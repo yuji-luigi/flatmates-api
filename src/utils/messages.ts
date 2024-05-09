@@ -68,6 +68,7 @@ export const _MSG = {
   USER_DELETED: 'Eliminazione utente avvenuto con successo',
   USER_NOT_FOUND: 'Utente non trovato',
   NOT_AUTHORIZED: "Non hai permesso per l'azione.",
+  NOT_FOUND: 'Not found',
   NOT_FOUND_ID: (entity: string, id: string) => `Model ${entity} con id:${id} non trovato`,
   MAIL_SEND_ERROR: "Errore durante l'invio della mail. Riprovo esecuzione del checkForExpiration la mail tra 1 minuto",
   NOT_ALLOWED: 'you are not allowed to do this',

@@ -75,7 +75,7 @@ const uploadSchema = new Schema<IUpload, IUploadModel, IUploadMethods>(
         console.log('methods');
       },
       async removeThis() {
-        const thisData: IUpload = await mongoose.model('uploads').findByIdAndDelete(this._id);
+        const thisData: IUpload | null = await mongoose.model('uploads').findByIdAndDelete(this._id);
         return thisData;
       },
       async setUrl(compact = true) {

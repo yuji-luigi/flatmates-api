@@ -1,7 +1,7 @@
 import httpStatus from 'http-status';
 import logger from '../../lib/logger';
 import { Response } from 'express';
-import { RequestCustom } from '../../types/custom-express/express-custom';
+import { ParamsInterface, RequestCustom as RequestCustomRoot } from '../../types/custom-express/express-custom';
 import { _MSG } from '../../utils/messages';
 import Space from '../../models/Space';
 import { RoleCache, roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
@@ -13,10 +13,16 @@ import { accessPermissionsCache } from '../../lib/mongoose/mongoose-cache/access
 import { ObjectId } from 'mongodb';
 import { UserByUserType } from '../../models/util-models/user-by-user-type/UserByUserType';
 import Invitation from '../../models/Invitation';
+import { RoleName } from '../../types/mongoose-types/model-types/role-interface';
 const entity = 'users';
 
+interface RequestCustom extends RequestCustomRoot {
+  user: ReqUser;
+  params: ParamsInterface & { userType: RoleName };
+}
 export const createUserByUserType = async (req: RequestCustom, res: Response) => {
   try {
+    if (!req.params.userType) throw new Error('User type is required');
     const foundUserByUserType = await UserByUserType[req.params.userType].findOne({ matchStage: { email: req.body.email } });
     if (foundUserByUserType) {
       throw new Error(_MSG.MAINTAINER_EXISTS);
@@ -48,7 +54,7 @@ export const addUserByUserTypeToSpace = async (req: RequestCustom, res: Response
     await AccessPermission.create({
       user: foundUserByUserType,
       space,
-      role: roleCache.get('maintainer')._id
+      role: roleCache.get('maintainer')?._id
     });
 
     res.status(httpStatus.CREATED).json({
@@ -70,7 +76,7 @@ export const addUserByUserTypeToSpace = async (req: RequestCustom, res: Response
  * @description remove duplication of spaceIds using Set
  */
 const getUserSpaceIds = (currentUserId: ObjectId) =>
-  [...new Set(accessPermissionsCache.get(currentUserId.toString()).map((ap) => ap.space.toString()))].map((s) => new ObjectId(s));
+  [...new Set(accessPermissionsCache.get(currentUserId.toString())?.map((ap) => ap.space.toString()))].map((s) => new ObjectId(s));
 
 /**
  * @description this pipeline filter out all the spaces that does not associated with the current user.
@@ -82,16 +88,19 @@ function getFilterOptionsAllSpacesOfUser(currentUserId: ObjectId) {
   };
 }
 
-function getFilterOptionsCurrentSpace(currentSpaceId: ObjectId) {
+function getFilterOptionsCurrentSpace(currentSpaceId: ObjectId | undefined) {
   if (!currentSpaceId) throw new ErrorCustom('Select the space first to get the users of the space', httpStatus.UNAUTHORIZED);
   return {
     spaces: { $in: ['$$spaces._id', [currentSpaceId]] }
   };
 }
 
-export const sendUserByUserTypesWithPaginationToClient = async (req: RequestCustom, res: Response) => {
+export const sendUserByUserTypesWithPaginationToClient = async (req: RequestCustom & { user: ReqUser }, res: Response) => {
   try {
-    const fieldFilterOptions = getFilterOptionsCurrentSpace(req.user.currentSpace._id);
+    if (!req.params.userType) {
+      throw new ErrorCustom('User type is required', 401);
+    }
+    const fieldFilterOptions = getFilterOptionsCurrentSpace(req.user.currentSpace?._id);
     const usersByUserType = await UserByUserType[req.params.userType].find({
       fieldFilterOptions,
       additionalPipelines: [{ $match: { spaces: { $ne: [] } } }]
@@ -101,7 +110,7 @@ export const sendUserByUserTypesWithPaginationToClient = async (req: RequestCust
         $match: {
           status: 'pending',
           userType: req.params.userType,
-          space: new ObjectId(req.user.currentSpace._id)
+          space: new ObjectId(req.user.currentSpace?._id)
         }
       },
       { $addFields: { name: 'pending_invite' } },
@@ -133,7 +142,7 @@ export const sendUserByUserTypesWithPaginationToClient = async (req: RequestCust
 export const sendUserByUserTypesToClient = async (req: RequestCustom, res: Response) => {
   try {
     const matchStage = req.user.isSuperAdmin ? {} : { 'userRegistry.isPublic': true };
-    const fieldFilterOptions = getFilterOptionsCurrentSpace(req.user.currentSpace._id);
+    const fieldFilterOptions = getFilterOptionsCurrentSpace(req.user.currentSpace?._id);
 
     const userByUserType = await UserByUserType[req.params.userType].find({
       matchStage,
@@ -229,7 +238,7 @@ export async function addSpacesToUserByUserType(req: RequestCustom, res: Respons
     const { spaces } = req.body;
 
     for (const space of spaces) {
-      await AccessPermission.create({ user: idMongoose, space, role: roleCache.get('maintainer')._id }).catch((error) => {
+      await AccessPermission.create({ user: idMongoose, space, role: roleCache.get('maintainer')?._id }).catch((error) => {
         logger.error(error.message || error);
       });
     }
@@ -266,7 +275,7 @@ export async function favoriteUserByUserTypeToSpaceAndSendToClient(req: RequestC
       foundAP.disabled = false;
       await foundAP.save();
     } else {
-      await AccessPermission.create({ user: idMongoose, space, role: roleCache.get('maintainer')._id }).catch((error) => {
+      await AccessPermission.create({ user: idMongoose, space, role: roleCache.get('maintainer')?._id }).catch((error) => {
         logger.error(error.message || error);
       });
     }
@@ -291,7 +300,7 @@ export async function favoriteUserByUserTypeToSpaceAndSendToClient(req: RequestC
 }
 
 // REMOVE MAINTAINER FROM SPACE
-export async function removeUserByUserTypeFromSpaceAndSendToClient(req: RequestCustom, res: Response) {
+export async function removeUserByUserTypeFromSpaceAndSendToClient(req: RequestCustom & { user: ReqUser }, res: Response) {
   try {
     const { idMongoose } = req.params;
     const { space } = req.body;
@@ -324,7 +333,7 @@ export async function removeUserByUserTypeFromSpaceAndSendToClient(req: RequestC
 }
 
 //! TODO: from next chose to call generic parameter route
-export const removeSpaceFromUserByUserTypeById = async (req: RequestCustom, res: Response) => {
+export const removeSpaceFromUserByUserTypeById = async (_req: RequestCustom, res: Response) => {
   try {
     res.status(httpStatus.OK).json({
       success: true,
@@ -340,10 +349,10 @@ export const removeSpaceFromUserByUserTypeById = async (req: RequestCustom, res:
 
 export async function getFilteredUserByUserTypeSpaces({ currentUser, maintainerId }: { currentUser: ReqUser; maintainerId: string }) {
   try {
-    const userSpaces = accessPermissionsCache.get(currentUser._id.toString()).map((ap) => ap.space);
+    const userSpaces = accessPermissionsCache.get(currentUser._id.toString())?.map((ap) => ap.space);
     const spaces = await AccessPermission.find({
       user: maintainerId,
-      role: roleCache.get('maintainer')._id,
+      role: roleCache.get('maintainer')?._id,
       space: { $in: userSpaces }
     });
     return spaces;
@@ -355,7 +364,7 @@ export async function getFilteredUserByUserTypeSpaces({ currentUser, maintainerI
 
 export async function getUserByUserTypeAssignedSpaces(maintainerId: string) {
   try {
-    const spaces = await AccessPermission.find({ user: maintainerId, role: roleCache.get('maintainer')._id });
+    const spaces = await AccessPermission.find({ user: maintainerId, role: roleCache.get('maintainer')?._id });
     return spaces;
   } catch (err) {
     logger.error(err.message || err);

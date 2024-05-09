@@ -4,9 +4,16 @@ import httpStatus from 'http-status';
 import { _MSG } from '../../utils/messages';
 import AccessController from '../../models/AccessPermission';
 import Role from '../../models/Role';
-import { RequestCustom } from '../../types/custom-express/express-custom';
+import { ParamsInterface, RequestCustom as RequestCustomRoot } from '../../types/custom-express/express-custom';
 import { roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
+import { ReqUser } from '../../lib/jwt/jwtTypings';
+import { RoleName } from '../../types/mongoose-types/model-types/role-interface';
 // import { CurrentSpace } from '../../types/mongoose-types/model-types/space-interface';
+
+interface RequestCustom extends RequestCustomRoot {
+  user: ReqUser;
+  params: ParamsInterface & { userType: RoleName };
+}
 
 export async function sendAccessControllersToClient(req: RequestCustom, res: Response) {
   try {

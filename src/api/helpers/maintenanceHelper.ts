@@ -9,6 +9,8 @@ import { AuthTokenInterface } from 'mongoose-types/model-types/auth-token-interf
 import { Maintainer } from '../../models/util-models/user-by-user-type/Maintainer';
 import { PropertyManager } from '../../models/util-models/user-by-user-type/PropertyManager';
 import { ReqUser } from '../../lib/jwt/jwtTypings';
+import httpStatus from 'http-status';
+import { ErrorCustom } from '../../lib/ErrorCustom';
 
 export async function createOptionsForMaintenance({
   maintenance,
@@ -17,9 +19,12 @@ export async function createOptionsForMaintenance({
 }: {
   maintenance: IMaintenance;
   authToken: AuthTokenInterface;
-  user: ReqUser;
+  user: ReqUser | undefined;
 }): Promise<Mail.Options | false> {
   try {
+    if (!user) {
+      throw new ErrorCustom('Unauthorized', httpStatus.UNAUTHORIZED);
+    }
     const admins = await PropertyManager.find({
       matchStage: {
         accessPermissions: { $elemMatch: { 'space._id': maintenance.space._id } }
@@ -29,6 +34,9 @@ export async function createOptionsForMaintenance({
       return false;
     }
     const space = await Space.findById(maintenance.space);
+    if (!space) {
+      throw new ErrorCustom('Space is not present', 401);
+    }
     const html = createBodyForMaintenance({ maintenance, user, space, authToken });
     const options: Mail.Options = {
       from: vars.displayMail,
@@ -150,6 +158,9 @@ export async function createOptionsToNotifyMaintainer({
       return false;
     }
     const space = await Space.findById(maintenance.space);
+    if (!space) {
+      throw new ErrorCustom('Space is not present', 401);
+    }
     const html = createBodyToNotifyMaintenainer({ maintenance, maintainer, space, authToken });
     const options: Mail.Options = {
       from: vars.displayMail,

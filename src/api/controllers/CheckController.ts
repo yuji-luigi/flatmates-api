@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { NextFunction, Response } from 'express';
 import httpStatus from 'http-status';
 import logger from '../../lib/logger';
 
@@ -12,6 +12,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { assetsDir } from '../../utils/globalVariables';
 import { UploadedFile } from 'express-fileupload';
+import { ErrorCustom } from '../../lib/ErrorCustom';
 const entity = 'checks';
 
 export const createCheck = async (req: RequestCustom, res: Response) => {
@@ -84,12 +85,14 @@ export const getMaintenanceCheckDataWithOCR = async (req: RequestWithFiles, res:
 export async function sendCheckToClient(req: RequestCustom, res: Response) {
   try {
     const check = await Check.findById(req.params.idMongoose);
+    if (!check) throw new ErrorCustom('check not found', 404);
 
-    const maintenance = await Maintenance.findOne({ _id: check.parent._id });
+    const maintenance = (await Maintenance.findOne({ _id: check.parent._id })) || { _id: '' };
     const foundAuthToken = await AuthToken.findOne({ 'docHolder.instanceId': maintenance._id, nonce: req.cookies.maintenanceNonce });
     // const nonceIsCorrect = +req.cookies.maintenanceNonce === authToken.nonce;
 
     if (!foundAuthToken) throw new Error('nonce is not correct');
+
     const promises = check.files.map(async (file) => {
       await file.setUrl();
     });
@@ -108,9 +111,10 @@ export async function sendCheckToClient(req: RequestCustom, res: Response) {
   }
 }
 
-export async function showCheckToClient(req: RequestCustom, res: Response) {
+export async function showCheckToClient(req: RequestCustom, res: Response, next: NextFunction) {
   try {
     const check = await Check.findById(req.params.idMongoose);
+    if (!check) throw new ErrorCustom('check not found', 404);
     const promises = check.files.map(async (file) => {
       await file.setUrl();
     });
@@ -121,7 +125,7 @@ export async function showCheckToClient(req: RequestCustom, res: Response) {
       collection: 'checks'
     });
   } catch (error) {
-    logger.error();
+    next(error);
   }
 }
 
@@ -131,6 +135,8 @@ export async function verifyNonceCookieSendChecksMaintenanceToClient(req: Reques
     if (!authToken) throw new Error('nonce is not correct. Please check email and set the 6 digits code again.');
 
     const check = await Check.findById(req.params.idMongoose);
+    if (!check) throw new ErrorCustom('check not found', 404);
+
     const promises = check.files.map(async (file) => {
       await file.setUrl();
     });

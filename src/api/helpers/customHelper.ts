@@ -17,6 +17,7 @@ export async function getOrganizationOfHead(parentId: string | ISpace, entity: E
     return await getOrganizationOfHead(parent.parentId, entity);
   } catch (error) {
     logger.error(error.message || error);
+    throw error;
   }
 }
 

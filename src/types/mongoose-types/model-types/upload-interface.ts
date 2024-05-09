@@ -19,7 +19,7 @@ export interface IUpload extends MongooseBaseModel, IUploadMethods {
 }
 export interface IUploadMethods {
   methods: () => void;
-  removeThis: () => Promise<object>;
+  removeThis: () => Promise<IUpload | null>;
   deleteFromStorage: () => Promise<void>;
   setUrl: (compact?: boolean) => Promise<void>;
   getUrl: (compact?: boolean) => Promise<string | undefined>;

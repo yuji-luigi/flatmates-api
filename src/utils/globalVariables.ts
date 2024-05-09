@@ -40,7 +40,7 @@ const vars = {
   storageBucketName,
   storageEndPoint,
   storageRegion: process.env.S3_REGION,
-  storageUrl: `https://${storageBucketName}.${storageEndPoint.split('://')[1]}`,
+  storageUrl: `https://${storageBucketName}.${storageEndPoint?.split('://')[1]}`,
   googleAuthClientId: process.env.GOOGLE_AUTH_CLIENT_ID,
   googleAuthSecret: process.env.GOOGLE_AUTH_SECRET,
   gmailAppPassword: process.env.GMAIL_APP_PASSWORD,

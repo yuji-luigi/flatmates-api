@@ -2,11 +2,9 @@
 /** LOGGER **/
 'use strict';
 
-import winston, { transports } from 'winston';
-require('winston-mail');
-import SlackHook from 'winston-slack-webhook-transport';
+import winston from 'winston';
 import path from 'path';
-import vars from '../utils/globalVariables';
+require('winston-mail');
 
 const PROJECT_ROOT = path.join(__dirname, '..');
 
@@ -156,8 +154,8 @@ type StackList = { [key: string]: string[] | any };
 function getStackInfo(stackIndex: string | number) {
   // get call stack, and analyze it
   // get all file, method, and line numbers
-  const stackList: StackList = new Error().stack.split('\n').slice(3);
-
+  const stackList: StackList | undefined = new Error().stack?.split('\n').slice(3);
+  if (stackList === undefined) return {};
   // stack trace format:
   // http://code.google.com/p/v8/wiki/JavaScriptStackTraceApi
   // do not remove the regex expresses to outside of this method (due to a BUG in node.js)

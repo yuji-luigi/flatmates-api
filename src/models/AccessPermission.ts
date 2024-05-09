@@ -111,6 +111,7 @@ accessPermissionSchema.post('save', async function (doc: AccessPermissionInterfa
   }
   const permissions = await AccessPermission.find({ user: userId });
   const { property_manager } = RoleCache;
+
   if (this.role.toString() === property_manager._id.toString()) {
     const foundPropM = await AccessPermission.findOne({ space: this.space, role: property_manager._id });
     if (foundPropM) {

@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
+import { ErrorCustom } from '../lib/ErrorCustom';
 const { Schema } = mongoose;
 
 export const userRegistrySchema = new Schema(

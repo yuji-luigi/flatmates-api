@@ -10,7 +10,7 @@ export const generateTokenUrl = {
   userRegister: (authToken: AuthTokenInterface) => `${baseUrl}/users/${authToken.linkId}/${authToken._id.toString()}`
 };
 
-export const signJwt = (payload: string | Record<string, any>) => jwt.sign(payload, vars.jwtSecret, { expiresIn: vars.jwtExpirationInterval });
+export const signJwt = (payload: string | Record<string, any>) => jwt.sign(payload, vars.jwtSecret || '', { expiresIn: vars.jwtExpirationInterval });
 
 /** @description sign payload as jwt then res.cookie with type checking. set jwt and space + organization cookie*/
 export function handleSetCookiesFromPayload(res: Response, payload: JWTPayload, space?: ISpace) {

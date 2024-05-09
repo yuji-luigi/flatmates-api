@@ -8,10 +8,13 @@ import { ObjectId } from 'mongodb';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
 import { RoleName } from '../../types/mongoose-types/model-types/role-interface';
+import { invitationStatus } from '../../types/mongoose-types/model-types/invitation-interface';
+import { ErrorCustom } from '../../lib/ErrorCustom';
+import httpStatus from 'http-status';
 /**
  * @description verify pin from request body and return authToken document with populated space
  */
-export async function verifyPinFromRequest(req: RequestCustom): Promise<{ verified: boolean; authToken: AuthTokenInterface }> {
+export async function verifyPinFromRequest(req: RequestCustom): Promise<{ verified: boolean; authToken?: AuthTokenInterface | null }> {
   const { linkId, idMongoose } = req.params;
   const { pin } = req.body;
   const data = await AuthToken.findOne({
@@ -50,13 +53,14 @@ export async function findAuthTokenFromCookie(cookie: string) {
   return foundToken;
 }
 
-export function checkAuthTokenForError(authToken: AuthTokenInterface) {
+export function checkAuthTokenForError(authToken: AuthTokenInterface | undefined | null): authToken is AuthTokenInterface {
   if (!authToken) {
-    throw new Error(_MSG.INVALID_ACCESS);
+    return false;
   }
   if (!authToken.active) {
-    throw new Error(_MSG.AUTH_TOKEN_EXPIRED);
+    return false;
   }
+  return true;
 }
 
 export async function handleCreateAuthTokenForUser(newUser: IUser) {
@@ -110,7 +114,7 @@ export async function handleCreateAuthTokensForUser(newUserIds: ObjectId[]) {
 // }
 
 export function typeGuardAuthTokenSpaceOrg(
-  authToken: AuthTokenInterface
+  authToken: AuthTokenInterface | null | undefined
 ): authToken is AuthTokenInterface & { space: ISpace & { organization: ObjectId } } {
   if (!authToken) {
     throw new Error('pin not verified');
@@ -120,8 +124,28 @@ export function typeGuardAuthTokenSpaceOrg(
   return true;
 }
 
-export async function getInvitationByAuthTokenLinkId(linkId: string) {
-  const [invitation] = await AuthToken.aggregate([
+export interface InvitationByLinkId {
+  _id: ObjectId;
+  // email: string;
+  userType: RoleName;
+  status: invitationStatus;
+  createdBy: { email: string; surname: string; name: string };
+  space: { _id: ObjectId; name: string; address: string };
+}
+
+export async function getInvitationByAuthTokenLinkId(
+  linkId: undefined | string,
+  options: { additionalMatchFields?: Record<string, string | undefined>; invitationStatus?: invitationStatus } = {}
+): Promise<InvitationByLinkId | undefined> {
+  const invitationStatusPP = options.invitationStatus && [
+    {
+      $match: {
+        status: options.invitationStatus,
+        ...(options.additionalMatchFields || {})
+      }
+    }
+  ];
+  const [invitation] = await AuthToken.aggregate<InvitationByLinkId | undefined>([
     {
       $match: {
         linkId: linkId
@@ -134,11 +158,7 @@ export async function getInvitationByAuthTokenLinkId(linkId: string) {
         foreignField: 'authToken',
         as: 'invitation',
         pipeline: [
-          {
-            $match: {
-              status: 'pending'
-            }
-          },
+          ...(invitationStatusPP || []),
           {
             $lookup: {
               from: 'spaces',
@@ -164,13 +184,17 @@ export async function getInvitationByAuthTokenLinkId(linkId: string) {
       $unwind: { path: '$invitation', preserveNullAndEmptyArrays: true }
     },
     {
+      $match: { invitation: { $exists: true, $ne: null } } // again filter out null values. returns empty array if null.
+    },
+    {
       $replaceRoot: { newRoot: '$invitation' }
     },
     {
       $project: {
         _id: 1,
-        email: 1,
-        useType: 1,
+        // email: 1,
+        userType: 1,
+        status: 1,
         createdBy: {
           name: 1,
           surname: 1,
@@ -183,12 +207,9 @@ export async function getInvitationByAuthTokenLinkId(linkId: string) {
         }
       }
     }
-  ]);
-  return invitation as {
-    _id: ObjectId;
-    email: string;
-    userType: RoleName;
-    createdBy: { email: string; surname: string; name: string };
-    space: { _id: ObjectId; name: string; address: string };
-  };
+  ]).catch((error) => {
+    error.message = 'error finding invitation';
+    throw new ErrorCustom(error, httpStatus.INTERNAL_SERVER_ERROR);
+  });
+  return invitation;
 }

@@ -1,5 +1,6 @@
 import { ParsedQs } from 'qs';
-import mongoose, { Document, Model, PipelineStage, Schema, SortOrder } from 'mongoose';
+import mongoose, { Model, PipelineStage, Schema, SortOrder } from 'mongoose';
+import { Document } from 'mongodb';
 import Thread from '../../models/Thread';
 import logger from '../../lib/logger';
 import { ObjectId } from 'mongodb';
@@ -43,14 +44,14 @@ type ResultAggregateWithPagination = PaginatedResult & Counts;
  * @returns {[Document[],Counts]}
  */
 export async function aggregateWithPagination(
-  query: Record<string, string | boolean | number | ObjectId | object>,
+  query: Record<string, any>,
   entity: string,
   customPipeline: PipelineStage.FacetPipelineStage[] = []
 ): Promise<ResultAggregateWithPagination[]> {
-  query.jj instanceof ObjectId;
+  let resultQuery: Record<string, string | any> = {};
   /** define skip value, then delete as follows */
   const limit = 10;
-  let skip = +query.skip - 1 <= 0 ? 0 : (+query.skip - 1) * limit;
+  let skip = Number(query.skip) - 1 <= 0 ? 0 : (Number(query.skip) - 1) * limit;
   skip = isNaN(skip) ? 0 : skip;
   delete query.skip; // not good way for functional programming. set new query object for querying the DB
   delete query.limit;
@@ -65,10 +66,17 @@ export async function aggregateWithPagination(
     if (!validFields.includes(key)) {
       delete query[key];
     } else {
-      query.j === 'true' ? (query.j = true) : query[key];
+      // // @ts-expect-error Type 'false' is not assignable to type 'string | string[] | ParsedQs | ParsedQs[] | undefined'.
+      // query[key] === 'true' ? (query[key] = true) : query[key];
+      // // @ts-expect-error Type 'false' is not assignable to type 'string | string[] | ParsedQs | ParsedQs[] | undefined'.
       query[key] === 'false' ? (query[key] = false) : query[key];
+
+      // TODO: implement resultQuery to be query
+      query[key] === 'true' && (resultQuery[key] = true);
+      query[key] === 'false' && (resultQuery[key] = false);
     }
   }
+  resultQuery = { ...query, ...resultQuery };
 
   const data = await mongoose.model(entity).aggregate<ResultAggregateWithPagination>([
     {
@@ -93,7 +101,7 @@ export async function getThreadsForPlatForm({
   query?: object;
   sortQuery?: SortQuery;
 }) {
-  const threads = await Thread.find<MongooseBaseModel>(query).sort({
+  const threads = await Thread.find<MongooseBaseModel>(query || {}).sort({
     isImportant: -1,
     createdAt: -1
   });
@@ -101,7 +109,7 @@ export async function getThreadsForPlatForm({
   if (threads.length) {
     if (threads[0].setStorageUrlToModel) {
       for (const item of threads) {
-        await item.setStorageUrlToModel();
+        await item.setStorageUrlToModel?.();
       }
     }
   }
@@ -169,7 +177,7 @@ export async function createSlug<T extends Document>(document: T & DocumentWithS
 /**
  * @description check if the email is already registered in the database. Pass user document if you are updating the user. For user arg should be undefined
  */
-export async function checkDuplicateEmail({ model, email, user }: { model: Model<any>; email: string; user?: IUser }) {
+export async function checkDuplicateEmail({ model, email, user }: { model: Model<any>; email: undefined | string; user?: IUser }) {
   // ignore email is undefined.
   if (!email) {
     return false;
@@ -253,13 +261,13 @@ export function correctQueryForEntity({ entity, query }: { entity: Entities; que
   function correctQuery(type: string, field: string) {
     if (typeof query[field] === 'object') return (resultQuery[field] = query[field]);
     if (type === 'Number') {
-      resultQuery[field] = +query[field];
+      resultQuery[field] = Number(query[field]);
     }
     if (type === 'Boolean') {
       resultQuery[field] = query[field] === 'true';
     }
     if (type === 'ObjectId') {
-      resultQuery[field] = new ObjectId(query[field].toString());
+      resultQuery[field] = new ObjectId(query[field]?.toString());
     }
   }
   for (const [field, fieldType] of Object.entries(pathTypes)) {
@@ -291,7 +299,7 @@ export function getValidFieldsAndConvertToBooleanAndObjectId({
       clonedQuery[key] === 'true' ? (clonedQuery[key] = true) : clonedQuery[key];
       clonedQuery[key] === 'false' ? (clonedQuery[key] = false) : clonedQuery[key];
       if (key === 'organization' || key === 'space' || key === 'parentId') {
-        clonedQuery[key] = new ObjectId(clonedQuery[key].toString());
+        clonedQuery[key] = new ObjectId(clonedQuery[key]?.toString());
       }
     }
   }

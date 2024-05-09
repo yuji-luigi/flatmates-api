@@ -6,15 +6,23 @@ import { CurrentSpace, ISpace } from '../../types/mongoose-types/model-types/spa
 import { ReqUser } from '../../lib/jwt/jwtTypings';
 import { accessPermissionsCache } from '../../lib/mongoose/mongoose-cache/access-permission-cache';
 import { RoleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
+import { ErrorCustom } from '../../lib/ErrorCustom';
+import httpStatus from 'http-status';
 
 /**  searches only root spaces of user */
-export function userHasSpace(user: ReqUser, currentSpaceId: string | ObjectId): boolean {
+export function userHasSpace(user: ReqUser, currentSpaceId: string | ObjectId | undefined): boolean {
+  if (!currentSpaceId) {
+    return false;
+  }
   currentSpaceId = currentSpaceId.toString();
-  const spaces = accessPermissionsCache.get(user._id.toString()).map((actrl) => actrl.space.toString());
-  return spaces.includes(currentSpaceId);
+  const spaces = accessPermissionsCache.get(user._id.toString())?.map((actrl) => actrl.space.toString());
+  return spaces?.includes(currentSpaceId) || false;
 }
 /**  depth-first search (DFS) */
 export async function userHasSpaceDFS(user: ReqUser, selectedSpace: ISpace): Promise<boolean> {
+  if (!user.accessPermissions) {
+    return false;
+  }
   // return user.spaces.includes(selectedSpace._id.toString());
   const spaces = user.accessPermissions.map((actrl) => actrl.space.toString());
 
@@ -50,7 +58,10 @@ async function searchDescendants(spaceId: string, targetId: string, user: ReqUse
   return false;
 }
 /** breadth-first search */
-export async function userHasSpaceBFS(user: ReqUser, selectedSpace: ISpace): Promise<boolean> {
+export async function userHasSpaceBFS(user: ReqUser, selectedSpace: ISpace | undefined | null): Promise<boolean> {
+  if (!user.accessPermissions || !selectedSpace) {
+    return false;
+  }
   const spaces = user.accessPermissions.map((actrl) => actrl.space.toString());
 
   // Initialize a queue with the root spaces
@@ -72,8 +83,11 @@ export async function userHasSpaceBFS(user: ReqUser, selectedSpace: ISpace): Pro
   return false;
 }
 
-export async function aggregateDescendantIds(spaceId: string | ObjectId, user: ReqUser): Promise<string[]> {
+export async function aggregateDescendantIds(spaceId: string | ObjectId | undefined, user: ReqUser | undefined): Promise<string[]> {
   try {
+    if (!user) {
+      throw new ErrorCustom('User not found. Not allowed', httpStatus.FORBIDDEN);
+    }
     const space = await Space.findById(spaceId);
     if (!user.isSuperAdmin && !(await userHasSpaceBFS(user, space))) {
       throw new Error(_MSG.NOT_ALLOWED);
@@ -156,7 +170,7 @@ export function formatCurrentSpace(space: ISpace): CurrentSpace {
   return {
     _id: space._id,
     name: space.name,
-    address: space.address,
+    address: space.address || '',
     slug: space.slug
   };
 }
@@ -183,6 +197,7 @@ export async function updateSpaceHasPropertyManagerRecursively(spaceId: ObjectId
     adminOf: [],
     active: false,
     cover: undefined,
+    email: '',
     loggedAs: RoleCache.property_manager
   };
   const descendants = await aggregateDescendantIds(spaceId, superAdminObject);

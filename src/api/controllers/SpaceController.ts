@@ -16,6 +16,7 @@ import { signJwt } from '../../lib/jwt/jwtUtils';
 import { JWTPayload } from '../../lib/jwt/JwtPayload';
 import { isAdminOfSpace } from '../../middlewares/auth-middlewares';
 import { Maintainer } from '../../models/util-models/user-by-user-type/Maintainer';
+import { ErrorCustom } from '../../lib/ErrorCustom';
 const entity = 'spaces';
 
 //================================================================================
@@ -28,8 +29,8 @@ export const sendSpacesToClient = async (req: RequestCustom, res: Response) => {
     if (!req.user) {
       throw new Error(_MSG.NOT_AUTHORIZED);
     }
-    const currentSpaceId = req.user.currentSpace._id?.toString();
-    const spaceIds = currentSpaceId ? await aggregateDescendantIds(currentSpaceId, req.user) : null;
+    const currentSpaceId = req.user.currentSpace?._id?.toString();
+    const spaceIds = currentSpaceId ? await aggregateDescendantIds(currentSpaceId, req.user) : ['does not exist'];
     let { query } = req;
     const spaceIdObj = query.space ? { _id: query.space } : {};
     query = currentSpaceId ? { ...query, _id: { $in: [...spaceIds, currentSpaceId] } } : { ...query, ...spaceIdObj };
@@ -55,7 +56,7 @@ export const sendSpacesToClient = async (req: RequestCustom, res: Response) => {
 export const createHeadSpaceWithPagination = async (req: RequestCustom, res: Response) => {
   try {
     let isMain = false;
-    if (req.user.isSuperAdmin) {
+    if (req.user?.isSuperAdmin) {
       isMain = true;
     }
     const newSpace = new Space({
@@ -65,8 +66,8 @@ export const createHeadSpaceWithPagination = async (req: RequestCustom, res: Res
       isMain
     });
     await newSpace.save();
-    const query = { ...req.query, isHead: true };
-    const data = await aggregateWithPagination(query, 'spaces');
+    req.query.isHead = true;
+    const data = await aggregateWithPagination(req.query, 'spaces');
     res.status(httpStatus.OK).json({
       success: true,
       collection: 'spaces',
@@ -90,7 +91,7 @@ export const sendMainSpacesWithPaginationToClient = async (req: RequestCustom, r
     req.query.isMain = true;
     const lookups = LOOKUP_PIPELINE_STAGES.spaces;
 
-    if (!req.user.isSuperAdmin || req.query.space) {
+    if (!req.user?.isSuperAdmin || req.query.space) {
       req.query._id = req.query.space;
     }
 
@@ -199,7 +200,7 @@ export const sendSpaceSettingPageDataToClient = async (req: RequestCustom, res: 
   try {
     const data = await Space.findOne({ slug: req.params.slug });
     const maintainers = await Maintainer.find({
-      matchStage: { spaces: { $in: [data._id] } }
+      matchStage: { spaces: { $in: [data?._id] } }
     });
     const isSpaceAdmin = isAdminOfSpace({ space: data, currentUser: req.user });
     // await setUrlToSpaceImages(data);
@@ -276,7 +277,11 @@ export const sendSpaceSelectionToClient = async (req: RequestCustom, res: Respon
   try {
     const entity = 'spaces';
 
-    const data = await Space.find({ _id: { $in: req.user.accessPermissions.map((actrl) => actrl.space) } });
+    const data = await Space.find({
+      _id: {
+        $in: req.user?.accessPermissions?.map((actrl) => actrl.space)
+      }
+    });
 
     res.status(httpStatus.OK).json({
       success: true,
@@ -298,11 +303,8 @@ export const deleteLinkedChildSpace = async (req: Request, res: Response) => {
     id;
     entity = 'spaces';
     const deletedDocument = await mongoose.model(entity).findOneAndDelete({ _id: id });
-    const query = {
-      ...req.query,
-      parentId: deletedDocument.parentId
-    };
-    const data = await aggregateWithPagination(query, entity);
+    req.query.parentId = deletedDocument.parentId;
+    const data = await aggregateWithPagination(req.query, entity);
 
     res.status(httpStatus.OK).json({
       success: true,
@@ -351,6 +353,7 @@ export const deleteHeadSpaceWithPagination = async (req: Request, res: Response)
 export const deleteSpaceCookie = async (req: RequestCustom, res: Response) => {
   try {
     deleteSpaceCookies(res);
+    if (!req.user) throw new ErrorCustom(_MSG.NOT_AUTHORIZED, httpStatus.UNAUTHORIZED);
     const payload = JWTPayload.simple({
       email: req.user.email,
       loggedAs: req.user.loggedAs.name,
@@ -445,6 +448,9 @@ export async function updateSpaceAndSendToClient(req: RequestCustom, res: Respon
     const space = await Space.findById(req.params.idMongoose);
     if (!isAdminOfSpace({ space, currentUser: req.user })) {
       throw new Error(_MSG.NOT_AUTHORIZED);
+    }
+    if (!space) {
+      throw new ErrorCustom(_MSG.NOT_FOUND, httpStatus.NOT_FOUND);
     }
 
     delete req.body.isMain;

@@ -18,16 +18,15 @@ const router = express.Router();
 
 const userTypes = ['property_manager', 'inhabitant', 'system_admin', 'maintainer'];
 
-router.use('/:userType', (req: RequestCustom, res, next) => {
-  console.log(req.params.userType);
-  if (userTypes.includes(req.params.userType)) {
+router.use('/:userType', (req: RequestCustom, _res, next) => {
+  if (userTypes.includes(req.params.userType as string)) {
     next();
     return;
   }
   next('router');
 });
 
-router.get('/test/test', (req, res) => res.send('API is working: userByUserType.routes.ts'));
+router.get('/test/test', (_req, res) => res.send('API is working: userByUserType.routes.ts'));
 
 router.get('/:userType', isLoggedIn(), sendUserByUserTypesToClient);
 router.get('/:userType/with-pagination', isLoggedIn(), sendUserByUserTypesWithPaginationToClient);

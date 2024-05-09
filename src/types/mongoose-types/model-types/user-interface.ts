@@ -1,7 +1,6 @@
 // import { Model } from 'mongoose';
 // import { IUserSetting } from './UserSetting';
 
-import { IOrganization } from './organization-interface';
 import { ISpace } from './space-interface';
 import { IUpload } from './upload-interface';
 import { MongooseBaseModel } from './base-types/base-model-interface';
@@ -23,9 +22,9 @@ export interface IUser extends UserBase, LoginInstance<IUser>, MongooseBaseModel
 }
 export interface UserBase {
   _id: ObjectId;
-  name: string | undefined;
+  name: string;
   surname?: string | undefined;
-  email?: string | undefined;
+  email?: string;
   password: string;
   avatar?: IUpload;
   phone?: string | undefined;
@@ -41,7 +40,7 @@ export interface UserBase {
   // userSetting: string | boolean;
   active: boolean;
   // organization?: IOrganization | null | undefined;
-  cover: IUpload;
+  cover?: IUpload;
   _update?: {
     password?: Buffer | string;
   };

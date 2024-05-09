@@ -9,6 +9,8 @@ import autoPopulate from 'mongoose-autopopulate';
 import { generateWord, replaceSpecialCharsWith } from '../utils/functions';
 import { ISpace, ISpaceMethods, spaceTypes } from '../types/mongoose-types/model-types/space-interface';
 import { ICollectionAware } from '../api/helpers/mongoose.helper';
+import { ErrorCustom } from '../lib/ErrorCustom';
+import httpStatus from 'http-status';
 
 // const { jwtSecret } = vars;
 
@@ -87,9 +89,9 @@ export const spacesSchema = new Schema<ISpace, SpaceModel, ISpaceMethods>(
         const clonedAncestor = [...ancestors];
         /** get the parent of the current schema */
         const ancestor = await currentDocument.getParent();
-        clonedAncestor.push(ancestor._id.toString());
+        ancestor && clonedAncestor.push(ancestor._id.toString());
         /** if parent is present then call the function recursively */
-        if (ancestor.parentId) {
+        if (ancestor?.parentId) {
           return this.getAncestors(ancestor);
         }
         /** At the end return the array */
@@ -161,6 +163,7 @@ spacesSchema.pre('save', async function (this: ISpace & ICollectionAware, next) 
     // If the slug is not unique, append a unique suffix
     if (this.parentId) {
       const parent = await Space.findById(this.parentId);
+      if (!parent) throw new ErrorCustom('Parent not found', httpStatus.INTERNAL_SERVER_ERROR);
       //TODO: NEED TO LISTEN TO THE PARENT AND ACCESS PERMISSIONS MODEL.
       this.hasPropertyManager = parent.hasPropertyManager;
       if (parent.isTail) {

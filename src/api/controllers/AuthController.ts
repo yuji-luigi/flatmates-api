@@ -1,7 +1,7 @@
 // import { IUser } from './../../types/model/user.d';
 // import { RegisterData } from './../../types/auth/formdata.d';
 /** *********** User ************* */
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import httpStatus from 'http-status';
 import User from '../../models/User';
 // import { UserModel } from 'model/user';
@@ -24,10 +24,7 @@ import { AccessPermissionCache } from '../../types/mongoose-types/model-types/ac
 import UserRegistry from '../../models/UserRegistry';
 import { ErrorCustom } from '../../lib/ErrorCustom';
 import { MeUser } from '../../lib/MeUser';
-import AuthToken from '../../models/AuthToken';
-import Invitation from '../../models/Invitation';
 import AccessPermission from '../../models/AccessPermission';
-import { getInvitationByAuthTokenLinkId } from '../helpers/authTokenHelper';
 
 const { cookieDomain } = vars;
 
@@ -50,10 +47,10 @@ const register = async (req: Request, res: Response) => {
 
     const newRootSpace = role !== 'maintainer' && (await createNewSpaceAtRegister({ space, user: newUser }));
 
-    if (role !== 'maintainer') {
+    if (role !== 'maintainer' && newRootSpace) {
       // create accessPermission for the user and space as system admin
       await AccessPermission.create({
-        role: roleCache.get(role)._id,
+        role: roleCache.get(role)?._id,
         space: newRootSpace._id,
         user: newUser._id
       });
@@ -61,12 +58,16 @@ const register = async (req: Request, res: Response) => {
       await AccessPermission.create({
         space: newRootSpace._id,
         user: newUser._id,
-        role: roleCache.get('system_admin')._id
+        role: roleCache.get('system_admin')?._id
       });
     }
     await newUser.save();
 
-    await UserRegistry.create({ user: newUser, role: roleCache.get(role)._id, isPublic });
+    await UserRegistry.create({
+      user: newUser,
+      role: roleCache.get(role)?._id,
+      isPublic
+    });
 
     const jwt = JWTPayload.simple({
       email: newUser.email,
@@ -74,7 +75,8 @@ const register = async (req: Request, res: Response) => {
       userType: role,
       ...(newRootSpace ? { spaceId: newRootSpace._id } : {})
     });
-    handleSetCookiesFromPayload(res, jwt, newRootSpace);
+
+    handleSetCookiesFromPayload(res, jwt, newRootSpace || undefined);
 
     res.status(httpStatus.CREATED).send({
       success: true,
@@ -122,6 +124,9 @@ const loginAndAcceptInvitation = async (req: Request, res: Response) => {
     const { email, password }: { email: string; password: string; userType: RoleName } = req.body;
     // const { linkId } = req.params;
     const user = await User.findOne({ email });
+    if (!user) {
+      throw new ErrorCustom('Utente non trovato', httpStatus.NOT_FOUND);
+    }
     if (!(await user.passwordMatches(password))) {
       throw new Error('Password non corrispondenti');
     }
@@ -166,6 +171,9 @@ const loginByRole = async (req: Request<{ role: RoleName }>, res: Response) => {
     const { role } = req.params as { role: RoleName };
 
     const user = await User.findOne({ email });
+    if (!user) {
+      throw new ErrorCustom('Utente non trovato', httpStatus.NOT_FOUND);
+    }
     if (!(await user.passwordMatches(password))) {
       throw new Error('Password non corrispondenti');
     }
@@ -176,7 +184,7 @@ const loginByRole = async (req: Request<{ role: RoleName }>, res: Response) => {
     accessPermissionsCache.set(user._id.toString(), accessPermissions);
     const userRegistry = await UserRegistry.findOne({
       user: user._id,
-      role: roleCache.get(role)._id
+      role: roleCache.get(role)?._id
     });
     if (!user.isSuperAdmin && !userRegistry) {
       return res.status(httpStatus.UNAUTHORIZED).json({
@@ -227,7 +235,13 @@ const removeSpaceToken = (_req: Request, res: Response) => {
 const me = async (req: RequestCustom, res: Response) => {
   // set last login
   try {
+    if (!req.user) {
+      return res.status(200).send('ok');
+    }
     const { user, meUser } = await MeUser.fromReqUserToUserMeUser(req.user);
+    if (!user) {
+      return res.status(200).send('ok');
+    }
     user.lastLogin = new Date(Date.now());
     await user.save();
 
@@ -248,12 +262,12 @@ export const sendRootSpaceSelectionsToClient = async (req: RequestCustom, res: R
     //!todo think about structure of the maintainers. do they have to have root spaces? role must be maintainers
     // let query: Record<string, string | any> = { isMain: true, _id: { $in: req.user.spaces } };
     // case admin show all main spaces of his organizations
-    const query = req.user.isSuperAdmin
+    const query = req.user?.isSuperAdmin
       ? req.query
       : {
           ...req.query,
           _id: {
-            $in: accessPermissionsCache.get(req.user._id.toString()).map((actrl) => actrl.space)
+            $in: accessPermissionsCache.get(req.user?._id.toString())?.map((actrl) => actrl.space)
           }
         };
     const correctedQuery = correctQueryForEntity({ entity: 'spaces', query });
@@ -292,8 +306,14 @@ export const sendMainOrganizationSelectionsToClient = async (req: RequestCustom,
 export const checkSystemAdmin = async (req: RequestCustom, res: Response) => {
   try {
     const { idMongoose } = req.params;
+    if (!req.user?.accessPermissions || !idMongoose) {
+      throw new ErrorCustom('Authorization problem.', httpStatus.UNAUTHORIZED);
+    }
+    if (!RoleCache.system_admin) {
+      throw new ErrorCustom('Role cache not initialized', httpStatus.INTERNAL_SERVER_ERROR);
+    }
     const foundSystemAdmin = req.user.accessPermissions.find(
-      (actrl) => actrl.space.toString() === idMongoose && actrl.role.toString() === roleCache.get('system_admin')._id.toString()
+      (actrl) => actrl.space.toString() === idMongoose && actrl.role.toString() === RoleCache.system_admin?._id.toString()
     );
     if (!foundSystemAdmin) {
       throw new ErrorCustom('You are not system admin of this space', httpStatus.UNAUTHORIZED);
@@ -303,7 +323,7 @@ export const checkSystemAdmin = async (req: RequestCustom, res: Response) => {
       email: req.user.email,
       loggedAs: RoleCache.system_admin.name,
       spaceId: idMongoose,
-      userType: req.user.userType.name
+      userType: req.user.userType?.name
     });
 
     handleSetCookiesFromPayload(res, payload);
@@ -322,16 +342,19 @@ export const checkSystemAdmin = async (req: RequestCustom, res: Response) => {
 
 export const exitSystemAdmin = async (req: RequestCustom, res: Response) => {
   try {
-    if (!req.user.userType) {
+    if (!req.user?.userType) {
       throw new ErrorCustom('Authorization problem.', httpStatus.UNAUTHORIZED);
     }
     const userType = roleCache.get(req.user.userType.name);
+    if (!userType?.name || !req.user.currentSpace?._id) {
+      throw new ErrorCustom('Authorization problem.', httpStatus.UNAUTHORIZED);
+    }
 
     // const meUser = await MeUser.fromReqUser({ ...req.user, loggedAs: userType });
 
     const payload = new JWTPayload({
       email: req.user.email,
-      loggedAs: userType.name,
+      loggedAs: userType?.name,
       spaceId: req.user.currentSpace._id,
       userType: req.user.userType.name
     });
@@ -350,16 +373,22 @@ export const exitSystemAdmin = async (req: RequestCustom, res: Response) => {
 export const setSpaceAndOrgInJwt = async (req: RequestCustom, res: Response) => {
   try {
     const { user } = req;
+    if (!user) {
+      throw new ErrorCustom('Authorization problem.', httpStatus.UNAUTHORIZED);
+    }
     if (!user.isSuperAdmin && !userHasSpace(user, req.params.idMongoose)) {
       throw new Error(_MSG.NOT_ALLOWED);
     }
     // user is super admin or has the root space.
     const space = await Space.findById(req.params.idMongoose);
+    if (!space) {
+      throw new ErrorCustom('Space not found', httpStatus.NOT_FOUND);
+    }
     const payload = new JWTPayload({
-      loggedAs: req.user.loggedAs.name,
-      email: req.user.email,
+      loggedAs: user.loggedAs.name,
+      email: user.email,
       spaceId: space._id,
-      userType: req.user.userType.name
+      userType: user.userType?.name
     });
 
     res.clearCookie('jwt', { domain: vars.cookieDomain });
@@ -387,119 +416,12 @@ export const setSpaceAndOrgInJwt = async (req: RequestCustom, res: Response) => 
   }
 };
 
-export async function acceptInvitation(req: RequestCustom, res: Response, next: NextFunction) {
-  try {
-    if (!req.user.email) {
-      throw new Error('');
-    }
-    const authToken = await AuthToken.findOne({ linkId: req.params.linkId });
-    if (!authToken) {
-      throw new Error('Invalid token');
-    }
-    const invitation = await Invitation.findOne({
-      status: 'pending',
-      authToken: authToken._id,
-      email: req.user.email
-    });
-    if (!invitation) {
-      throw new Error('Invalid invitation');
-    }
-    invitation.status = 'accepted';
-    await invitation.save();
-
-    const newAccessPermission = new AccessPermission({
-      user: req.user._id,
-      role: RoleCache[invitation.userType],
-      space: invitation.space
-    });
-    await UserRegistry.create({ user: req.user, role: RoleCache[invitation.userType], isPublic: false }).catch(console.error);
-    await newAccessPermission.save();
-
-    await AuthToken.deleteOne({ _id: authToken._id });
-
-    const payload = new JWTPayload({
-      email: req.user.email,
-      loggedAs: invitation.userType,
-      userType: invitation.userType,
-      spaceId: invitation.space
-    });
-
-    handleSetCookiesFromPayload(res, payload);
-
-    res.status(httpStatus.OK).json({});
-  } catch (error) {
-    logger.error(error.stack || error);
-    next(error);
-  }
-}
-
-// function authInvitation() {}
-
-export async function registerByInvitation(req: RequestCustom, res: Response, next: NextFunction) {
-  try {
-    if (!req.user.email) {
-      throw new Error('');
-    }
-    const authToken = await AuthToken.findOne({ linkId: req.params.linkId });
-    if (!authToken) {
-      throw new Error('Invalid token');
-    }
-    const invitation = await Invitation.findOne({
-      status: 'pending',
-      authToken: authToken._id,
-      email: req.user.email
-    });
-    if (!invitation) {
-      throw new Error('Invalid invitation');
-    }
-    invitation.status = 'accepted';
-    await invitation.save();
-
-    const newAccessPermission = new AccessPermission({
-      user: req.user._id,
-      role: RoleCache[invitation.userType],
-      space: invitation.space
-    });
-    await UserRegistry.create({ user: req.user, role: RoleCache[invitation.userType], isPublic: false }).catch(console.error);
-    await newAccessPermission.save();
-
-    await AuthToken.deleteOne({ _id: authToken._id });
-
-    const payload = new JWTPayload({
-      email: req.user.email,
-      loggedAs: invitation.userType,
-      userType: invitation.userType,
-      spaceId: invitation.space
-    });
-
-    handleSetCookiesFromPayload(res, payload);
-
-    res.status(httpStatus.OK).json({});
-  } catch (error) {
-    logger.error(error.stack || error);
-    next(error);
-  }
-}
-
-export async function getInvitationByLinkId(req: RequestCustom, res: Response, next: NextFunction) {
-  try {
-    const invitation = await getInvitationByAuthTokenLinkId(req.params.linkId);
-
-    res.status(httpStatus.OK).json({ success: true, data: invitation });
-  } catch (error) {
-    logger.error(error.stack || error);
-    next(error);
-  }
-}
-
 export default {
   removeSpaceToken,
   loginByRole,
   logout,
-  acceptInvitation,
   me,
   register,
-  getInvitationByLinkId,
   loginAndAcceptInvitation
   // completeRegisterMaintainer
 };

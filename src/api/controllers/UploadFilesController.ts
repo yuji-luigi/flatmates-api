@@ -44,6 +44,7 @@ import { RequestCustom } from '../../types/custom-express/express-custom';
 import mongoose from 'mongoose';
 import { UploadResponseObject } from '../helpers/types-uploadFileHelper';
 import vars from '../../utils/globalVariables';
+import { ErrorCustom } from '../../lib/ErrorCustom';
 // const { storageBucketName } = vars;
 
 export async function getResourceFromStorage(req: Request, res: Response) {
@@ -76,7 +77,7 @@ export async function postResourceIntoStorage(req: RequestCustom, res: Response)
       const createdModel = await Upload.create({
         ...uploadModelsData[key],
         url: vars.storageUrl + '/' + uploadModelsData[key].fullPath,
-        uploadedBy: req.user._id
+        uploadedBy: req.user?._id
       });
 
       if (responseObj[createdModel.fieldInParent]) {
@@ -104,6 +105,9 @@ export async function deleteFileFromStorageAndEntity(req: RequestCustom, res: Re
     const { modelEntity, modelId, uploadKey, uploadId } = req.params;
 
     const uploadModel = await Upload.findById(uploadId);
+    if (!uploadModel) {
+      throw new ErrorCustom('File not found', 404);
+    }
     deleteFileFromStorage(uploadModel.fullPath);
     await uploadModel.removeThis();
     const rootModel = await mongoose.model(modelEntity).findById(modelId);
@@ -175,7 +179,7 @@ export async function postMaintenanceFileToStorage(req: RequestCustom, res: Resp
   }
 }
 
-export async function deleteAll(req: RequestCustom, res: Response) {
+export async function deleteAll(_req: RequestCustom, res: Response) {
   try {
     const deletedModels = await Upload.find();
     for (const key in deletedModels) {
@@ -199,7 +203,7 @@ export async function deleteAll(req: RequestCustom, res: Response) {
   }
 }
 
-export async function getAllUploads(req: RequestCustom, res: Response) {
+export async function getAllUploads(_req: RequestCustom, res: Response) {
   try {
     const uploads = await Upload.find();
 

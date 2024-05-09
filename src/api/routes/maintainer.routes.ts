@@ -1,22 +1,10 @@
 import express from 'express';
-import {
-  addMaintainerToSpace,
-  addSpacesToMaintainer,
-  createMaintainer,
-  favoriteMaintainerToSpaceAndSendToClient,
-  removeMaintainerFromSpaceAndSendToClient,
-  removeSpaceFromMaintainerById,
-  sendMaintainersOfBuildingToClient,
-  sendMaintainersToClient,
-  sendMaintainersWithPaginationToClient,
-  sendSingleMaintainerBySlug,
-  updateMaintainerById
-} from '../controllers/MaintainerController';
+import { removeSpaceFromMaintainerById, sendMaintainersOfBuildingToClient } from '../controllers/MaintainerController';
 import { isLoggedIn } from '../../middlewares/isLoggedIn';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 const router = express.Router();
 router.use((req: RequestCustom, res, next) => {
-  if (req.user.isSuperAdmin) {
+  if (req.user?.isSuperAdmin) {
     return next();
   }
   if (!req.query.space) {
@@ -26,7 +14,7 @@ router.use((req: RequestCustom, res, next) => {
   }
   next();
 });
-router.get('/test/test', (req, res) => res.send('API is working: maintainer.routes.tsd'));
+router.get('/test/test', (_req, res) => res.send('API is working: maintainer.routes.tsd'));
 
 // router.get('/', isLoggedIn(), sendMaintainersToClient);
 // router.get('/with-pagination', isLoggedIn(), sendMaintainersWithPaginationToClient);

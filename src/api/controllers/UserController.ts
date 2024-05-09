@@ -2,7 +2,7 @@ import httpStatus from 'http-status';
 import { NextFunction, Response } from 'express';
 import logger from '../../lib/logger';
 import Space from '../../models/Space';
-import { RequestCustom } from '../../types/custom-express/express-custom';
+import { RequestCustom as RequestCustomRoot } from '../../types/custom-express/express-custom';
 import { aggregateWithPagination, checkDuplicateEmail, convert_idToMongooseId } from '../helpers/mongoose.helper';
 import vars from '../../utils/globalVariables';
 import User from '../../models/User';
@@ -22,13 +22,16 @@ import AuthToken from '../../models/AuthToken';
 import Invitation from '../../models/Invitation';
 import { createInvitationEmail } from '../../lib/node-mailer/createInvitationMail';
 import { roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
+import { ReqUser } from '../../lib/jwt/jwtTypings';
 
 const entity = 'users';
 
 const lookupSpaces: PipelineStage.FacetPipelineStage = {
   $lookup: { from: 'spaces', localField: 'spaces', foreignField: '_id', as: 'spaces' }
 };
-
+interface RequestCustom extends RequestCustomRoot {
+  user: ReqUser;
+}
 export const createUserAndSendDataWithPagination = async (req: RequestCustom, res: Response) => {
   try {
     // todo: control for user accessPermission.
@@ -160,19 +163,19 @@ export async function sendUsersSelectionForSuperAdmin(_req: RequestCustom, res: 
   }
 }
 
-export async function updateOrganizationById(req: RequestCustom, res: Response) {
+export async function updateOrganizationById(_req: RequestCustom, res: Response) {
   try {
-    const organization = await User.findById(req.params.organizationId);
-    // const {name, descripition, phone, email, homepage, logoBanner, logoSquare, admins, isPublic} = req.body;
-    // const organization = await User.findById(req.params.organizationId).lean();
-    const reqBody = deleteEmptyFields(req.body);
-    organization.set(reqBody);
-    await organization.save();
+    // const organization = await User.findById(req.params.organizationId);
+    // // const {name, descripition, phone, email, homepage, logoBanner, logoSquare, admins, isPublic} = req.body;
+    // // const organization = await User.findById(req.params.organizationId).lean();
+    // const reqBody = deleteEmptyFields(req.body);
+    // organization.set(reqBody);
+    // await organization.save();
 
     res.status(httpStatus.OK).json({
       success: true,
-      collection: 'organizations',
-      data: organization
+      collection: 'organizations'
+      // data: organization
       // totalDocuments:
     });
   } catch (error) {
@@ -249,12 +252,15 @@ export async function deleteOrganizationCookie(_req: RequestCustom, res: Respons
 
 export async function importExcelFromClient(req: RequestCustom, res: Response) {
   try {
-    const fileFromClient = req.files.file;
+    const fileFromClient = req.files?.file;
+    if (!fileFromClient) {
+      throw new ErrorCustom('Please select a file to upload', httpStatus.BAD_REQUEST);
+    }
     // Parse the file based on its type
     const data = convertExcelToJson<userExcelData>(fileFromClient);
-    const space = req.user.currentSpace._id;
-    const organization = req.user.currentSpace.organizationId;
-    if (!space)
+    const space = req.user.currentSpace?._id;
+    const organization = req.user.currentSpace?.organizationId;
+    if (!space || !organization)
       throw new ErrorEx({
         status: httpStatus.INTERNAL_SERVER_ERROR,
         message: 'Please set the select input value in some building/space',
@@ -304,7 +310,7 @@ export async function importExcelFromClient(req: RequestCustom, res: Response) {
   }
 }
 
-export async function sendTokenEmail(req: RequestCustom, res: Response) {
+export async function sendTokenEmail(req: RequestCustom & { params: { idMongoose: string } }, res: Response) {
   try {
     const mailOptions = await createMailOptionsForUserToken({ userId: req.params.idMongoose });
     const result = await sendEmail(mailOptions);
@@ -399,7 +405,9 @@ export const registerUserOnBoardingAndSendUserToClient = async (req: RequestCust
     }
     const authToken = await findAuthTokenFromCookie(req.cookies['auth-token']);
     // throws error if token is not valid
-    checkAuthTokenForError(authToken);
+    if (!checkAuthTokenForError(authToken)) {
+      throw new Error('Invalid access');
+    }
 
     const modifiedUser = await findAndModifyUserBase(req);
     modifiedUser.set({ active: true });
@@ -430,7 +438,9 @@ export const registerUserOnBoardingAndSendUserToClient = async (req: RequestCust
 async function findAndModifyUserBase(req: RequestCustom) {
   const { idMongoose } = req.params;
   const foundUser = await User.findById(idMongoose);
-
+  if (!foundUser) {
+    throw new ErrorCustom('User not found', httpStatus.NOT_FOUND);
+  }
   const emailDuplicates = await checkDuplicateEmail({ model: User, user: foundUser as IUser, email: req.body.email });
   const reqBody = emptyFieldsToUndefined(req.body);
   if (emailDuplicates) {
@@ -451,6 +461,9 @@ async function findAndModifyUserBase(req: RequestCustom) {
 export async function inviteUserToSpace(req: RequestCustom, res: Response, next: NextFunction) {
   try {
     const { userType: userTypeName } = req.params;
+    if (!userTypeName) {
+      throw new ErrorCustom('userType is required', httpStatus.BAD_REQUEST);
+    }
     const { email, space } = req.body;
     if (!req.user.isAdminOfCurrentSpace && !req.user.isSuperAdmin) {
       throw new ErrorCustom('you are not allowed to invite user to space.', httpStatus.UNAUTHORIZED);
@@ -461,11 +474,14 @@ export async function inviteUserToSpace(req: RequestCustom, res: Response, next:
     await authToken.save();
 
     const userType = roleCache.get(userTypeName);
+    if (!userType) {
+      throw new ErrorCustom('User type not found', httpStatus.INTERNAL_SERVER_ERROR);
+    }
 
     await Invitation.create({
       email,
       space,
-      userType: userType.name,
+      userType: userType?.name,
       authToken,
       createdBy: req.user._id
     });

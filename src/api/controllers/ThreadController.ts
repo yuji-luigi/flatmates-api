@@ -20,7 +20,7 @@ const createThread = async (req: RequestCustom, res: Response) => {
     await Thread.create(reqBody);
     req.query = {
       ...req.query,
-      spaces: { $in: [new ObjectId(req.user.currentSpace._id)] }
+      spaces: { $in: [new ObjectId(req.user?.currentSpace?._id)] }
     };
     const correctedQuery = correctQueryForEntity({ entity: 'threads', query: req.query });
     const threadsToSend = await getThreadsForPlatForm({ entity: 'threads', query: correctedQuery, sortQuery: { isImportant: -1, createdAt: -1 } });

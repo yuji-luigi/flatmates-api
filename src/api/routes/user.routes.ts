@@ -12,17 +12,20 @@ import {
   sendAuthTokenOfUserToClient,
   inviteUserToSpace
 } from '../controllers/UserController';
-import { RequestCustom } from '../../types/custom-express/express-custom';
+import { RequestCustom as RequestCustomRoot } from '../../types/custom-express/express-custom';
 import { deleteCrudObjectByIdAndSendDataWithPagination } from '../controllers/DataTableController';
 import { isLoggedIn } from '../../middlewares/isLoggedIn';
 import MSG from '../../utils/messages';
+import { ReqUser } from '../../lib/jwt/jwtTypings';
 
 const router = express.Router();
-
+interface RequestCustom extends RequestCustomRoot {
+  user: ReqUser;
+}
 router.use((req: RequestCustom, response: Response, next: NextFunction) => {
   try {
     if (!req.user.isSuperAdmin && req.user.loggedAs.name === 'inhabitant') {
-      if (!req.user.currentSpace._id) {
+      if (!req.user.currentSpace?._id) {
         throw new Error('User must select a space first.');
       }
     }
@@ -64,7 +67,7 @@ router.put('/:idMongoose/on-boarding', isLoggedIn(), compareTargetAndCurrentUser
 
 router.delete('/with-pagination/:idMongoose', isLoggedIn(), deleteCrudObjectByIdAndSendDataWithPagination);
 
-router.delete('/with-pagination/linkedChildren/:idMongoose', (req: Request, res: Response) => res.status(httpStatus.FORBIDDEN).send('forbidden'));
+router.delete('/with-pagination/linkedChildren/:idMongoose', (_req: Request, res: Response) => res.status(httpStatus.FORBIDDEN).send('forbidden'));
 export default router;
 
 async function compareTargetAndCurrentUser(req: RequestCustom, res: Response, next: NextFunction) {

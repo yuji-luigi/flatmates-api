@@ -13,6 +13,7 @@ import { _MSG } from '../utils/messages';
 import Role from './AccessPermission';
 import AccessController from './AccessPermission';
 import { JwtSignPayload } from '../lib/jwt/jwtTypings';
+import { ErrorCustom } from '../lib/ErrorCustom';
 
 export type modules = {
   [key: string]: boolean;
@@ -58,9 +59,11 @@ export const userSchema = new Schema<IUser, UserModel>(
       type: String,
       match: /^\S+@\S+\.\S+$/,
       // unique: true,
-      required: false,
+      // TODO: Was not required before.(Import inhabitants from excel sheet) now with invitation system it is required.
+      required: true,
       trim: true,
-      lowercase: true
+      lowercase: true,
+      unique: true
     },
     password: {
       type: String,
@@ -140,7 +143,7 @@ userSchema.method({
       email: this.email,
       entity: 'users'
     };
-    return jwt.sign(payload, jwtSecret, {
+    return jwt.sign(payload, jwtSecret || '', {
       expiresIn: '24h' // expires in 24 hours
     });
   },
@@ -168,6 +171,9 @@ userSchema.statics = {
         });
 
       const user = await this.findOne({ email }).exec();
+      if (!user) {
+        throw new ErrorCustom('Error authenticating user', httpStatus.UNAUTHORIZED);
+      }
       if (!user.active || !user.password) {
         throw new APIError({
           message: _MSG.REGISTER_FIRST

@@ -8,11 +8,12 @@ import { AuthTokenInterface } from 'mongoose-types/model-types/auth-token-interf
 import { generateTokenUrl } from '../../lib/jwt/jwtUtils';
 import { checkDuplicateEmail } from './mongoose.helper';
 import { ObjectId } from 'mongodb';
+import { ErrorCustom } from '../../lib/ErrorCustom';
 
 export type userExcelData = {
   name: string;
   surname: string;
-  email: string;
+  email?: string;
   building: string;
   floor: number;
   room: number;
@@ -79,10 +80,16 @@ export async function handleConstructUpdateUser({
 export async function createMailOptionsForUserToken({ userId }: { userId: string }): Promise<Mail.Options> {
   try {
     const user = await User.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
     if (!user.email) {
       throw new Error('User does not have email');
     }
     const authToken = await AuthToken.findOne({ 'docHolder.ref': User.collection.collectionName, 'docHolder.instanceId': user._id });
+    if (!authToken) {
+      throw new ErrorCustom('Auth token not found', 404);
+    }
     const html = createTokenMailBodyByUser(user as IUser, authToken);
     const options: Mail.Options = {
       from: vars.displayMail,

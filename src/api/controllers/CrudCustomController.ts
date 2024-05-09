@@ -8,7 +8,6 @@ import { cutQuery, deleteEmptyFields, getEntity, getEntityFromOriginalUrl } from
 import { aggregateWithPagination } from '../helpers/mongoose.helper';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import Maintenance from '../../models/Maintenance';
-import Thread from '../../models/Thread';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 import { _MSG } from '../../utils/messages';
 import { sumUpChecksByMonth } from '../aggregation-helpers/checkPipelines';
@@ -215,10 +214,10 @@ export const sendDataForHomeDashboard = async (req: RequestCustom, res: Response
     let { query } = req;
     // const maintainerQuery = {};
 
-    let space: Partial<ISpace> = {};
+    let space: Partial<ISpace | null> = {};
 
     if (req.user?.currentSpace?._id) {
-      space = await Space.findById(req.user.currentSpace._id);
+      space = (await Space.findById(req.user.currentSpace._id)) || {};
       query = { space: req.user.currentSpace._id };
     }
     // const threadQuery = query.space ? { spaces: { $in: [query.space] } } : {};

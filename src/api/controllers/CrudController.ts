@@ -27,7 +27,7 @@ export const getPublicCrudObjects = async (req: RequestCustom, res: Response) =>
     if (data.length) {
       if (data[0].setStorageUrlToModel) {
         for (const item of data) {
-          await item.setStorageUrlToModel();
+          await item?.setStorageUrlToModel?.();
         }
       }
     }
@@ -100,7 +100,10 @@ export const getSingleCrudObject = async (req: RequestCustom, res: Response) => 
   try {
     const entity = req.params.entity || (getEntity(req.url) as Entities);
     req.params.entity = entity;
-    const data: Record<string, object | string | Date | number | IUpload> = await mongoose.model(entity).findById(req.params.idMongoose);
+    const data: Record<string, object | string | Date | number | IUpload> | null = await mongoose.model(entity).findById(req.params.idMongoose);
+    if (!data) {
+      throw new Error(_MSG.OBJ_NOT_FOUND);
+    }
     data.avatar && (await (data.avatar as IUpload).setUrl());
     data.cover && (await (data.cover as IUpload).setUrl());
     res.status(httpStatus.OK).json({
@@ -122,7 +125,7 @@ export const createCrudObject = async (req: RequestCustom, res: Response) => {
     // get req.params.entity
     const entity = req.params.entity || getEntity(req.url);
     req.body = deleteEmptyFields(req.body);
-    req.body.user = req.user._id;
+    req.body.user = req.user?._id;
     const Model = mongoose.model(entity);
     const newModel = new Model(req.body);
     await newModel.save();

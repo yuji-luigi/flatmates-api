@@ -9,7 +9,7 @@ export const isLoggedIn =
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
 
-    (roles: USER_ROLES[] = USER_ROLES) =>
+    (_roles: USER_ROLES[] = USER_ROLES) =>
     async (req: RequestCustom, res: Response, next: NextFunction) => {
       const { user } = req;
       if (user) {
@@ -27,7 +27,7 @@ export const isLoggedIn =
     };
 
 export function isSuperAdmin(req: RequestCustom, _res: Response, next: NextFunction) {
-  if (req.user.isSuperAdmin) {
+  if (req.user?.isSuperAdmin) {
     return next();
   } else {
     next(new ErrorCustom(_MSG.NOT_AUTHORIZED, httpStatus.UNAUTHORIZED));

@@ -23,7 +23,7 @@ import { RequestCustom } from '../../types/custom-express/express-custom';
 const router = express.Router();
 
 router.use((req: RequestCustom, res, next) => {
-  if (req.user.isSuperAdmin) {
+  if (req.user?.isSuperAdmin) {
     return next();
   }
   if (!req.query.space) {
@@ -56,7 +56,7 @@ router.get('/settings/:slug', isLoggedIn(), sendSpaceSettingPageDataToClient);
 
 router.post('/with-pagination/linkedChildren/:parentId', isLoggedIn(), createLinkedChild);
 router.post('/with-pagination', isLoggedIn(), createHeadSpaceWithPagination);
-router.post('/', isLoggedIn(), (req: Request, res: Response) => res.status(httpStatus.FORBIDDEN).send('forbidden'));
+router.post('/', isLoggedIn(), (_req: Request, res: Response) => res.status(httpStatus.FORBIDDEN).send('forbidden'));
 
 router.put('/:idMongoose', isLoggedIn(), updateSpaceAndSendToClient);
 

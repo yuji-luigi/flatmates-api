@@ -10,8 +10,8 @@ import { accessPermissionsCache } from '../lib/mongoose/mongoose-cache/access-pe
 import { RoleCache } from '../lib/mongoose/mongoose-cache/role-cache';
 import { IUser } from '../types/mongoose-types/model-types/user-interface';
 
-export function clearQueriesForSAdmin(req: RequestCustom, res: Response, next: NextFunction) {
-  if (req.user.isSuperAdmin) {
+export function clearQueriesForSAdmin(req: RequestCustom, _res: Response, next: NextFunction) {
+  if (req.user?.isSuperAdmin) {
     delete req.query.organization;
     delete req.query.space;
   }
@@ -34,16 +34,28 @@ export const ADMIN = 'admin';
 export const LOGGED_USER = 'user';
 export const SUPER_ADMIN = 'super_admin';
 
-export function isAdminOfSpace({ space, currentUser }: { space: ISpace | CurrentSpace; currentUser: ReqUser | IUser }) {
+export function isAdminOfSpace({
+  space,
+  currentUser
+}: {
+  space: ISpace | CurrentSpace | undefined | null;
+  currentUser: ReqUser | IUser | undefined;
+}) {
+  if (!currentUser) {
+    return false;
+  }
   if (currentUser.isSuperAdmin) {
     return true;
   }
-  if (!space._id) {
+  if (!space?._id) {
     return false;
   }
   const accessPermissions = accessPermissionsCache.get(currentUser._id.toString());
+  if (!accessPermissions) {
+    return false;
+  }
   const isSystemAdmin = !!accessPermissions.find(
-    (actrl) => actrl.space.toString() === space._id.toString() && actrl.role.toString() === RoleCache.system_admin._id.toString()
+    (actrl) => actrl.space.toString() === space._id?.toString() && actrl.role.toString() === RoleCache.system_admin._id.toString()
   );
 
   return isSystemAdmin;

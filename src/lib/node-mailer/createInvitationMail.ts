@@ -4,6 +4,7 @@ import vars from '../../utils/globalVariables';
 import Space from '../../models/Space';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 import { translationResources } from './translations';
+import { ErrorCustom } from '../ErrorCustom';
 
 export async function createInvitationEmail(args: {
   email: string;
@@ -13,6 +14,9 @@ export async function createInvitationEmail(args: {
 }): Promise<MailOptions> {
   const { email, space: spaceId } = args;
   const space = await Space.findById(spaceId);
+  if (!space) {
+    throw new ErrorCustom('Space not found', 404);
+  }
   return {
     from: vars.displayMail,
     to: email,

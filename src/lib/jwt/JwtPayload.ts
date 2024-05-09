@@ -1,6 +1,8 @@
 import { ObjectId } from 'mongodb';
 import { RoleName } from '../../types/mongoose-types/model-types/role-interface';
 import { JwtSignPayload } from './jwtTypings';
+import { ErrorCustom } from '../ErrorCustom';
+import httpStatus from 'http-status';
 
 export class JWTPayload implements JwtSignPayload {
   email: string;
@@ -9,10 +11,23 @@ export class JWTPayload implements JwtSignPayload {
   spaceId?: string;
   accessControllerId?: string;
 
-  constructor({ email, loggedAs, spaceId, userType }: { email: string; loggedAs: RoleName; spaceId: string | ObjectId; userType: RoleName }) {
+  constructor({
+    email,
+    loggedAs,
+    spaceId,
+    userType
+  }: {
+    email: string | undefined;
+    loggedAs: RoleName;
+    spaceId: string | ObjectId;
+    userType: RoleName | undefined;
+  }) {
     if (userType === 'system_admin') {
       // NOTE: Why...?
       throw new Error('system_admin cannot be set as userType in JWT payload');
+    }
+    if (!email) {
+      throw new ErrorCustom('Unauthorized', httpStatus.UNAUTHORIZED);
     }
     this.email = email;
     this.loggedAs = loggedAs;
@@ -26,13 +41,16 @@ export class JWTPayload implements JwtSignPayload {
     spaceId,
     userType
   }: {
-    email: string;
+    email: string | undefined;
     loggedAs: RoleName;
     spaceId?: string | ObjectId;
     userType: RoleName;
   }): JWTPayload {
     if (spaceId instanceof ObjectId) {
       spaceId = spaceId.toString();
+    }
+    if (!email) {
+      throw new ErrorCustom('Unauthorized', httpStatus.UNAUTHORIZED);
     }
     if (userType === 'system_admin') {
       throw new Error('system_admin cannot be set as userType in JWT payload');
