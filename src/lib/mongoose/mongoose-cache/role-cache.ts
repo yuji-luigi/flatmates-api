@@ -2,7 +2,7 @@ import httpStatus from 'http-status';
 import Role from '../../../models/Role';
 import { RoleName, RoleInterface } from '../../../types/mongoose-types/model-types/role-interface';
 import { ErrorCustom } from '../../ErrorCustom';
-import { CacheWithNullCheck } from '../../CacheWithNullCheck';
+import { CacheWithNullCheck } from '../../cache/CacheWithNullCheck';
 /**
  * @description key is Name of role
  *  */

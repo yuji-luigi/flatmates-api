@@ -12,7 +12,6 @@ import logger from '../logger';
 import { spaceCache } from '../mongoose/mongoose-cache/space-cache';
 import { UserResolverReturnType } from '../../middlewares/handleUserFromRequest';
 import { AccessPermissionCache } from '../../types/mongoose-types/model-types/access-permission-interface';
-import { ErrorCustom } from '../ErrorCustom';
 
 const { jwtSecret } = vars;
 const JwtStrategy = passport.Strategy;
@@ -62,11 +61,7 @@ const resolveUserJwt = async (resolvedJwt: JwtSignPayload | JwtSignPayloadWithAc
       accessPermissionsCache.set(leanUser._id.toString(), _accessControllers);
     }
 
-    const accessPermissions = accessPermissionsCache.get(leanUser._id.toString());
-
-    if (!accessPermissions) {
-      throw new ErrorCustom('Access Permissions not found', 500, 'Access cache not initialized.');
-    }
+    const accessPermissions = accessPermissionsCache.get(leanUser._id.toString()) || [];
 
     for (const aCtrl of accessPermissions) {
       // init cache of all spaces of the user(accessPermissions).
