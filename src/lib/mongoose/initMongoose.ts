@@ -32,6 +32,7 @@ import AccessPermission from '../../models/AccessPermission';
 import UserRegistry from '../../models/UserRegistry';
 import { ICollectionAware, createSlug } from '../../api/helpers/mongoose.helper';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
+import { AnyBulkWriteOperation } from 'mongodb';
 
 // Set mongoose Promise to Bluebird
 // eslint-disable-next-line no-undef
@@ -88,7 +89,15 @@ const mongooseConnector = {
 };
 
 export default mongooseConnector;
-
+interface Operation {
+  insertOne: {
+    document: {
+      user: mongoose.Types.ObjectId;
+      role: mongoose.Types.ObjectId;
+      isPublic: boolean;
+    };
+  };
+}
 async function initUserRegistry() {
   const documentsToInsert = await AccessPermission.find();
 
@@ -114,7 +123,7 @@ async function initUserRegistry() {
   );
 
   // Filter out any null operations resulting from duplicates
-  const filteredOperations = operations.filter((op) => op !== null);
+  const filteredOperations = operations.filter((op): op is Operation => op !== null);
 
   if (filteredOperations.length > 0) {
     await UserRegistry.bulkWrite(filteredOperations);

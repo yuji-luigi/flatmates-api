@@ -12,6 +12,7 @@ import logger from '../logger';
 import { spaceCache } from '../mongoose/mongoose-cache/space-cache';
 import { UserResolverReturnType } from '../../middlewares/handleUserFromRequest';
 import { AccessPermissionCache } from '../../types/mongoose-types/model-types/access-permission-interface';
+import { ErrorCustom } from '../ErrorCustom';
 
 const { jwtSecret } = vars;
 const JwtStrategy = passport.Strategy;
@@ -63,6 +64,10 @@ const resolveUserJwt = async (resolvedJwt: JwtSignPayload | JwtSignPayloadWithAc
 
     const accessPermissions = accessPermissionsCache.get(leanUser._id.toString());
 
+    if (!accessPermissions) {
+      throw new ErrorCustom('Access Permissions not found', 500, 'Access cache not initialized.');
+    }
+
     for (const aCtrl of accessPermissions) {
       // init cache of all spaces of the user(accessPermissions).
       // todo: the use case of the cache??
@@ -75,8 +80,8 @@ const resolveUserJwt = async (resolvedJwt: JwtSignPayload | JwtSignPayloadWithAc
     const currentSpace: CurrentSpace = {
       isAdminOfSpace: false
     };
-    // case space exist in jwt. prepare set space info in req.user
-    if ('spaceId' in resolvedJwt) {
+    // case space field in jwt and also is truthy. prepare set space info in req.user
+    if ('spaceId' in resolvedJwt && resolvedJwt.spaceId) {
       if (accessPermissions.length && !accessPermissions.map((aCtrl) => aCtrl.space.toString()).includes(resolvedJwt.spaceId)) {
         return done(null, false);
       }
@@ -87,8 +92,7 @@ const resolveUserJwt = async (resolvedJwt: JwtSignPayload | JwtSignPayloadWithAc
       leanUser.isAdminOfCurrentSpace = isAdminOfSpace({ space, currentUser: leanUser });
     }
 
-    const currentAccessPermission =
-      accessPermissions.length && accessPermissions.find((aCtrl) => aCtrl.space.toString() === currentSpace._id?.toString());
+    const currentAccessPermission = accessPermissions.find((aCtrl) => aCtrl.space.toString() === currentSpace._id?.toString());
 
     const reqUser = reqUserBuilder({
       user: leanUser,
@@ -102,7 +106,7 @@ const resolveUserJwt = async (resolvedJwt: JwtSignPayload | JwtSignPayloadWithAc
     return done(null, reqUser);
   } catch (error) {
     logger.error(error.stack || error);
-    return done(error, null); // todo: find out why user parameter is undefined in handleUserFromRequest function after this
+    return done(error, false); // todo: find out why user parameter is undefined in handleUserFromRequest function after this
   }
 };
 

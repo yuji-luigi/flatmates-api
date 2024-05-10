@@ -2,10 +2,11 @@ import httpStatus from 'http-status';
 import Role from '../../../models/Role';
 import { RoleName, RoleInterface } from '../../../types/mongoose-types/model-types/role-interface';
 import { ErrorCustom } from '../../ErrorCustom';
+import { CacheWithNullCheck } from '../../CacheWithNullCheck';
 /**
  * @description key is Name of role
  *  */
-export const roleCache = new Map<RoleName, RoleInterface>();
+export const roleCache = new CacheWithNullCheck<RoleName, RoleInterface>();
 
 export const initCacheRole = async () => {
   const roles = await Role.find();

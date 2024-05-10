@@ -20,26 +20,24 @@ export interface IUser extends UserBase, LoginInstance<IUser>, MongooseBaseModel
   token: () => string;
   save: () => void;
 }
-export interface UserBase {
+
+export interface UserBase extends UserBaseOptionalPassword {
+  password: string;
+}
+
+export interface UserBaseOptionalPassword {
   _id: ObjectId;
   name: string;
   surname?: string | undefined;
   email?: string;
-  password: string;
+  password: undefined | string;
   avatar?: IUpload;
   phone?: string | undefined;
   isSuperAdmin: boolean;
   slug: string;
-  /** will be only super_admin and user. will use adminOf field to check if user is admin of an space.
-   */
   role: ObjectId | RoleInterface;
-  // role: ObjectId | RoleInterface;
-  // need to put the control when user is created/updated
   adminOf: ISpace[];
-  // wallet?: string;
-  // userSetting: string | boolean;
   active: boolean;
-  // organization?: IOrganization | null | undefined;
   cover?: IUpload;
   _update?: {
     password?: Buffer | string;

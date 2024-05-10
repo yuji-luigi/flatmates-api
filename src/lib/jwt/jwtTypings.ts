@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
-import { UserBase } from '../../types/mongoose-types/model-types/user-interface';
 import { RoleName, RoleInterface } from '../../types/mongoose-types/model-types/role-interface';
 import { AccessPermissionCache } from '../../types/mongoose-types/model-types/access-permission-interface';
+import { UserBaseOptionalPassword } from '../../types/mongoose-types/model-types/user-interface';
 
 export type CurrentSpace = {
   name?: string;
@@ -12,7 +12,7 @@ export type CurrentSpace = {
 };
 
 // not jwt this is type of the req.user
-export type ReqUser = UserBase & {
+export type ReqUser = UserBaseOptionalPassword & {
   loggedAs: RoleInterface;
   userType?: RoleInterface;
   accessPermissions?: AccessPermissionCache[];
