@@ -12,6 +12,7 @@ export const initCacheRole = async () => {
   const roles = await Role.find();
   roles.forEach((role) => {
     roleCache.set(role.name, role);
+    console.log(roleCache.get(role.name));
   });
 };
 

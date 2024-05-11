@@ -235,20 +235,16 @@ const removeSpaceToken = (_req: Request, res: Response) => {
 const me = async (req: RequestCustom, res: Response) => {
   // set last login
   try {
-    if (!req.user) {
-      return res.status(200).send('ok');
-    }
+    //@ts-ignore
     const { user, meUser } = await MeUser.fromReqUserToUserMeUser(req.user);
-    if (!user) {
-      return res.status(200).send('ok');
-    }
+
     user.lastLogin = new Date(Date.now());
     await user.save();
 
     return res.send({
       success: true,
       user: meUser,
-      loggedAs: req.user.loggedAs
+      loggedAs: req.user?.loggedAs
     });
   } catch (error) {
     logger.error(error.message || error);

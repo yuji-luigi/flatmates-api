@@ -37,7 +37,6 @@ export const invitationSchema = new Schema<InvitationInterface>(
       ref: 'authTokens'
     }
   },
-
   {
     versionKey: false,
     timestamps: true

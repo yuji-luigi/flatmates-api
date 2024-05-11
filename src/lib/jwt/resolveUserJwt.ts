@@ -66,7 +66,7 @@ const resolveUserJwt = async (resolvedJwt: JwtSignPayload | JwtSignPayloadWithAc
     for (const aCtrl of accessPermissions) {
       // init cache of all spaces of the user(accessPermissions).
       // todo: the use case of the cache??
-      if (!spaceCache.get(aCtrl.space.toString())) {
+      if (!spaceCache.getWithoutException(aCtrl.space.toString())) {
         const space = await Space.findById(aCtrl.space).lean();
         spaceCache.set(aCtrl.space.toString(), space);
       }
@@ -81,9 +81,11 @@ const resolveUserJwt = async (resolvedJwt: JwtSignPayload | JwtSignPayloadWithAc
         return done(null, false);
       }
 
-      const space = spaceCache.get(resolvedJwt.spaceId);
-      currentSpace.name = space.name;
-      currentSpace._id = space._id;
+      const space = spaceCache.getWithoutException(resolvedJwt.spaceId);
+      if (space) {
+        currentSpace.name = space.name;
+        currentSpace._id = space._id;
+      }
       leanUser.isAdminOfCurrentSpace = isAdminOfSpace({ space, currentUser: leanUser });
     }
 

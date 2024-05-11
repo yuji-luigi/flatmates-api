@@ -23,7 +23,7 @@ export class MeUser {
   isSystemAdmin: boolean;
   phone: string;
   active: boolean;
-  accessPermission: AccessPermissionCache;
+  accessPermission: AccessPermissionCache | undefined | null;
   public static meUserFactory({
     user,
     loggedAs,
@@ -60,9 +60,9 @@ export class MeUser {
     if (!user) {
       throw new ErrorCustom('User not found', 404);
     }
-    if (!reqUser.currentAccessPermission) {
-      throw new ErrorCustom('Access Permission not found', 404);
-    }
+    // if (!reqUser.currentAccessPermission) {
+    //   throw new ErrorCustom('Access Permission not found', 404);
+    // }
 
     const meUser: MeUser = {
       _id: user._id.toString(),

@@ -466,7 +466,7 @@ export async function inviteUserToSpace(req: RequestCustom, res: Response, next:
     }
     const { email, space } = req.body;
     if (!req.user.isAdminOfCurrentSpace && !req.user.isSuperAdmin) {
-      throw new ErrorCustom('you are not allowed to invite user to space.', httpStatus.UNAUTHORIZED);
+      throw new ErrorCustom(_MSG.NOT_AUTHORIZED, httpStatus.UNAUTHORIZED);
     }
 
     const authToken = new AuthToken();
@@ -488,12 +488,8 @@ export async function inviteUserToSpace(req: RequestCustom, res: Response, next:
 
     const mailOptions = await createInvitationEmail({ email, space, userType, authToken });
     await sendEmail(mailOptions);
-    // const authToken = await AuthToken.create({
-    //   email
-    // }).save();
 
-    // const mailOptions = await createMailOptionsForUserToken({ userId: req.params.idMongoose });
-
+    //TODO: send back the invitation document and add in Redux store.
     res.status(httpStatus.OK).json({
       success: true,
       collection: 'users',
