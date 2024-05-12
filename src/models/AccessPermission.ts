@@ -40,6 +40,7 @@ export const accessPermissionSchema = new Schema<AccessPermissionInterface, Acce
       ref: 'roles',
       required: true
     },
+
     space: {
       type: Schema.Types.ObjectId,
       ref: 'spaces',

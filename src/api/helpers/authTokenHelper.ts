@@ -1,14 +1,16 @@
 import AuthToken from '../../models/AuthToken';
+import Invitation from '../../models/Invitation';
 
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { _MSG } from '../../utils/messages';
 import logger from '../../lib/logger';
 import { ObjectId } from 'mongodb';
+import { Document } from 'mongoose';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
 import { RoleName } from '../../types/mongoose-types/model-types/role-interface';
-import { invitationStatus } from '../../types/mongoose-types/model-types/invitation-interface';
+import { InvitationInterface, invitationStatus } from '../../types/mongoose-types/model-types/invitation-interface';
 import { ErrorCustom } from '../../lib/ErrorCustom';
 import httpStatus from 'http-status';
 /**
@@ -133,10 +135,33 @@ export interface InvitationByLinkId {
   space: { _id: ObjectId; name: string; address: string };
 }
 
+// Overload signatures
 export async function getInvitationByAuthTokenLinkId(
   linkId: undefined | string,
-  options: { additionalMatchFields?: Record<string, string | undefined>; invitationStatus?: invitationStatus } = {}
-): Promise<InvitationByLinkId | undefined> {
+  options?: {
+    additionalMatchFields?: Record<string, string | undefined>;
+    invitationStatus?: invitationStatus;
+    hydrate?: false | undefined;
+  }
+): Promise<InvitationByLinkId | undefined>;
+
+export async function getInvitationByAuthTokenLinkId(
+  linkId: undefined | string,
+  options?: {
+    additionalMatchFields?: Record<string, string | undefined>;
+    invitationStatus?: invitationStatus;
+    hydrate: true;
+  }
+): Promise<(InvitationInterface & Document) | undefined>;
+
+export async function getInvitationByAuthTokenLinkId(
+  linkId: undefined | string,
+  options: {
+    additionalMatchFields?: Record<string, string | undefined>;
+    invitationStatus?: invitationStatus;
+    hydrate?: boolean;
+  } = {}
+): Promise<InvitationByLinkId | (InvitationInterface & Document) | undefined> {
   const invitationStatusPP = options.invitationStatus && [
     {
       $match: {
@@ -211,5 +236,10 @@ export async function getInvitationByAuthTokenLinkId(
     error.message = 'error finding invitation';
     throw new ErrorCustom(error, httpStatus.INTERNAL_SERVER_ERROR);
   });
-  return invitation;
+  if (options.hydrate && invitation) {
+    const mongooseInvitation = Invitation.hydrate(invitation);
+    return mongooseInvitation;
+  }
+
+  return invitation as undefined | InvitationByLinkId;
 }

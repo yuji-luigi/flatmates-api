@@ -53,6 +53,7 @@ export async function findAndUpdateInvitationStatus(aggregatedInvitation: Invita
   if (!invitation) {
     throw new ErrorCustom('Invitation not found', httpStatus.NOT_FOUND);
   }
+  invitation.status = _status;
   await invitation.save();
   return invitation;
 }

@@ -47,6 +47,28 @@ export async function acceptInvitationByLogin(req: Request, res: Response, next:
     next(error);
   }
 }
+export async function declineInvitationByLinkId(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { linkId } = req.params;
+
+    // 2 find and auth by invitation authToken
+    const invitationDocument = await getInvitationByAuthTokenLinkId(linkId, { hydrate: true });
+    if (!invitationDocument) {
+      throw new ErrorCustom('We could not find your invitation. Please check your email.', httpStatus.NOT_FOUND);
+    }
+    invitationDocument.status = 'declined';
+    await invitationDocument.save();
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      data: {
+        message: 'Invitation declined successfully'
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
 
 export async function acceptInvitationByRegistering(req: Request, res: Response, next: NextFunction) {
   try {
@@ -101,15 +123,13 @@ export async function acceptInvitationByLoggedUserAndLinkId(req: Request & { use
   }
 }
 
-export async function getInvitationByLinkId(req: Request, res: Response, next: NextFunction) {
+export async function getInvitationByLinkIdAndSendToClient(req: Request, res: Response, next: NextFunction) {
   try {
     if (!req.params.linkId) {
       throw new ErrorCustom('Error in request', httpStatus.NOT_FOUND);
     }
     const invitation = await getInvitationByAuthTokenLinkId(req.params.linkId);
-
     const data = invitation && { _id: invitation._id, status: invitation.status };
-
     res.status(httpStatus.OK).json({
       success: true,
       data
