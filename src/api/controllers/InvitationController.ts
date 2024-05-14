@@ -10,6 +10,57 @@ import {
 } from '../helpers/invitation-helpers';
 import { getInvitationByAuthTokenLinkId } from '../helpers/authTokenHelper';
 import { ReqUser } from '../../lib/jwt/jwtTypings';
+import AuthToken from '../../models/AuthToken';
+import { roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
+import { createInvitationEmail } from '../../lib/node-mailer/createInvitationMail';
+import Invitation from '../../models/Invitation';
+import { RequestCustom } from '../../types/custom-express/express-custom';
+import { _MSG } from '../../utils/messages';
+import { sendEmail } from '../helpers/nodemailerHelper';
+
+export async function inviteToSpaceByUserTypeEmail(
+  req: RequestCustom & { user: ReqUser; params: { userType: string } },
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    // need to check if the user is system_admin of the space or super admin
+    if (!req.user.isAdminOfCurrentSpace && !req.user.isSuperAdmin) {
+      throw new ErrorCustom(_MSG.NOT_AUTHORIZED, httpStatus.UNAUTHORIZED);
+    }
+    const { userType: userTypeName } = req.params;
+    const { email, space } = req.body;
+
+    const authToken = new AuthToken();
+
+    await authToken.save();
+
+    const userType = roleCache.get(userTypeName);
+    if (!userType) {
+      throw new ErrorCustom('User type not found', httpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    const invitation = await Invitation.create({
+      email,
+      space,
+      userType: userType?.name,
+      authToken,
+      createdBy: req.user._id
+    });
+
+    const mailOptions = await createInvitationEmail({ email, space, userType, authToken });
+    await sendEmail(mailOptions);
+
+    //TODO: send back the invitation document and add in Redux store.
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: 'users',
+      data: { name: 'pending_invite', email: invitation.email }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
 
 export async function acceptInvitationByLogin(req: Request, res: Response, next: NextFunction) {
   try {
