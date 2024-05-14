@@ -17,6 +17,7 @@ export type ReqUser = UserBaseOptionalPassword & {
   userType?: RoleInterface;
   accessPermissions?: AccessPermissionCache[];
   currentAccessPermission?: AccessPermissionCache;
+  /** admin = system_admin */
   isAdminOfCurrentSpace?: boolean;
 } & { currentSpace?: CurrentSpace };
 
