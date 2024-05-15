@@ -4,6 +4,7 @@
 import { StringSchemaDefinition } from 'mongoose';
 import { detailedDate } from './functions';
 import { RequestCustom } from '../types/custom-express/express-custom';
+import { INTERNAL_SERVER_ERROR } from 'http-status';
 type message = { message: string };
 type argument = {
   employee?: string;
@@ -80,7 +81,8 @@ export const _MSG = {
   REGISTER_FIRST: 'Account must initialize first. Password or active is not set',
   AUTH_TOKEN_EXPIRED: 'Please contact your admin to get a new link. Your link has expired',
   ERRORS: {
-    GENERIC: 'Something went wrong'
+    GENERIC: 'Something went wrong',
+    INTERNAL_SERVER_ERROR: 'Internal server error'
   },
   RESPONSE: {
     NOT_FOUND: (req: RequestCustom) => NOTFOUND_HTML(req)

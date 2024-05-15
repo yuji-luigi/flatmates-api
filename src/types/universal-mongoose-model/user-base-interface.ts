@@ -6,7 +6,7 @@ export interface LoginInstanceProperties {
   _id: ObjectId;
   name: string;
   surname?: string;
-  email?: string;
+  email: string;
   password: string;
   active: boolean;
   lastLogin?: Date;

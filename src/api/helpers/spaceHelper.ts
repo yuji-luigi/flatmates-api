@@ -193,8 +193,6 @@ export async function updateSpaceHasPropertyManagerRecursively(spaceId: ObjectId
     name: '',
     password: '',
     slug: '',
-    role: new ObjectId(),
-    adminOf: [],
     active: false,
     cover: undefined,
     email: '',

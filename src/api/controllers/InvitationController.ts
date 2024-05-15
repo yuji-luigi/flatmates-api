@@ -6,7 +6,8 @@ import {
   handleAcceptInvitation,
   findAndUpdateInvitationStatus,
   handleFindPendingInvitationByLinkIdAndEmail,
-  handleSetCookieOnInvitationSuccess
+  handleSetCookieOnInvitationSuccess,
+  checkCanCreateInvitation
 } from '../helpers/invitation-helpers';
 import { getInvitationByAuthTokenLinkId } from '../helpers/authTokenHelper';
 import { ReqUser } from '../../lib/jwt/jwtTypings';
@@ -30,6 +31,8 @@ export async function inviteToSpaceByUserTypeEmail(
     }
     const { userType: userTypeName } = req.params;
     const { email, space } = req.body;
+
+    await checkCanCreateInvitation({ email, space, userType: userTypeName });
 
     const authToken = new AuthToken();
 

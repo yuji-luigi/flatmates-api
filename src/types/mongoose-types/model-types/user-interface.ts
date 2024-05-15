@@ -1,21 +1,20 @@
 // import { Model } from 'mongoose';
 // import { IUserSetting } from './UserSetting';
 
-import { ISpace } from './space-interface';
 import { IUpload } from './upload-interface';
 import { MongooseBaseModel } from './base-types/base-model-interface';
-import { LoginInstance, LoginInstanceMethods, tokenGeneratePayload } from '../../universal-mongoose-model/user-base-interface';
+import { LoginInstanceMethods, tokenGeneratePayload } from '../../universal-mongoose-model/user-base-interface';
 import { Model } from 'mongoose';
 import { ObjectId } from 'mongodb';
-import { RoleInterface } from './role-interface';
 export type UserError = {
   status?: number;
   isPublic?: boolean;
   message?: string;
 };
 
-export interface IUser extends UserBase, LoginInstance<IUser>, MongooseBaseModel {
+export interface IUser extends UserBase, MongooseBaseModel {
   // tailSpace: ISpace | string;
+  lastLogin?: Date;
   passwordMatches: (password: string) => Promise<boolean>;
   token: () => string;
   save: () => void;
@@ -23,20 +22,21 @@ export interface IUser extends UserBase, LoginInstance<IUser>, MongooseBaseModel
 
 export interface UserBase extends UserBaseOptionalPassword {
   password: string;
+  email: string;
 }
 
 export interface UserBaseOptionalPassword {
   _id: ObjectId;
   name: string;
   surname?: string | undefined;
-  email?: string;
+  email: string;
   password: undefined | string;
   avatar?: IUpload;
   phone?: string | undefined;
   isSuperAdmin: boolean;
   slug: string;
-  role: ObjectId | RoleInterface;
-  adminOf: ISpace[];
+  // role: ObjectId | RoleInterface;
+  // adminOf: ISpace[];
   active: boolean;
   cover?: IUpload;
   _update?: {

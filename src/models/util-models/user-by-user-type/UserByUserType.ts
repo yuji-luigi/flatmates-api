@@ -18,4 +18,7 @@ export class UserByUserType {
   static get system_admin() {
     return Inhabitant;
   }
+  static get super_admin() {
+    return Inhabitant;
+  }
 }

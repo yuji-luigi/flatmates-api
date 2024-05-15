@@ -27,14 +27,17 @@ export class MeUser {
   public static meUserFactory({
     user,
     loggedAs,
-    currentSpace,
-    currentAccessPermission
+    currentSpace
   }: {
     user: IUser | ReqUser;
     loggedAs: RoleName;
-    currentSpace: ISpace | CurrentSpace;
-    currentAccessPermission: AccessPermissionCache;
+    currentSpace: ISpace | CurrentSpace | undefined | null;
   }) {
+    // currentAccessPermission can be null or undefined
+    const currentAccessPermission = accessPermissionsCache
+      .get(user._id.toString())
+      ?.find((aCtrl) => aCtrl.space.toString() === currentSpace?._id?.toString());
+
     const meUser: MeUser = {
       _id: user._id.toString(),
       name: user.name,
@@ -90,18 +93,12 @@ export class MeUser {
       throw new ErrorCustom('User not found', 404);
     }
     const space = await Space.findById(jwtPayload.spaceId);
-    if (!space) {
-      throw new ErrorCustom('Space not found', 404);
-    }
-    // TODO: check if the ap is correct ex: when system_admin ap must be system admin, whereas inhabitant ap must be inhabitantf
-    const currentAccessPermission = accessPermissionsCache.get(user._id.toString())?.find((aCtrl) => aCtrl.space.toString() === space._id.toString());
-    if (!currentAccessPermission) {
-      throw new ErrorCustom('Access Permission not found', 404);
-    }
+
+    // TODO: check if the ap is correct ex: when system_admin ap must be system admin, whereas inhabitant ap must be inhabitant
+
     const meUser = this.meUserFactory({
       user,
       currentSpace: space,
-      currentAccessPermission,
       loggedAs: jwtPayload.loggedAs
     });
 

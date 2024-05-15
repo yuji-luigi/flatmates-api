@@ -25,6 +25,7 @@ import UserRegistry from '../../models/UserRegistry';
 import { ErrorCustom } from '../../lib/ErrorCustom';
 import { MeUser } from '../../lib/MeUser';
 import AccessPermission from '../../models/AccessPermission';
+import { ReqUser } from '../../lib/jwt/jwtTypings';
 
 const { cookieDomain } = vars;
 
@@ -232,10 +233,9 @@ const removeSpaceToken = (_req: Request, res: Response) => {
   res.status(httpStatus.OK).json({ message: 'SpaceToken removed' });
 };
 
-const me = async (req: RequestCustom, res: Response) => {
+const me = async (req: RequestCustom & { user: ReqUser }, res: Response) => {
   // set last login
   try {
-    //@ts-ignore
     const { user, meUser } = await MeUser.fromReqUserToUserMeUser(req.user);
 
     user.lastLogin = new Date(Date.now());
@@ -326,6 +326,33 @@ export const checkSystemAdmin = async (req: RequestCustom, res: Response) => {
     const meUser = await MeUser.fromJwtPayloadUser(payload);
     // const meUser = await MeUser.fromReqUser({ ...req.user, loggedAs: roleCache.get('system_admin') });
 
+    res.status(httpStatus.OK).json({ success: true, data: meUser });
+  } catch (error) {
+    logger.error(error.stack || error);
+    res.status(error.code || 500).json({
+      success: false,
+      message: error.message || error
+    });
+  }
+};
+
+export const toggleLoggedAsSuperAdmin = async (req: RequestCustom, res: Response) => {
+  try {
+    if (!req.user?.isSuperAdmin) {
+      throw new ErrorCustom(_MSG.NOT_AUTHORIZED, httpStatus.UNAUTHORIZED);
+    }
+
+    const loggedAs: RoleName =
+      req.user.loggedAs.name === RoleCache.super_admin.name ? req.user.userType?.name || 'inhabitant' : RoleCache.super_admin.name;
+
+    const payload = JWTPayload.simple({
+      email: req.user.email,
+      loggedAs,
+      userType: req.user.userType?.name || 'inhabitant'
+    });
+
+    const meUser = await MeUser.fromJwtPayloadUser(payload);
+    handleSetCookiesFromPayload(res, payload);
     res.status(httpStatus.OK).json({ success: true, data: meUser });
   } catch (error) {
     logger.error(error.stack || error);

@@ -10,7 +10,6 @@ import autopopulate from 'mongoose-autopopulate';
 import logger from '../lib/logger';
 import { IUser, UserError, UserModel } from '../types/mongoose-types/model-types/user-interface';
 import { _MSG } from '../utils/messages';
-import Role from './AccessPermission';
 import AccessController from './AccessPermission';
 import { JwtSignPayload } from '../lib/jwt/jwtTypings';
 import { ErrorCustom } from '../lib/ErrorCustom';
@@ -107,14 +106,14 @@ userSchema.pre('save', async function save(next) {
 });
 
 // HASH PASSWORD BEFORE CREATION OF USER
-userSchema.pre<IUser>('findOneAndDelete', async function save(next) {
-  try {
-    await Role.findByIdAndDelete(this.role);
-    return next();
-  } catch (error) {
-    return next(error);
-  }
-});
+// userSchema.pre<IUser>('findOneAndDelete', async function save(next) {
+//   try {
+//     await Role.findByIdAndDelete(this.role);
+//     return next();
+//   } catch (error) {
+//     return next(error);
+//   }
+// });
 
 /**
  * Methods

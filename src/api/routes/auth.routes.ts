@@ -6,7 +6,8 @@ import authCtrl, {
   exitSystemAdmin,
   sendMainOrganizationSelectionsToClient,
   sendRootSpaceSelectionsToClient,
-  setSpaceAndOrgInJwt
+  setSpaceAndOrgInJwt,
+  toggleLoggedAsSuperAdmin
 } from '../controllers/AuthController';
 import { handleUserFromRequest } from '../../middlewares/handleUserFromRequest';
 import { isLoggedIn } from '../../middlewares/isLoggedIn';
@@ -36,6 +37,7 @@ router.get('/space-selections', isLoggedIn(), sendRootSpaceSelectionsToClient);
 router.put('/space-selections/:idMongoose', isLoggedIn(), setSpaceAndOrgInJwt);
 router.get('/organization-selections', isLoggedIn(), sendMainOrganizationSelectionsToClient);
 
+router.patch('/super-admin/toggle', isLoggedIn(), toggleLoggedAsSuperAdmin);
 router.get('/system-admin/check-by-space/:idMongoose', isLoggedIn(), checkSystemAdmin);
 router.get('/system-admin/exit', isLoggedIn(), exitSystemAdmin);
 

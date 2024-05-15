@@ -14,8 +14,6 @@ import passport from 'passport';
 import routes from './api/routes';
 import strategies from './lib/jwt/resolveUserJwt';
 import mongooseConnector from './lib/mongoose/initMongoose';
-import { entities } from './types/mongoose-types/model-types/Entities';
-import { getSchemaPathTypes } from './api/helpers/mongoose.helper';
 import { errorLogger, errorResponder } from './middlewares/errorHandler';
 // import { seedRoles } from './lib/mongoose/seed/mongoose-seeder';
 

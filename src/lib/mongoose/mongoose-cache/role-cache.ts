@@ -1,3 +1,4 @@
+import { _MSG } from './../../../utils/messages';
 import httpStatus from 'http-status';
 import Role from '../../../models/Role';
 import { RoleName, RoleInterface } from '../../../types/mongoose-types/model-types/role-interface';
@@ -40,7 +41,9 @@ export class RoleCache {
     if (roleCache.get('system_admin') === undefined) {
       throw new ErrorCustom('Cache is not initialized yet for some reason', httpStatus.INTERNAL_SERVER_ERROR);
     }
-
     return roleCache.get('system_admin') as RoleInterface;
+  }
+  static get super_admin() {
+    return roleCache.get('super_admin') as RoleInterface;
   }
 }
