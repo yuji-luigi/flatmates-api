@@ -87,11 +87,8 @@ export const createLinkedChild = async (req: RequestCustom, res: Response) => {
     const Model = mongoose.model(entity);
 
     const childDoc = new Model({ ...req.body });
-    const savedChildDoc = await childDoc.save();
-    logger.debug(savedChildDoc._doc);
-    // parentModel.isTail = false; // set isTail to false
-    // await parentModel.save(); // save
-    // sendCrudObjectsWithPaginationToClient(req, res);
+    await childDoc.save();
+
     req.query = { ...req.query, parentId };
     const data = await aggregateWithPagination(req.query, entity);
 

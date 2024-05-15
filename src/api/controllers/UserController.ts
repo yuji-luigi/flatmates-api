@@ -1,5 +1,5 @@
 import httpStatus from 'http-status';
-import { NextFunction, Response } from 'express';
+import { Response } from 'express';
 import logger from '../../lib/logger';
 import Space from '../../models/Space';
 import { RequestCustom as RequestCustomRoot } from '../../types/custom-express/express-custom';
@@ -18,10 +18,6 @@ import ErrorEx from '../../errors/extendable.error';
 import { deleteCrudObjectByIdAndSendDataWithPagination } from './DataTableController';
 import AccessController from '../../models/AccessPermission';
 import { ErrorCustom } from '../../lib/ErrorCustom';
-import AuthToken from '../../models/AuthToken';
-import Invitation from '../../models/Invitation';
-import { createInvitationEmail } from '../../lib/node-mailer/createInvitationMail';
-import { roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
 import { ReqUser } from '../../lib/jwt/jwtTypings';
 
 const entity = 'users';
@@ -90,36 +86,51 @@ export const createUserAndSendDataWithPagination = async (req: RequestCustom, re
 
 export async function sendUsersToClient(req: RequestCustom, res: Response) {
   try {
-    const resultACtrl = await aggregateWithPagination(req.query, 'accessPermissions', [
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'user',
-          foreignField: '_id',
-          as: 'user'
-        }
-      },
-      { $unwind: '$user' },
-      {
-        $group: {
-          _id: '$user',
-          doc: { $first: '$$ROOT' } // Keep the first document encountered for each unique user
-        }
-      },
-      { $replaceRoot: { newRoot: '$doc' } }
-    ]);
-    const users = resultACtrl[0].paginatedResult.map((actrl) => actrl.user);
+    const result = await aggregateWithPagination(req.query, 'users');
+    const users = result[0].paginatedResult;
     res.status(httpStatus.OK).json({
       success: true,
       collection: 'organizations',
       data: users,
-      totalDocuments: resultACtrl[0].counts[0]?.total || 0
+      totalDocuments: result[0].counts[0]?.total || 0
     });
   } catch (error) {
     logger.error(error.message || error);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message || error });
   }
 }
+// export async function sendUsersToClient(req: RequestCustom, res: Response) {
+//   try {
+//     const resultACtrl = await aggregateWithPagination(req.query, 'accessPermissions', [
+//       {
+//         $lookup: {
+//           from: 'users',
+//           localField: 'user',
+//           foreignField: '_id',
+//           as: 'user'
+//         }
+//       },
+//       { $unwind: '$user' },
+//       {
+//         $group: {
+//           _id: '$user',
+//           doc: { $first: '$$ROOT' } // Keep the first document encountered for each unique user
+//         }
+//       },
+//       { $replaceRoot: { newRoot: '$doc' } }
+//     ]);
+//     const users = resultACtrl[0].paginatedResult.map((actrl) => actrl.user);
+//     res.status(httpStatus.OK).json({
+//       success: true,
+//       collection: 'organizations',
+//       data: users,
+//       totalDocuments: resultACtrl[0].counts[0]?.total || 0
+//     });
+//   } catch (error) {
+//     logger.error(error.message || error);
+//     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message || error });
+//   }
+// }
 
 /**
  *

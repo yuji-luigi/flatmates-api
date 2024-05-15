@@ -16,6 +16,7 @@ import { deleteCrudObjectByIdAndSendDataWithPagination } from '../controllers/Da
 import { isLoggedIn } from '../../middlewares/isLoggedIn';
 import MSG from '../../utils/messages';
 import { ReqUser } from '../../lib/jwt/jwtTypings';
+import { SUPER_ADMIN } from '../../middlewares/auth-middlewares';
 
 const router = express.Router();
 interface RequestCustom extends RequestCustomRoot {
@@ -49,7 +50,7 @@ router.use((req: RequestCustom, response: Response, next: NextFunction) => {
 
 router.get('/', isLoggedIn(), sendUsersToClient);
 
-router.get('/with-pagination', isLoggedIn(), sendUsersToClient);
+router.get('/with-pagination', isLoggedIn([SUPER_ADMIN]), sendUsersToClient);
 
 router.get('/:idMongoose/send-token-email', isLoggedIn(), sendTokenEmail);
 
