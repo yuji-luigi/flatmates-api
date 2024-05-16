@@ -2,29 +2,29 @@ import { NextFunction, Response } from 'express';
 import httpStatus from 'http-status';
 import { RequestCustom } from '../types/custom-express/express-custom';
 import { _MSG } from '../utils/messages';
-import { USER_ROLES } from '../types/enum/enum';
 import { ErrorCustom } from '../lib/ErrorCustom';
+import { ReqUser } from '../lib/jwt/jwtTypings';
+import { roleCache } from '../lib/mongoose/mongoose-cache/role-cache';
+import { RoleName } from '../types/mongoose-types/model-types/role-interface';
 
-export const isLoggedIn =
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-
-
-    (_roles: USER_ROLES[] = USER_ROLES) =>
-    async (req: RequestCustom, res: Response, next: NextFunction) => {
-      const { user } = req;
-      if (user) {
-        if (user.isSuperAdmin) {
-          return next();
-        }
+export const isLoggedIn = (roles?: RoleName[]) => async (req: RequestCustom, res: Response, next: NextFunction) => {
+  try {
+    const { user } = req;
+    if (user) {
+      if (user.isSuperAdmin) {
         return next();
       }
-      return res.status(httpStatus.UNAUTHORIZED).json({
-        success: false,
-        message: _MSG.NOT_AUTHORIZED,
-        user: null
-      });
-      // throw Error('user not authorized');
-    };
+      if (roles?.length) {
+        checkForPermission(roles, user);
+      }
+
+      return next();
+    }
+    throw new ErrorCustom(_MSG.NOT_AUTHORIZED, httpStatus.UNAUTHORIZED);
+  } catch (error) {
+    next(error);
+  }
+};
 
 export function isSuperAdmin(req: RequestCustom, _res: Response, next: NextFunction) {
   if (req.user?.isSuperAdmin) {
@@ -32,4 +32,16 @@ export function isSuperAdmin(req: RequestCustom, _res: Response, next: NextFunct
   } else {
     next(new ErrorCustom(_MSG.NOT_AUTHORIZED, httpStatus.UNAUTHORIZED));
   }
+}
+
+/** @throws ErrorCustom. check for roles array and user.currentAccessPermission.role */
+function checkForPermission(roles: RoleName[], user: ReqUser) {
+  if (!user.currentAccessPermission) {
+    throw new ErrorCustom(_MSG.NOT_AUTHORIZED, httpStatus.UNAUTHORIZED);
+  }
+  const roleIdStrings = roleCache.allRoles.filter((roleC) => roles.includes(roleC.name)).map((roleC) => roleC._id.toString());
+  if (roleIdStrings.includes(user.currentAccessPermission?.role.toString())) {
+    return;
+  }
+  throw new ErrorCustom(_MSG.NOT_AUTHORIZED, httpStatus.UNAUTHORIZED);
 }

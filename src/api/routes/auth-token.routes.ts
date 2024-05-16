@@ -39,7 +39,7 @@ router.get('/:linkId/:idMongoose', sendAuthTokenByIdsToClient);
 router.put('/:linkId/:idMongoose', sendNotImplemented);
 router.post('/:entity/with-pagination', sendNotImplemented);
 
-router.post('/generate-new/:entity/:idMongoose', isLoggedIn([ADMIN]), generateNewAuthTokenForEntity);
+router.post('/generate-new/:entity/:idMongoose', isLoggedIn(), generateNewAuthTokenForEntity);
 
 router.delete('/:linkId/:idMongoose', sendNotImplemented);
 

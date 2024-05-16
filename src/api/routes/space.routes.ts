@@ -22,6 +22,7 @@ import { isLoggedIn } from '../../middlewares/isLoggedIn';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 const router = express.Router();
 
+router.use(isLoggedIn());
 router.use((req: RequestCustom, res, next) => {
   if (req.user?.isSuperAdmin) {
     return next();
@@ -34,36 +35,32 @@ router.use((req: RequestCustom, res, next) => {
   next();
 });
 
-router.get('/', isLoggedIn(), sendSpacesToClient);
-// router.get('/home', isLoggedIn(), sendDataForHomeDashboard);
-router.get('/with-pagination', isLoggedIn(), sendMainSpacesWithPaginationToClient);
+router.get('/', sendSpacesToClient);
+// router.get('/home',  sendDataForHomeDashboard);
+router.get('/with-pagination', sendMainSpacesWithPaginationToClient);
 
-router.get('/with-pagination/linkedChildren/:parentId', isLoggedIn(), getLinkedChildrenSpaces);
+router.get('/with-pagination/linkedChildren/:parentId', getLinkedChildrenSpaces);
 
-router.get('/descendants/:spaceId', isLoggedIn(), sendDescendantIdsToClient);
-router.get('/head-to-tail/:spaceId', isLoggedIn(), sendHeadToTailToClient);
+router.get('/descendants/:spaceId', sendDescendantIdsToClient);
+router.get('/head-to-tail/:spaceId', sendHeadToTailToClient);
 
 // GET SINGLES
-router.get('/single-by-cookie', isLoggedIn(), sendSingleSpaceToClientByCookie);
-// router.get('/is-admin', isLoggedIn(), sendSingleSpaceToClientByCookie);
+router.get('/single-by-cookie', sendSingleSpaceToClientByCookie);
+// router.get('/is-admin',  sendSingleSpaceToClientByCookie);
 
 // todo: set ACL for this route
-router.get('/:spaceId', isLoggedIn(), sendSingleSpaceByIdToClient);
-router.get('/settings/:slug', isLoggedIn(), sendSpaceSettingPageDataToClient);
+router.get('/:spaceId', sendSingleSpaceByIdToClient);
+router.get('/settings/:slug', sendSpaceSettingPageDataToClient);
+router.post('/with-pagination/linkedChildren/:parentId', isLoggedIn(['system_admin', 'property_manager']), createLinkedChild);
+router.post('/with-pagination', isLoggedIn(['system_admin', 'property_manager']), createHeadSpaceWithPagination);
+router.post('/', (_req: Request, res: Response) => res.status(httpStatus.FORBIDDEN).send('forbidden'));
 
-// CUSTOM crud ROUTES
-// !deprecated moved to auth route
+router.put('/:idMongoose', updateSpaceAndSendToClient);
 
-router.post('/with-pagination/linkedChildren/:parentId', isLoggedIn(), createLinkedChild);
-router.post('/with-pagination', isLoggedIn(), createHeadSpaceWithPagination);
-router.post('/', isLoggedIn(), (_req: Request, res: Response) => res.status(httpStatus.FORBIDDEN).send('forbidden'));
+router.delete('/with-pagination/:spaceId', deleteHeadSpaceWithPagination);
 
-router.put('/:idMongoose', isLoggedIn(), updateSpaceAndSendToClient);
-
-router.delete('/with-pagination/:spaceId', isLoggedIn(), deleteHeadSpaceWithPagination);
-
-router.delete('/:spaceId', isLoggedIn(), deleteHeadSpaceWithPagination);
-router.delete('/with-pagination/linkedChildren/:idMongoose', isLoggedIn(), dataTableCtrl.deleteLinkedChildByIdWithPagination);
+router.delete('/:spaceId', deleteHeadSpaceWithPagination);
+router.delete('/with-pagination/linkedChildren/:idMongoose', dataTableCtrl.deleteLinkedChildByIdWithPagination);
 
 // for static site generation
 

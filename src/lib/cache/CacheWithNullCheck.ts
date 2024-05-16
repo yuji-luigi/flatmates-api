@@ -2,7 +2,6 @@ export class CacheWithNullCheck<Key, Type> extends Map<Key, Type> {
   constructor() {
     super();
   }
-
   get(key: Key): Type {
     const foundCache = super.get(key);
     if (!foundCache) {

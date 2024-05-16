@@ -27,6 +27,7 @@ export const roles = [
 ] as const;
 
 export type RoleName = (typeof roles)[number]['name'];
+
 export interface RoleInterface extends MongooseBaseModel {
   name: RoleName;
   label: string;

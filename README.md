@@ -31,30 +31,18 @@ CRON_SCHEDULE_DEV="*/3 \* \* \* \* \*"
 
 .........................................
 
-### enable login me function
-
-/middleware/auth.js
-
-```javascript
-### remove this
-exports.isLoggedIn = (roles = USER_ROLES) => (req, res, next) => {
-    // passport.authenticate(
-    //     'jwt',
-    //     { session: false },
-    //     handleJWT(req, res, next, roles),
-    // )(req, res, next);
-    next();
-};
-
 ### use this code
-/*
+
+/_
 !!!THIS IS THE CORRECT ROUTE FOR ME ROUTE!!!
 exports.isLoggedIn = (roles = User.roles) => (req, res, next) => passport.authenticate(
-    'jwt',
-    { session: false },
-    handleJWT(req, res, next, roles),
-)(req, res, next); */
+'jwt',
+{ session: false },
+handleJWT(req, res, next, roles),
+)(req, res, next); _/
+
 ```
 # flatmate-api
 # flatmate-api
 # flatmate-api
+```

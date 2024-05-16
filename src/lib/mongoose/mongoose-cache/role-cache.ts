@@ -4,19 +4,18 @@ import Role from '../../../models/Role';
 import { RoleName, RoleInterface } from '../../../types/mongoose-types/model-types/role-interface';
 import { ErrorCustom } from '../../ErrorCustom';
 import { CacheWithNullCheck } from '../../cache/CacheWithNullCheck';
-/**
- * @description key is Name of role
- *  */
-export const roleCache = new CacheWithNullCheck<RoleName, RoleInterface>();
 
 export const initCacheRole = async () => {
   const roles = await Role.find();
   roles.forEach((role) => {
     roleCache.set(role.name, role);
   });
+  roleCache.allRoles = roles;
 };
 
-export class RoleCache {
+export class RoleCache extends CacheWithNullCheck<RoleName, RoleInterface> {
+  private _allRoles: RoleInterface[] = [];
+
   static get maintainer() {
     if (roleCache.get('maintainer') === undefined) {
       throw new ErrorCustom('Cache is not initialized yet for some reason', httpStatus.INTERNAL_SERVER_ERROR);
@@ -34,7 +33,6 @@ export class RoleCache {
     if (roleCache.get('inhabitant') === undefined) {
       throw new ErrorCustom('Cache is not initialized yet for some reason', httpStatus.INTERNAL_SERVER_ERROR);
     }
-
     return roleCache.get('inhabitant');
   }
   static get system_admin() {
@@ -46,4 +44,15 @@ export class RoleCache {
   static get super_admin() {
     return roleCache.get('super_admin') as RoleInterface;
   }
+
+  get allRoles(): RoleInterface[] {
+    return this._allRoles;
+  }
+  set allRoles(value: RoleInterface[]) {
+    this._allRoles = value;
+  }
 }
+/**
+ * @description key is Name of role
+ *  */
+export const roleCache = new RoleCache();

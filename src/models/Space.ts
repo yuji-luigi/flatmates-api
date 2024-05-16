@@ -174,22 +174,6 @@ spacesSchema.pre('save', async function (this: ISpace & ICollectionAware, next) 
       isUnique = !existingSpace;
       this.slug = slugToCheck;
     }
-
-    // if (this.parentId) {
-    //   const parent = await Space.findById(this.parentId);
-    //   if (!parent) throw new ErrorCustom('Parent not found', httpStatus.INTERNAL_SERVER_ERROR);
-    //   console.log(parent.name);
-    //   //TODO: NEED TO LISTEN TO THE PARENT AND ACCESS PERMISSIONS MODEL.
-    //   this.hasPropertyManager = parent.hasPropertyManager;
-    //   if (parent.isTail) {
-    //     parent.isTail = false;
-    //     await parent.save();
-    //   }
-    // }
-    // const foundDescendant = await Space.findOne({ parentId: this._id });
-    // if (!foundDescendant) {
-    //   this.isTail = true;
-    // }
     const foundDescendant = await Space.findOne({ parentId: this._id });
     if (!foundDescendant) {
       this.isTail = true;

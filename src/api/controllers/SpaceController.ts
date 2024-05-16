@@ -6,7 +6,7 @@ import mongoose from 'mongoose';
 import Space from '../../models/Space';
 import { deleteEmptyFields } from '../../utils/functions';
 import { aggregateWithPagination } from '../helpers/mongoose.helper';
-import { RequestCustom } from '../../types/custom-express/express-custom';
+import { RequestCustom as _RequestCustom } from '../../types/custom-express/express-custom';
 import vars, { sensitiveCookieOptions } from '../../utils/globalVariables';
 import { aggregateDescendantIds } from '../helpers/spaceHelper';
 import { _MSG } from '../../utils/messages';
@@ -17,18 +17,15 @@ import { JWTPayload } from '../../lib/jwt/JwtPayload';
 import { isAdminOfSpace } from '../../middlewares/auth-middlewares';
 import { Maintainer } from '../../models/util-models/user-by-user-type/Maintainer';
 import { ErrorCustom } from '../../lib/ErrorCustom';
+import { ReqUser } from '../../lib/jwt/jwtTypings';
 const entity = 'spaces';
 
-//================================================================================
-// CUSTOM CONTROLLER...
-//================================================================================
-///todo: separate the function in to send spaces or direct children spaces to client
+// NOTE: user is always present
+interface RequestCustom extends _RequestCustom {
+  user: ReqUser;
+}
 export const sendSpacesToClient = async (req: RequestCustom, res: Response) => {
   try {
-    // throw new Error('GET /spaces is called! check the usage. why currentSpaceId is needed?');
-    if (!req.user) {
-      throw new Error(_MSG.NOT_AUTHORIZED);
-    }
     const currentSpaceId = req.user.currentSpace?._id?.toString();
     const spaceIds = currentSpaceId ? await aggregateDescendantIds(currentSpaceId, req.user) : ['does not exist'];
     let { query } = req;
@@ -53,20 +50,16 @@ export const sendSpacesToClient = async (req: RequestCustom, res: Response) => {
   }
 };
 
-export const createHeadSpaceWithPagination = async (req: RequestCustom, res: Response) => {
+export const createHeadSpaceWithPagination = async (req: Request & { user: ReqUser }, res: Response) => {
   try {
-    let isMain = false;
-    if (req.user?.isSuperAdmin) {
-      isMain = true;
-    }
+    console.log(req.user.currentSpace);
+    console.log(req.user?.currentAccessPermission);
     const newSpace = new Space({
       ...req.body,
-      // organization: req.user.organizationId,
-      isHead: true,
-      isMain
+      isHead: true
     });
     await newSpace.save();
-    req.query.isHead = true;
+    req.query.isHead = 'true';
     const data = await aggregateWithPagination(req.query, 'spaces');
     res.status(httpStatus.OK).json({
       success: true,
