@@ -28,6 +28,7 @@ export interface ISpace extends MongooseBaseModel {
    * click parent do query by parentId and get the children
    */
   parentId?: ISpace | string | null;
+  parentIds: string[];
   address?: string;
   // floors?: string[];
   password: string;

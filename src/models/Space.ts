@@ -1,4 +1,5 @@
 import mongoose, { model, Model } from 'mongoose';
+import { ObjectId } from 'mongodb';
 import logger from '../lib/logger';
 const { Schema } = mongoose;
 // import jwt from 'jsonwebtoken';
@@ -11,6 +12,7 @@ import { ISpace, ISpaceMethods, spaceTypes } from '../types/mongoose-types/model
 import { ICollectionAware } from '../api/helpers/mongoose.helper';
 import { ErrorCustom } from '../lib/ErrorCustom';
 import httpStatus from 'http-status';
+import { aggregateDescendantIds, getDescendantPipeline } from '../api/helpers/spaceHelper';
 
 // const { jwtSecret } = vars;
 
@@ -49,8 +51,12 @@ export const spacesSchema = new Schema<ISpace, SpaceModel, ISpaceMethods>(
       type: Schema.Types.ObjectId,
       ref: 'spaces'
     },
+    parentIds: [
+      {
+        type: String
+      }
+    ],
     password: String,
-
     isMain: {
       type: Boolean
     },
@@ -148,7 +154,7 @@ spacesSchema.post('save', async function (this: ISpace & ICollectionAware) {
   if (this.parentId) {
     const parent = await Space.findById(this.parentId);
     if (!parent) throw new ErrorCustom('Parent not found', httpStatus.INTERNAL_SERVER_ERROR);
-    console.log(parent.name);
+
     //TODO: NEED TO LISTEN TO THE PARENT AND ACCESS PERMISSIONS MODEL.
     this.hasPropertyManager = parent.hasPropertyManager;
     if (parent.isTail) {
@@ -178,6 +184,8 @@ spacesSchema.pre('save', async function (this: ISpace & ICollectionAware, next) 
     if (!foundDescendant) {
       this.isTail = true;
     }
+    this.parentIds = await handleGetParentIds(this);
+
     next();
   } catch (error) {
     logger.error(error.message || error);
@@ -185,6 +193,67 @@ spacesSchema.pre('save', async function (this: ISpace & ICollectionAware, next) 
   }
 });
 
+spacesSchema.pre('findOneAndDelete', async function () {
+  try {
+    console.log(this.getFilter());
+    await handleDeleteDescendants(new ObjectId(this.getFilter()._id));
+  } catch (error) {
+    logger.error(error.message || error);
+    throw new Error('error in slug generation of space');
+  }
+});
+spacesSchema.pre('deleteOne', async function () {
+  try {
+    // await handleDeleteDescendants();
+  } catch (error) {
+    logger.error(error.message || error);
+    throw new Error('error in slug generation of space');
+  }
+});
+spacesSchema.post('findOneAndDelete', async function (doc) {
+  try {
+    await handleUpdateIsTail(doc);
+  } catch (error) {
+    logger.error(error.message || error);
+    throw new Error('error in slug generation of space');
+  }
+});
+spacesSchema.post('deleteOne', async function (doc) {
+  try {
+    await handleUpdateIsTail(doc);
+  } catch (error) {
+    logger.error(error.message || error);
+    throw new Error('error in slug generation of space');
+  }
+});
+
+async function handleUpdateIsTail(deletedDocument: ISpace & ICollectionAware) {
+  if (deletedDocument.isTail) {
+    const foundSibling = await Space.findOne({ parentId: deletedDocument.parentId });
+    if (!foundSibling) {
+      const parent = await Space.findById(deletedDocument.parentId);
+      if (!parent) throw new ErrorCustom('Parent not found', httpStatus.INTERNAL_SERVER_ERROR);
+      parent.isTail = true;
+      await parent.save();
+    }
+  }
+}
+async function handleGetParentIds(space: ISpace & ICollectionAware) {
+  if (!space.parentId) {
+    return [];
+  }
+  const parent = await Space.findById(space.parentId);
+  if (!parent) throw new ErrorCustom('Parent not found', httpStatus.INTERNAL_SERVER_ERROR);
+  return [...parent.parentIds, space.parentId.toString()];
+}
+
+// TODO: RECURSIVE DELETE CASCADE
+async function handleDeleteDescendants(deletingSpaceId: ObjectId) {
+  const [result] = await Space.aggregate(getDescendantPipeline(deletingSpaceId));
+  console.log(result.descendantIds);
+  await Space.deleteMany({ _id: { $in: result.descendantIds } });
+  return;
+}
 spacesSchema.plugin(autoPopulate);
 // spacesSchema.plugin(urlSlug);
 

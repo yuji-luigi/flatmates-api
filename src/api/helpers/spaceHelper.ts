@@ -8,6 +8,7 @@ import { accessPermissionsCache } from '../../lib/mongoose/mongoose-cache/access
 import { RoleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
 import { ErrorCustom } from '../../lib/ErrorCustom';
 import httpStatus from 'http-status';
+import { get } from 'lodash';
 
 /**  searches only root spaces of user */
 export function userHasSpace(user: ReqUser, currentSpaceId: string | ObjectId | undefined): boolean {
@@ -95,40 +96,7 @@ export async function aggregateDescendantIds(spaceId: string | ObjectId | undefi
     // todo: can
     const selectedId = new ObjectId(spaceId);
 
-    const pipeline = [
-      // Find all documents with parentId equal to the selected space ID
-      { $match: { parentId: selectedId } },
-      // Create a new field to store the selected space ID as an array
-      { $set: { descendantIds: [selectedId] } },
-      // Recursively search for all descendants
-      {
-        $graphLookup: {
-          from: 'spaces',
-          startWith: '$descendantIds',
-          connectFromField: '_id',
-          connectToField: 'parentId',
-          as: 'descendants'
-        }
-      },
-      // Unwind the descendants array
-      { $unwind: '$descendants' },
-      // Group the documents by parentId and create an array of unique descendantIds for each group
-      {
-        $group: {
-          _id: '$descendants.parentId',
-          // descendantIds: { $addToSet: '$descendants' }
-          descendantIds: { $addToSet: '$descendants._id' }
-          // descendantIds: { $addToSet: { $concatArrays: [[selectedId], '$descendants._id'] } }
-        }
-      },
-      // Unwind the descendantIds array
-      { $unwind: '$descendantIds' },
-      // Group all the descendantIds into a single array
-      { $group: { _id: null, descendantIds: { $addToSet: '$descendantIds' } } },
-      // Project to remove the _id field and return only the descendantIds array
-      { $project: { _id: 0, descendantIds: 1 } }
-    ];
-
+    const pipeline = getDescendantPipeline(selectedId);
     const result = await Space.aggregate(pipeline).exec();
 
     const spaceIds = result[0]?.descendantIds || [];
@@ -141,6 +109,42 @@ export async function aggregateDescendantIds(spaceId: string | ObjectId | undefi
     logger.error(err);
     throw new Error(err);
   }
+}
+
+export function getDescendantPipeline(selectedId: ObjectId) {
+  return [
+    // Find all documents with parentId equal to the selected space ID
+    { $match: { parentId: selectedId } },
+    // Create a new field to store the selected space ID as an array
+    { $set: { descendantIds: [selectedId] } },
+    // Recursively search for all descendants
+    {
+      $graphLookup: {
+        from: 'spaces',
+        startWith: '$descendantIds',
+        connectFromField: '_id',
+        connectToField: 'parentId',
+        as: 'descendants'
+      }
+    },
+    // Unwind the descendants array
+    { $unwind: '$descendants' },
+    // Group the documents by parentId and create an array of unique descendantIds for each group
+    {
+      $group: {
+        _id: '$descendants.parentId',
+        // descendantIds: { $addToSet: '$descendants' }
+        descendantIds: { $addToSet: '$descendants._id' }
+        // descendantIds: { $addToSet: { $concatArrays: [[selectedId], '$descendants._id'] } }
+      }
+    },
+    // Unwind the descendantIds array
+    { $unwind: '$descendantIds' },
+    // Group all the descendantIds into a single array
+    { $group: { _id: null, descendantIds: { $addToSet: '$descendantIds' } } },
+    // Project to remove the _id field and return only the descendantIds array
+    { $project: { _id: 0, descendantIds: 1 } }
+  ];
 }
 
 export async function aggregateHeadToTail(spaceId: string, user: ReqUser): Promise<string[]> {

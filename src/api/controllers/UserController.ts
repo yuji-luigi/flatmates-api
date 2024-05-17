@@ -19,6 +19,7 @@ import { deleteCrudObjectByIdAndSendDataWithPagination } from './DataTableContro
 import AccessController from '../../models/AccessPermission';
 import { ErrorCustom } from '../../lib/ErrorCustom';
 import { ReqUser } from '../../lib/jwt/jwtTypings';
+import AccessPermission from '../../models/AccessPermission';
 
 const entity = 'users';
 
@@ -383,14 +384,21 @@ export async function sendAuthTokenOfUserToClient(_req: RequestCustom, res: Resp
 
 export const updateUserById = async (req: RequestCustom, res: Response) => {
   try {
-    const modifiedModel = await findAndModifyUserBase(req);
-    await modifiedModel.save();
-    await modifiedModel.populate({ path: 'spaces', select: 'name' });
+    const { accessPermissions } = req.body;
+    if (accessPermissions?.length) {
+      for (const accessPermission of accessPermissions) {
+        // catch the error and log it. do not throw it.
+        await AccessPermission.create(accessPermission).catch(console.error);
+      }
+    }
+
+    const modifiedUser = await findAndModifyUserBase(req);
+    await modifiedUser.save();
     res.status(httpStatus.OK).json({
       success: true,
       message: _MSG.OBJ_UPDATED,
       collection: entity,
-      data: modifiedModel,
+      data: modifiedUser,
       count: 1
     });
   } catch (err) {

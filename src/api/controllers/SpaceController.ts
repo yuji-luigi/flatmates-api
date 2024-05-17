@@ -52,11 +52,10 @@ export const sendSpacesToClient = async (req: RequestCustom, res: Response) => {
 
 export const createHeadSpaceWithPagination = async (req: Request & { user: ReqUser }, res: Response) => {
   try {
-    console.log(req.user.currentSpace);
-    console.log(req.user?.currentAccessPermission);
     const newSpace = new Space({
       ...req.body,
-      isHead: true
+      isHead: true,
+      isMain: true
     });
     await newSpace.save();
     req.query.isHead = 'true';

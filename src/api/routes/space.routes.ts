@@ -18,9 +18,11 @@ import dataTableCtrl from '../controllers/DataTableController';
 
 import { createLinkedChild } from '../controllers/CrudCustomController';
 import httpStatus from 'http-status';
-import { isLoggedIn } from '../../middlewares/isLoggedIn';
+import { isLoggedIn, isSuperAdmin } from '../../middlewares/isLoggedIn';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 const router = express.Router();
+
+const userIsAdminOfSpace = isLoggedIn(['system_admin', 'property_manager', 'inhabitant']);
 
 router.use(isLoggedIn());
 router.use((req: RequestCustom, res, next) => {
@@ -51,16 +53,18 @@ router.get('/single-by-cookie', sendSingleSpaceToClientByCookie);
 // todo: set ACL for this route
 router.get('/:spaceId', sendSingleSpaceByIdToClient);
 router.get('/settings/:slug', sendSpaceSettingPageDataToClient);
-router.post('/with-pagination/linkedChildren/:parentId', isLoggedIn(['system_admin', 'property_manager']), createLinkedChild);
-router.post('/with-pagination', isLoggedIn(['system_admin', 'property_manager']), createHeadSpaceWithPagination);
+
+router.post('/with-pagination', isSuperAdmin, createHeadSpaceWithPagination);
+
+router.post('/with-pagination/linkedChildren/:parentId', userIsAdminOfSpace, createLinkedChild);
 router.post('/', (_req: Request, res: Response) => res.status(httpStatus.FORBIDDEN).send('forbidden'));
 
-router.put('/:idMongoose', updateSpaceAndSendToClient);
+router.put('/:idMongoose', userIsAdminOfSpace, updateSpaceAndSendToClient);
 
-router.delete('/with-pagination/:spaceId', deleteHeadSpaceWithPagination);
+router.delete('/with-pagination/:spaceId', userIsAdminOfSpace, deleteHeadSpaceWithPagination);
 
-router.delete('/:spaceId', deleteHeadSpaceWithPagination);
-router.delete('/with-pagination/linkedChildren/:idMongoose', dataTableCtrl.deleteLinkedChildByIdWithPagination);
+router.delete('/:spaceId', userIsAdminOfSpace, deleteHeadSpaceWithPagination);
+router.delete('/with-pagination/linkedChildren/:idMongoose', userIsAdminOfSpace, dataTableCtrl.deleteLinkedChildByIdWithPagination);
 
 // for static site generation
 
