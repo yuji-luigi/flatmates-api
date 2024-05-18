@@ -3,6 +3,7 @@ import { removeSpaceFromMaintainerById, sendMaintainersOfBuildingToClient } from
 import { isLoggedIn } from '../../middlewares/isLoggedIn';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 const router = express.Router();
+
 router.use((req: RequestCustom, res, next) => {
   if (req.user?.isSuperAdmin) {
     return next();

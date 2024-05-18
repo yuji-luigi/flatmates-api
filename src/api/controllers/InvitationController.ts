@@ -183,7 +183,14 @@ export async function getInvitationByLinkIdAndSendToClient(req: Request, res: Re
       throw new ErrorCustom('Error in request', httpStatus.NOT_FOUND);
     }
     const invitation = await getInvitationByAuthTokenLinkId(req.params.linkId);
-    const data = invitation && { _id: invitation._id, status: invitation.status };
+    const data = invitation && {
+      _id: invitation._id,
+      status: invitation.status,
+      userType: invitation.userType,
+      space: {
+        name: invitation.space.name
+      }
+    };
     res.status(httpStatus.OK).json({
       success: true,
       data

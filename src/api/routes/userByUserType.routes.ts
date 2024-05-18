@@ -16,7 +16,7 @@ import {
 } from '../controllers/UserByController';
 const router = express.Router();
 
-const userTypes = ['property_manager', 'inhabitant', 'system_admin', 'maintainer'];
+const userTypes = ['property_manager', 'inhabitant', 'system_admin', 'maintainers'];
 
 router.use('/:userType', (req: RequestCustom, _res, next) => {
   if (userTypes.includes(req.params.userType as string)) {

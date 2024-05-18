@@ -64,11 +64,11 @@ const register = async (req: Request, res: Response) => {
     }
     await newUser.save();
 
-    await UserRegistry.create({
-      user: newUser,
-      role: roleCache.get(role)?._id,
-      isPublic
-    });
+    // await UserRegistry.create({
+    //   user: newUser,
+    //   role: roleCache.get(role)?._id,
+    //   isPublic
+    // });
 
     const jwt = JWTPayload.simple({
       email: newUser.email,
