@@ -12,6 +12,7 @@ declare module 'express' {
   interface Request {
     user: ReqUser | undefined;
     maintenance?: IMaintenance;
+    files?: { [key: string]: any };
   }
 }
 

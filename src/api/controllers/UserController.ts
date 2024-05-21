@@ -271,8 +271,7 @@ export async function importExcelFromClient(req: RequestCustom, res: Response) {
     // Parse the file based on its type
     const data = convertExcelToJson<userExcelData>(fileFromClient);
     const space = req.user.currentSpace?._id;
-    const organization = req.user.currentSpace?.organizationId;
-    if (!space || !organization)
+    if (!space)
       throw new ErrorEx({
         status: httpStatus.INTERNAL_SERVER_ERROR,
         message: 'Please set the select input value in some building/space',
@@ -281,7 +280,7 @@ export async function importExcelFromClient(req: RequestCustom, res: Response) {
       });
 
     // SECOND IMPLEMENTATION: PROMISE.ALL
-    const promises = createUserExcelPromises({ excelData: data, space, organization });
+    const promises = createUserExcelPromises({ excelData: data, space });
     const CHUNK_SIZE = 100;
     const chunks = chunkArray(promises, CHUNK_SIZE);
     for (const chunk of chunks) {

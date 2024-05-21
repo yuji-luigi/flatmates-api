@@ -48,7 +48,7 @@ router.use((req: RequestCustom, response: Response, next: NextFunction) => {
  * ORGANIZATION
  */
 
-router.get('/', isLoggedIn(), sendUsersToClient);
+router.get('/', isLoggedIn([SUPER_ADMIN]), sendUsersToClient);
 
 router.get('/with-pagination', isLoggedIn([SUPER_ADMIN]), sendUsersToClient);
 

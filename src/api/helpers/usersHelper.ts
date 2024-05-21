@@ -29,34 +29,51 @@ export async function deleteDuplicateEmailField(excelData: userExcelData) {
   return clonedJson;
 }
 
-export async function handleConstructUpdateUser({
-  excelData,
-  space,
-  organization
-}: {
-  excelData: userExcelData;
-  space: ObjectId;
-  organization: ObjectId;
-}) {
+export async function handleConstructUpdateUser({ excelData, space }: { excelData: userExcelData; space: ObjectId }) {
   try {
     const duplicateEmailFound = await checkDuplicateEmail({ model: User, email: excelData.email });
     if (duplicateEmailFound) {
       delete excelData.email;
     }
+    const _aggUser = await User.aggregate([
+      {
+        $match: {
+          name: excelData.name,
+          surname: excelData.surname
+        }
+      },
+      {
+        $lookup: {
+          from: 'accessPermissions',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'accessPermission',
+          pipeline: [
+            {
+              $match: {
+                space: space
+              }
+            }
+          ]
+        }
+      },
+      {
+        $unwind: {
+          path: '$accessPermission',
+          preserveNullAndEmptyArrays: true
+        }
+      }
+    ]);
     let user = await User.findOne({
       name: excelData.name,
-      surname: excelData.surname,
-      spaces: { $in: [space] },
-      organizations: { $in: [organization] }
+      surname: excelData.surname
     });
     // case already imported once. update the user
     if (user) {
       user.set({
         name: excelData.name,
         surname: excelData.surname,
-        email: excelData.email,
-        spaces: [space],
-        role: 'user'
+        email: excelData.email
       });
     }
     // case new user. create new one + new authToken
@@ -65,9 +82,7 @@ export async function handleConstructUpdateUser({
         name: excelData.name,
         surname: excelData.surname,
         email: excelData.email,
-        spaces: [space],
-        role: 'user',
-        organizations: [organization]
+        role: 'user'
       });
     }
     return user;
@@ -116,10 +131,10 @@ function createTokenMailBodyByUser(user: IUser, authToken: AuthTokenInterface) {
   return html;
 }
 
-export function createUserExcelPromises({ excelData, space, organization }: { excelData: userExcelData[]; space: ObjectId; organization: ObjectId }) {
+export function createUserExcelPromises({ excelData, space }: { excelData: userExcelData[]; space: ObjectId }) {
   const promises = excelData.map((current) => async () => {
     current = await deleteDuplicateEmailField(current); // Await some async operation
-    const newUser = await handleConstructUpdateUser({ excelData: current, space, organization }); // Await another async operation
+    const newUser = await handleConstructUpdateUser({ excelData: current, space }); // Await another async operation
 
     // await handleCreateAuthTokenForUser(newUser); // Another one
     await newUser.save(); // And another one

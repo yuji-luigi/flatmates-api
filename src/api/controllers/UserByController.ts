@@ -14,6 +14,8 @@ import { ObjectId } from 'mongodb';
 import { UserByUserType } from '../../models/util-models/user-by-user-type/UserByUserType';
 import Invitation from '../../models/Invitation';
 import { RoleName } from '../../types/mongoose-types/model-types/role-interface';
+import { Error } from 'mongoose';
+import { convertExcelToJson } from '../../utils/excelHelper';
 const entity = 'users';
 
 interface RequestCustom extends RequestCustomRoot {
@@ -369,5 +371,24 @@ export async function getUserByUserTypeAssignedSpaces(maintainerId: string) {
   } catch (err) {
     logger.error(err.message || err);
     throw new Error(err.message || err);
+  }
+}
+
+export async function importBuildingToUnitFromExcel(req: RequestCustom, res: Response) {
+  try {
+    if (!req.files?.file) {
+      throw new ErrorCustom('No excel or file detected', httpStatus.BAD_REQUEST);
+    }
+    const json = convertExcelToJson(req.files.file);
+
+    console.log(json);
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: entity,
+      data: null
+    });
+  } catch (err) {
+    logger.error(err.message || err);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: err.message || err });
   }
 }
