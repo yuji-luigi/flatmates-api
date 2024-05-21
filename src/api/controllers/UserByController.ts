@@ -379,9 +379,9 @@ export async function importBuildingToUnitFromExcel(req: RequestCustom, res: Res
     if (!req.files?.file) {
       throw new ErrorCustom('No excel or file detected', httpStatus.BAD_REQUEST);
     }
-    const json = convertExcelToJson(req.files.file);
+    const data = convertExcelToJson(req.files.file);
 
-    console.log(json);
+    console.log(data);
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity,
