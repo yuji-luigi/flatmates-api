@@ -7,7 +7,7 @@ import {
   addUserByUserTypeToSpace,
   createUserByUserType,
   favoriteUserByUserTypeToSpaceAndSendToClient,
-  importBuildingToUnitFromExcel,
+  importFlatmatesFromClient,
   removeSpaceFromUserByUserTypeById,
   removeUserByUserTypeFromSpaceAndSendToClient,
   sendUserByUserTypesOfBuildingToClient,
@@ -29,7 +29,7 @@ router.use('/:userType', (req: RequestCustom, _res, next) => {
 
 router.get('/test/test', (_req, res) => res.send('API is working: userByUserType.routes.ts'));
 
-router.post('/inhabitant/import-excel', isLoggedIn(), importBuildingToUnitFromExcel);
+router.post('/inhabitant/import-excel', isLoggedIn(), importFlatmatesFromClient);
 
 router.get('/:userType', isLoggedIn(), sendUserByUserTypesToClient);
 router.get('/:userType/with-pagination', isLoggedIn(), sendUserByUserTypesWithPaginationToClient);

@@ -376,7 +376,7 @@ export async function getUserByUserTypeAssignedSpaces(maintainerId: string) {
   }
 }
 
-export async function importBuildingToUnitFromExcel(req: RequestCustom, res: Response) {
+export async function importFlatmatesFromClient(req: RequestCustom, res: Response) {
   try {
     const { currentSpace } = req.user;
     if (!currentSpace) throw new ErrorCustom('Select the space first to get the users of the space', httpStatus.UNAUTHORIZED);
@@ -386,12 +386,12 @@ export async function importBuildingToUnitFromExcel(req: RequestCustom, res: Res
     }
     const data = convertExcelToJson<UserImportExcel>(req.files.file);
 
-    await handleImportFlatmates({ excelData: data, currentSpace });
+    const units = await handleImportFlatmates({ excelData: data, currentSpace });
 
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity,
-      data: null
+      data: units
     });
   } catch (err) {
     logger.error(err.message || err);

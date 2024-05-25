@@ -38,6 +38,7 @@ export async function handleImportFlatmates({ excelData, currentSpace }: { excel
   try {
     const blocks = excelData.map((flatmate) => flatmate.Scala);
     const uniqueBlocks = [...new Set(blocks)];
+    const result = [];
     for (const scala of uniqueBlocks) {
       /** "scala" in excel */
       let scalaSpace = await Space.findOne({ name: scala, parentId: currentSpace._id });
@@ -90,17 +91,17 @@ export async function handleImportFlatmates({ excelData, currentSpace }: { excel
               unitSpace: unitSpaceToSave._id,
               space: currentSpace._id
             });
-          } else {
-            updatingUnit.ownerName = unitSpace.Proprietario;
-            updatingUnit.mateName = unitSpace.Inquilino;
-            await updatingUnit.save();
           }
+          updatingUnit.ownerName = unitSpace.Proprietario;
+          updatingUnit.mateName = unitSpace.Inquilino;
+          await updatingUnit.save();
+          result.push(updatingUnit);
 
           //  TODO: create invitation per unit. but there should not be email for now
         }
       }
     }
-    return;
+    return result;
   } catch (error) {
     logger.error(error.stack || error);
     throw new Error('Error creating spaces from excel data');
