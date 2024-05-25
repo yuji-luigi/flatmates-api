@@ -1,16 +1,14 @@
-import { AuthTokenInterface } from './auth-token-interface';
 import { MongooseBaseModel } from './base-types/base-model-interface';
-import { IOrganization } from './organization-interface';
 import { ISpace } from './space-interface';
 import { IUser } from './user-interface';
+import { ObjectId } from 'mongodb';
 
 export interface UnitInterface extends MongooseBaseModel {
   name: string;
-  surname: string;
-  email?: string;
-  authToken: AuthTokenInterface;
-  space: ISpace;
-  tailSpace: ISpace | string;
-  organization?: string | IOrganization;
-  user: IUser;
+  ownerName: string;
+  mateName?: string;
+  space: ObjectId;
+  condominium: ObjectId;
+  owner?: ObjectId;
+  mate?: ObjectId;
 }

@@ -15,7 +15,9 @@ import { UserByUserType } from '../../models/util-models/user-by-user-type/UserB
 import Invitation from '../../models/Invitation';
 import { RoleName } from '../../types/mongoose-types/model-types/role-interface';
 import { Error } from 'mongoose';
-import { convertExcelToJson } from '../../utils/excelHelper';
+import { convertExcelToJson } from '../../utils/excel/excelHelper';
+import { handleImportFlatmates } from '../../utils/excel/importFlatmatesUnits';
+import { UserImportExcel } from '../../types/excel/UserImportExcel';
 const entity = 'users';
 
 interface RequestCustom extends RequestCustomRoot {
@@ -376,12 +378,16 @@ export async function getUserByUserTypeAssignedSpaces(maintainerId: string) {
 
 export async function importBuildingToUnitFromExcel(req: RequestCustom, res: Response) {
   try {
+    const { currentSpace } = req.user;
+    if (!currentSpace) throw new ErrorCustom('Select the space first to get the users of the space', httpStatus.UNAUTHORIZED);
+
     if (!req.files?.file) {
       throw new ErrorCustom('No excel or file detected', httpStatus.BAD_REQUEST);
     }
-    const data = convertExcelToJson(req.files.file);
+    const data = convertExcelToJson<UserImportExcel>(req.files.file);
 
-    console.log(data);
+    await handleImportFlatmates({ excelData: data, currentSpace });
+
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity,

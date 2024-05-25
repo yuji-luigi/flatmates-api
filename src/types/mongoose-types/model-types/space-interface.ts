@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb';
 import { MongooseBaseModel } from './base-types/base-model-interface';
 import { IUpload } from './upload-interface';
 
-export const spaceTypes = ['country', 'street', 'building', 'area', 'house', 'room', 'floor'] as const;
+export const spaceTypes = ['country', 'area', 'building', 'block', 'floor', 'unit'] as const;
 export type SpaceTypes = (typeof spaceTypes)[number];
 
 export interface ISpace extends MongooseBaseModel {

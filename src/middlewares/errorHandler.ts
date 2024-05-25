@@ -3,8 +3,10 @@ import { ErrorCustom } from '../lib/ErrorCustom';
 import logger from '../lib/logger';
 
 // Error handling Middleware functions
-export const errorLogger = (error: Error, _request: Request, _response: Response, next: NextFunction) => {
+export const errorLogger = (error: ErrorCustom, _request: Request, _response: Response, next: NextFunction) => {
   logger.error(`error ${error.stack || error.message}`);
+
+  error.internalLog && logger.error(`error ${error.stack || error.message}`);
   next(error); // calling next middleware
 };
 

@@ -12,7 +12,7 @@ import { ISpace, ISpaceMethods, spaceTypes } from '../types/mongoose-types/model
 import { ICollectionAware } from '../api/helpers/mongoose.helper';
 import { ErrorCustom } from '../lib/ErrorCustom';
 import httpStatus from 'http-status';
-import { aggregateDescendantIds, getDescendantPipeline } from '../api/helpers/spaceHelper';
+import { getDescendantPipeline } from '../api/helpers/spaceHelper';
 
 // const { jwtSecret } = vars;
 

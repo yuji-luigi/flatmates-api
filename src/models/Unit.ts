@@ -6,29 +6,29 @@ const { Schema } = mongoose;
 
 export const unitSchema = new Schema<UnitInterface>(
   {
-    name: String,
-    surname: String,
-    email: String,
-    authToken: {
-      type: Schema.Types.ObjectId,
-      ref: 'authTokens'
+    name: {
+      type: String,
+      required: true
     },
-    user: {
-      type: Schema.Types.ObjectId,
-      ref: 'users',
-      autopopulate: true
+    ownerName: {
+      type: String,
+      required: true
     },
-    tailSpace: {
+    mateName: {
+      type: String,
+      required: true
+    },
+    owner: {
       type: Schema.Types.ObjectId,
-      ref: 'spaces'
+      ref: 'users'
     },
     space: {
       type: Schema.Types.ObjectId,
       ref: 'spaces'
     },
-    organization: {
+    condominium: {
       type: Schema.Types.ObjectId,
-      ref: 'organizations'
+      ref: 'spaces'
     }
   },
   {
@@ -41,4 +41,4 @@ unitSchema.statics = {};
 
 unitSchema.plugin(autoPopulate);
 
-export default mongoose.model('authTokens', unitSchema);
+export default mongoose.model('units', unitSchema);
