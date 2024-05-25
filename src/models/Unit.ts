@@ -22,11 +22,17 @@ export const unitSchema = new Schema<UnitInterface>(
       type: Schema.Types.ObjectId,
       ref: 'users'
     },
-    space: {
+    mate: {
+      type: Schema.Types.ObjectId,
+      ref: 'users'
+    },
+    /** the tip space. */
+    unitSpace: {
       type: Schema.Types.ObjectId,
       ref: 'spaces'
     },
-    condominium: {
+    /** the condominium */
+    space: {
       type: Schema.Types.ObjectId,
       ref: 'spaces'
     }

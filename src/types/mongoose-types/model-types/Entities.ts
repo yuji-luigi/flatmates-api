@@ -19,7 +19,8 @@ export const entities = [
   'users',
   'maintenances',
   'accessPermissions',
-  'invitations'
+  'invitations',
+  'units'
   // ...loginInstanceEntities
   // 'users',
   // 'maintainers'

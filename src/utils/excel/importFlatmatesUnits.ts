@@ -81,18 +81,20 @@ export async function handleImportFlatmates({ excelData, currentSpace }: { excel
             });
             await unitSpaceToSave.save();
           }
-          let updatingUnit = await Unit.findOne({ name: unitSpace['N.ro'], space: unitSpaceToSave._id });
+          let updatingUnit = await Unit.findOne({ name: unitSpace['N.ro'], unitSpace: unitSpaceToSave._id });
           if (!updatingUnit) {
             updatingUnit = await Unit.create({
               ownerName: unitSpace.Proprietario,
               mateName: unitSpace.Inquilino,
               name: unitSpace['N.ro'],
-              space: unitSpaceToSave._id,
-              condominium: currentSpace._id
+              unitSpace: unitSpaceToSave._id,
+              space: currentSpace._id
             });
+          } else {
+            updatingUnit.ownerName = unitSpace.Proprietario;
+            updatingUnit.mateName = unitSpace.Inquilino;
+            await updatingUnit.save();
           }
-          updatingUnit.ownerName = unitSpace.Proprietario;
-          await updatingUnit.save();
 
           //  TODO: create invitation per unit. but there should not be email for now
         }
