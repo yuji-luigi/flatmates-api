@@ -15,8 +15,8 @@ export const invitationSchema = new Schema<InvitationInterface>(
     cell: String,
     // email of invited user
     email: {
-      type: String,
-      required: true
+      type: String
+      // required: true
     },
     space: {
       type: Schema.Types.ObjectId,
@@ -35,6 +35,10 @@ export const invitationSchema = new Schema<InvitationInterface>(
     authToken: {
       type: Schema.Types.ObjectId,
       ref: 'authTokens'
+    },
+    unit: {
+      type: Schema.Types.ObjectId,
+      ref: 'units'
     }
   },
   {
@@ -46,9 +50,24 @@ export const invitationSchema = new Schema<InvitationInterface>(
 invitationSchema.statics = {};
 
 invitationSchema.pre('save', async function (next) {
-  const found = await Invitation.findOne({ email: this.email, space: this.space, status: 'pending' });
+  const found = await Invitation.findOne({
+    $or: [
+      // NOTE: case for property_manager and maintainer
+      { $and: [{ email: { $exists: true } }, { email: this.email }], space: this.space, status: 'pending' },
+      // NOTE: case for flatmates unit
+      { unit: this.unit, status: 'pending', userType: this.userType }
+    ]
+  });
+
   if (found && this.isNew) {
     throw new ErrorCustom('Invitation already exists', httpStatus.CONFLICT);
+  }
+
+  if ((this.userType === 'property_manager' || this.userType === 'maintainer') && !this.email) {
+    throw new ErrorCustom('Email is for inviting.', httpStatus.BAD_REQUEST, `${this.userType} must have email.`);
+  }
+  if (this.userType === 'inhabitant' && !this.unit) {
+    throw new ErrorCustom('Unit is required to create flatmates(Units).', httpStatus.BAD_REQUEST, 'Unit is required for inhabitant.');
   }
   next();
 });

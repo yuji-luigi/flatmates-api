@@ -5,7 +5,8 @@ import {
   acceptInvitationByRegistering,
   declineInvitationByLinkId,
   getInvitationByLinkIdAndSendToClient,
-  inviteToSpaceByUserTypeEmail
+  inviteToSpaceByUserTypeEmail,
+  sentAuthTokenOfUnitFromInvitation
 } from '../controllers/InvitationController';
 import { queryHandler } from '../../middlewares/handleSetQuery';
 import { handleUserFromRequest } from '../../middlewares/handleUserFromRequest';
@@ -13,6 +14,8 @@ import { handleUserFromRequest } from '../../middlewares/handleUserFromRequest';
 const router = express.Router();
 
 router.get('/by-linkId/:linkId', getInvitationByLinkIdAndSendToClient);
+
+router.get('/units/auth-token/:idMongoose', sentAuthTokenOfUnitFromInvitation);
 
 router.post('/accept-by-login/:linkId', acceptInvitationByLogin);
 router.post('/decline/:linkId', declineInvitationByLinkId);

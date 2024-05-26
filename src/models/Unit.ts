@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
-import { UnitInterface } from '../types/mongoose-types/model-types/unit-interface';
+import { UnitInterface, unitStatus } from '../types/mongoose-types/model-types/unit-interface';
 
 const { Schema } = mongoose;
 
@@ -35,6 +35,12 @@ export const unitSchema = new Schema<UnitInterface>(
     space: {
       type: Schema.Types.ObjectId,
       ref: 'spaces'
+    },
+    status: {
+      type: String,
+      enum: unitStatus,
+      default: 'idle',
+      required: true
     }
   },
   {

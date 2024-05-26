@@ -3,36 +3,8 @@ import { CurrentSpace } from '../../lib/jwt/jwtTypings';
 import Space from '../../models/Space';
 import Unit from '../../models/Unit';
 import { UserImportExcel } from '../../types/excel/UserImportExcel';
-
-// export async function _importFlatmatesUnits({ excelData, space }: { excelData: ; space: ObjectId }) {
-//   try {
-//     let user = await User.findOne({
-//       name: excelData.name,
-//       surname: excelData.surname
-//     });
-//     // case already imported once. update the user
-//     if (user) {
-//       user.set({
-//         name: excelData.name,
-//         surname: excelData.surname,
-//         email: excelData.email
-//       });
-//     }
-//     // case new user. create new one + new authToken
-//     if (!user) {
-//       user = new User({
-//         name: excelData.name,
-//         surname: excelData.surname,
-//         email: excelData.email,
-//         role: 'user'
-//       });
-//     }
-//     return user;
-//   } catch (error) {
-//     logger.error(error.message || error, 'error in registerUserCondominium');
-//     throw new Error(error.message || error);
-//   }
-// }
+import Invitation from '../../models/Invitation';
+import AuthToken from '../../models/AuthToken';
 
 export async function handleImportFlatmates({ excelData, currentSpace }: { excelData: UserImportExcel[]; currentSpace: CurrentSpace }) {
   try {
@@ -89,7 +61,8 @@ export async function handleImportFlatmates({ excelData, currentSpace }: { excel
               mateName: unitSpace.Inquilino,
               name: unitSpace['N.ro'],
               unitSpace: unitSpaceToSave._id,
-              space: currentSpace._id
+              space: currentSpace._id,
+              status: 'registration-pending'
             });
           }
           updatingUnit.ownerName = unitSpace.Proprietario;
@@ -97,7 +70,18 @@ export async function handleImportFlatmates({ excelData, currentSpace }: { excel
           await updatingUnit.save();
           result.push(updatingUnit);
 
-          //  TODO: create invitation per unit. but there should not be email for now
+          const newAuthToken = await AuthToken.create({});
+
+          await Invitation.create({
+            userType: 'inhabitant',
+            status: 'pending',
+            unit: updatingUnit._id,
+            space: currentSpace._id,
+            authToken: newAuthToken._id
+          }).catch(async (error) => {
+            logger.error(error.stack || error);
+            await newAuthToken.deleteOne();
+          });
         }
       }
     }

@@ -16,6 +16,29 @@ const entity = 'authTokens';
 // CRUD GENERIC CONTROLLER METHODS
 //= ===============================================================================
 
+export const sendQrCodeByEntityAndIdMongoose = async (req: Request, res: Response) => {
+  try {
+    const { entity, idMongoose } = req.params;
+    const data = await AuthToken.findOne({
+      entity,
+      _id: idMongoose
+    });
+    if (!data) {
+      throw new Error('no data found');
+    }
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: entity,
+      data: { linkId: data.linkId },
+      totalDocuments: 1
+    });
+  } catch (err) {
+    logger.error(_MSG.INVALID_ACCESS, err.message);
+    res.status(err).json({
+      message: err.message || err
+    });
+  }
+};
 export const sendAuthTokenByIdsToClient = async (req: Request, res: Response) => {
   try {
     const { linkId, idMongoose } = req.params;

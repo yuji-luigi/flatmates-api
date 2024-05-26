@@ -18,6 +18,7 @@ import Invitation from '../../models/Invitation';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { _MSG } from '../../utils/messages';
 import { sendEmail } from '../helpers/nodemailerHelper';
+import { ObjectId } from 'bson';
 
 export async function inviteToSpaceByUserTypeEmail(
   req: RequestCustom & { user: ReqUser; params: { userType: string } },
@@ -194,6 +195,45 @@ export async function getInvitationByLinkIdAndSendToClient(req: Request, res: Re
     res.status(httpStatus.OK).json({
       success: true,
       data
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+export async function sentAuthTokenOfUnitFromInvitation(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { status } = req.query;
+    const [authToken] = await AuthToken.aggregate([
+      {
+        $lookup: {
+          from: 'invitations',
+          localField: '_id',
+          foreignField: 'authToken',
+          as: 'invitation',
+          pipeline: [
+            {
+              $match: {
+                status: status,
+                unit: new ObjectId(req.params.idMongoose)
+              }
+            }
+          ]
+        }
+      },
+      { $unwind: { path: '$invitation', preserveNullAndEmptyArrays: true } },
+      {
+        $project: {
+          _id: 1,
+          active: 1,
+          linkId: 1,
+          nonce: 1
+        }
+      }
+    ]);
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      data: authToken
     });
   } catch (error) {
     next(error);

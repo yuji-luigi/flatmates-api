@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { Response } from 'express';
 
 const router = express.Router();
 
@@ -11,11 +11,11 @@ import {
 import { sendNotImplemented } from '../controllers/CrudController';
 import { handleUserFromRequest } from '../../middlewares/handleUserFromRequest';
 import { queryHandler } from '../../middlewares/handleSetQuery';
-import { ADMIN } from '../../middlewares/auth-middlewares';
 import { isLoggedIn } from '../../middlewares/isLoggedIn';
 import { authUserMaintenanceByJWT, authUserMaintenanceFiles, checkIsActiveMaintainerFromClient } from '../controllers/MaintenanceController';
+import { RequestCustom } from '../../types/custom-express/express-custom';
 
-router.get('/', (req: Request, res: Response) => {
+router.get('/', (_req: RequestCustom, res: Response) => {
   res.send('API is working');
 });
 
@@ -29,6 +29,8 @@ router.post('/maintenances/file-upload/:linkId/:idMongoose', authUserMaintenance
 
 router.use(handleUserFromRequest);
 router.use(queryHandler);
+
+router.get('/qr-code/:entity/:idMongoose', sendAuthTokenByIdsToClient);
 
 // GENERIC crud routes
 router.get('/:idMongoose', sendLinkIdToClient);

@@ -5,7 +5,8 @@ import { RoleName } from './role-interface';
 export const invitationStatuses = ['pending', 'accepted', 'declined'] as const;
 
 export type invitationStatus = (typeof invitationStatuses)[number];
-export interface InvitationInterface extends MongooseBaseModel {
+
+export interface _InvitationInterface extends MongooseBaseModel {
   email: string;
   cell?: string;
   userType: RoleName;
@@ -13,4 +14,19 @@ export interface InvitationInterface extends MongooseBaseModel {
   space: ObjectId;
   createdBy: ObjectId;
   authToken: ObjectId;
+  unit?: ObjectId;
+}
+
+export type InvitationInterface = _InvitationInterface | InhabitantInvitationInterface | PropertyManagerMaintainerInvitationInterface;
+// export type InvitationInterface = InhabitantInvitationInterface | PropertyManagerMaintainerInvitationInterface;
+
+interface InhabitantInvitationInterface extends _InvitationInterface {
+  userType: 'inhabitant';
+  unit: ObjectId;
+}
+
+interface PropertyManagerMaintainerInvitationInterface extends _InvitationInterface {
+  userType: 'property_manager' | 'maintainer';
+  email: string;
+  unit?: undefined;
 }
