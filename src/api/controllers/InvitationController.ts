@@ -200,7 +200,8 @@ export async function getInvitationByLinkIdAndSendToClient(req: Request, res: Re
     next(error);
   }
 }
-export async function sentAuthTokenOfUnitFromInvitation(req: Request, res: Response, next: NextFunction) {
+
+export async function sendAuthTokenOfUnitFromInvitation(req: Request, res: Response, next: NextFunction) {
   try {
     const { status } = req.query;
     const [authToken] = await AuthToken.aggregate([
@@ -230,7 +231,6 @@ export async function sentAuthTokenOfUnitFromInvitation(req: Request, res: Respo
         }
       }
     ]);
-
     res.status(httpStatus.OK).json({
       success: true,
       data: authToken

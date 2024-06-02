@@ -23,6 +23,7 @@ import { handleUserFromRequest } from '../../middlewares/handleUserFromRequest';
 import { queryHandler } from '../../middlewares/handleSetQuery';
 import statisticRoutes from './statistic.routes';
 import invitationRoutes from './invitation-routes';
+import unitRoutes from './unit-routes';
 //= ===============================================================================
 // AUTH ROUTES
 //= ===============================================================================
@@ -40,6 +41,7 @@ router.use(handleUserFromRequest);
 router.use(queryHandler);
 
 router.use('/accessPermissions', accessControllerRoutes);
+router.use('/units', unitRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/maintenances', maintenanceRoutes);
 router.use('/threads', threadRoutes);

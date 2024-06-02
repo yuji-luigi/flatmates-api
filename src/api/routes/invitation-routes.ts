@@ -6,7 +6,7 @@ import {
   declineInvitationByLinkId,
   getInvitationByLinkIdAndSendToClient,
   inviteToSpaceByUserTypeEmail,
-  sentAuthTokenOfUnitFromInvitation
+  sendAuthTokenOfUnitFromInvitation
 } from '../controllers/InvitationController';
 import { queryHandler } from '../../middlewares/handleSetQuery';
 import { handleUserFromRequest } from '../../middlewares/handleUserFromRequest';
@@ -15,7 +15,8 @@ const router = express.Router();
 
 router.get('/by-linkId/:linkId', getInvitationByLinkIdAndSendToClient);
 
-router.get('/units/auth-token/:idMongoose', sentAuthTokenOfUnitFromInvitation);
+// TODO: MOVE TO UNITS ROUTE. /units/
+router.get('/units/auth-token/:idMongoose', sendAuthTokenOfUnitFromInvitation);
 
 router.post('/accept-by-login/:linkId', acceptInvitationByLogin);
 router.post('/decline/:linkId', declineInvitationByLinkId);
