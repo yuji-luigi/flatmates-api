@@ -23,23 +23,6 @@ export const authTokenSchema = new Schema<AuthTokenInterface>(
       type: Date,
       default: () => new Date(Date.now() + 24 * 60 * 60 * 1000)
     }
-    // parent: {
-    //   entity: String,
-    //   _id: String
-    // }
-    // createdBy?
-    // user: {
-    //   type: Schema.Types.ObjectId,
-    //   ref: 'users',
-    //   required: true,
-    //   autopopulate: true
-    // },
-    // refEntity: {
-    //   type: String
-    // },
-    // refId: {
-    //   type: Schema.Types.ObjectId
-    // }
   },
   {
     versionKey: false,

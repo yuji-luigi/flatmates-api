@@ -386,7 +386,7 @@ export async function importFlatmatesFromClient(req: RequestCustom, res: Respons
     }
     const data = convertExcelToJson<UserImportExcel>(req.files.file);
 
-    const units = await handleImportFlatmates({ excelData: data, currentSpace });
+    const units = await handleImportFlatmates({ excelData: data, currentSpace, createdBy: req.user._id });
 
     res.status(httpStatus.OK).json({
       success: true,

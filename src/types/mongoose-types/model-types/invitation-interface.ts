@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb';
 import { MongooseBaseModel } from './base-types/base-model-interface';
 import { RoleName } from './role-interface';
 
-export const invitationStatuses = ['pending', 'accepted', 'declined'] as const;
+export const invitationStatuses = ['pending', 'accepted', 'declined', 'outdated'] as const;
 
 export type invitationStatus = (typeof invitationStatuses)[number];
 
@@ -15,6 +15,7 @@ export interface _InvitationInterface extends MongooseBaseModel {
   createdBy: ObjectId;
   authToken: ObjectId;
   unit?: ObjectId;
+  displayName?: string;
 }
 
 export type InvitationInterface = _InvitationInterface | InhabitantInvitationInterface | PropertyManagerMaintainerInvitationInterface;

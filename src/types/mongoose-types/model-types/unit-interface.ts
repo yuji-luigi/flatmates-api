@@ -4,11 +4,16 @@ import { ObjectId } from 'mongodb';
 export interface UnitInterface extends MongooseBaseModel {
   name: string;
   ownerName: string;
-  mateName?: string;
+  tenantName?: string;
   unitSpace: ObjectId;
+  /**building and palazzo (condominium?) */
   space: ObjectId;
+  /**wing, section, scala*/
+  wing: ObjectId;
+  /** piano */
+  floor: ObjectId;
   owner?: ObjectId;
-  mate?: ObjectId;
+  tenant?: ObjectId;
   status: UnitStatus;
 }
 export const unitStatus = ['complete-registration', 'idle', 'registration-pending'] as const;

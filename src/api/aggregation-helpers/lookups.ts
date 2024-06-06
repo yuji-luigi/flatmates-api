@@ -69,7 +69,7 @@ export const LOOKUP_PIPELINE_STAGES: Record<Entities, PipelineStage.FacetPipelin
     { $unwind: '$space' },
     { $lookup: { from: 'users', localField: 'owner', foreignField: '_id', as: 'owner' } },
     { $unwind: { path: '$owner', preserveNullAndEmptyArrays: true } },
-    { $lookup: { from: 'users', localField: 'mate', foreignField: '_id', as: 'mate' } },
-    { $unwind: { path: '$mate', preserveNullAndEmptyArrays: true } }
+    { $lookup: { from: 'users', localField: 'tenant', foreignField: '_id', as: 'tenant' } },
+    { $unwind: { path: '$tenant', preserveNullAndEmptyArrays: true } }
   ]
 };

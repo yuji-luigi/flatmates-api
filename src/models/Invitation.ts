@@ -12,6 +12,9 @@ export const invitationSchema = new Schema<InvitationInterface>(
       type: Schema.Types.ObjectId,
       ref: 'users'
     },
+    displayName: {
+      type: String
+    },
     cell: String,
     // email of invited user
     email: {

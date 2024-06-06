@@ -5,16 +5,12 @@ import httpStatus from 'http-status';
 
 export async function sendUnitsWithAuthToken(req: Request, res: Response, next: NextFunction) {
   try {
-    const unitsOfSpace = await Unit.find({
-      space: req.user?.currentSpace?._id
-    });
-    const _ = await Unit.aggregate([
+    const spaceId = req.user?.currentSpace?._id;
+
+    const units = await Unit.aggregate([
       {
-        $lookup: {
-          from: 'spaces',
-          localField: 'space',
-          foreignField: '_id',
-          as: 'space'
+        $match: {
+          space: spaceId
         }
       },
       {
@@ -24,38 +20,75 @@ export async function sendUnitsWithAuthToken(req: Request, res: Response, next: 
           foreignField: '_id',
           as: 'space'
         }
-      }
-    ]);
-
-    const authTokens = await AuthToken.aggregate([
+      },
+      {
+        $unwind: {
+          path: '$space',
+          preserveNullAndEmptyArrays: true
+        }
+      },
       {
         $lookup: {
           from: 'invitations',
-          localField: '_id',
-          foreignField: 'authToken',
-          as: 'invitation',
+          let: { unitId: '$_id' },
           pipeline: [
-            {
-              $match: {
-                // status: status,
-                unit: { $in: unitsOfSpace }
-              }
-            }
-          ]
+            { $match: { $expr: { $eq: ['$unit', '$$unitId'] } } }
+            // {
+            //   $lookup: {
+            //     from: 'authtokens',
+            //     localField: 'authToken',
+            //     foreignField: '_id',
+            //     as: 'authToken'
+            //   }
+            // }
+            // {
+            //   $unwind: {
+            //     path: '$authToken',
+            //     preserveNullAndEmptyArrays: true
+            //   }
+            // }
+          ],
+          as: 'invitation'
         }
       },
-      { $unwind: { path: '$invitation', preserveNullAndEmptyArrays: true } },
+      {
+        $unwind: {
+          path: '$invitation',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $lookup: {
+          from: 'authtokens',
+          localField: 'invitation.authToken',
+          foreignField: '_id',
+          as: 'authToken'
+        }
+      },
+      {
+        $unwind: {
+          path: '$authToken',
+          preserveNullAndEmptyArrays: true
+        }
+      },
       {
         $project: {
-          _id: 1,
-          active: 1,
-          linkId: 1,
-          nonce: 1
+          name: 1,
+          ownerName: 1,
+          tenantName: 1,
+          status: 1,
+          space: {
+            name: 1,
+            address: 1
+          },
+          authToken: { $ifNull: ['$authToken', null] }
         }
       }
     ]);
+    console.log(JSON.stringify(units, null, 2));
+
     res.status(httpStatus.OK).json({
-      data: authTokens,
+      data: units,
       success: true
     });
   } catch (error) {

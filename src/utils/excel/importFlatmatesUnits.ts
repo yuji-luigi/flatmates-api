@@ -5,13 +5,24 @@ import Unit from '../../models/Unit';
 import { UserImportExcel } from '../../types/excel/UserImportExcel';
 import Invitation from '../../models/Invitation';
 import AuthToken from '../../models/AuthToken';
+import { ObjectId } from 'mongodb';
 
-export async function handleImportFlatmates({ excelData, currentSpace }: { excelData: UserImportExcel[]; currentSpace: CurrentSpace }) {
+export async function handleImportFlatmates({
+  excelData,
+  currentSpace,
+  createdBy
+}: {
+  excelData: UserImportExcel[];
+  currentSpace: CurrentSpace;
+  createdBy: ObjectId;
+}) {
   try {
-    const blocks = excelData.map((flatmate) => flatmate.Scala);
-    const uniqueBlocks = [...new Set(blocks)];
+    const wings = excelData.map((flatmate) => flatmate.Scala);
+    const uniqueWings = [...new Set(wings)];
     const result = [];
-    for (const scala of uniqueBlocks) {
+    for (const scala of uniqueWings) {
+      // filter excel by scala
+      const rowsByWing = excelData.filter((flatmate) => flatmate.Scala === scala);
       /** "scala" in excel */
       let scalaSpace = await Space.findOne({ name: scala, parentId: currentSpace._id });
       if (!scalaSpace) {
@@ -26,6 +37,7 @@ export async function handleImportFlatmates({ excelData, currentSpace }: { excel
       const floors = excelData.filter((flatmate) => flatmate.Scala === scala).map((flatmate) => flatmate.Piano);
       const uniqueFloors = [...new Set(floors)];
       for (const piano of uniqueFloors) {
+        const rowsByWingAndFloor = rowsByWing.filter((flatmate) => flatmate.Piano === piano);
         let floorObj = await Space.findOne({ name: piano.toString(), parentId: scalaSpace._id });
         if (!floorObj) {
           floorObj = new Space({
@@ -37,16 +49,22 @@ export async function handleImportFlatmates({ excelData, currentSpace }: { excel
           await floorObj.save();
         }
 
-        const tailSpaces = excelData.filter((flatmate) => flatmate.Scala === scala && flatmate.Piano === piano).map((flatmate) => flatmate['N.ro']);
+        const tailSpaces = rowsByWingAndFloor
+          .filter((flatmate) => flatmate.Scala === scala && flatmate.Piano === piano)
+          .map((flatmate) => flatmate['N.ro']);
         const _uniqueTailSpaces = [...new Set(tailSpaces)];
-        const uniqueTailSpaces = excelData.filter((excel) => _uniqueTailSpaces.some((spaceName) => excel['N.ro'] === spaceName));
-        for (const unitSpace of uniqueTailSpaces) {
+        const excelByFloor = rowsByWingAndFloor.filter((excel) => _uniqueTailSpaces.some((spaceName) => excel['N.ro'] === spaceName));
+        for (const unitSpaceExcel of excelByFloor) {
           // search in DB to control if to save or not
-          let unitSpaceToSave = await Space.findOne({ name: unitSpace['N.ro'], parentId: floorObj._id });
+          let unitSpaceToSave = await Space.findOne({
+            name: unitSpaceExcel['N.ro'],
+            parentId: floorObj._id
+          });
+          console.log(unitSpaceToSave?._id.toString());
           // case does not found. create new
           if (!unitSpaceToSave) {
             unitSpaceToSave = new Space({
-              name: unitSpace['N.ro'],
+              name: unitSpaceExcel['N.ro'],
               parentId: floorObj._id,
               isHead: false,
               type: 'unit',
@@ -54,29 +72,51 @@ export async function handleImportFlatmates({ excelData, currentSpace }: { excel
             });
             await unitSpaceToSave.save();
           }
-          let updatingUnit = await Unit.findOne({ name: unitSpace['N.ro'], unitSpace: unitSpaceToSave._id });
+          let updatingUnit = await Unit.findOne({
+            name: unitSpaceExcel['N.ro'],
+            space: currentSpace._id,
+            wing: scalaSpace._id,
+            floor: floorObj._id,
+            unitSpace: unitSpaceToSave._id
+          });
           if (!updatingUnit) {
             updatingUnit = await Unit.create({
-              ownerName: unitSpace.Proprietario,
-              mateName: unitSpace.Inquilino,
-              name: unitSpace['N.ro'],
-              unitSpace: unitSpaceToSave._id,
+              ownerName: unitSpaceExcel.Proprietario,
+              tenantName: unitSpaceExcel.Inquilino,
+              name: unitSpaceExcel['N.ro'],
               space: currentSpace._id,
+              wing: scalaSpace._id,
+              floor: floorObj._id,
+              unitSpace: unitSpaceToSave._id,
               status: 'registration-pending'
             });
           }
-          updatingUnit.ownerName = unitSpace.Proprietario;
-          updatingUnit.mateName = unitSpace.Inquilino;
+          updatingUnit.ownerName = unitSpaceExcel.Proprietario;
+          updatingUnit.tenantName = unitSpaceExcel.Inquilino;
           await updatingUnit.save();
           result.push(updatingUnit);
 
           const newAuthToken = await AuthToken.create({});
+          const displayName = unitSpaceExcel.Inquilino || unitSpaceExcel.Proprietario;
+          const foundInvitation = await Invitation.findOne({
+            unit: updatingUnit._id,
+            userType: 'inhabitant'
+          });
+          if (foundInvitation?.displayName === displayName) {
+            continue;
+          }
+          if (foundInvitation && foundInvitation.displayName !== displayName) {
+            foundInvitation.status = foundInvitation.status === 'pending' ? 'outdated' : foundInvitation.status;
+            await foundInvitation.save();
+          }
 
           await Invitation.create({
             userType: 'inhabitant',
             status: 'pending',
             unit: updatingUnit._id,
             space: currentSpace._id,
+            createdBy,
+            displayName,
             authToken: newAuthToken._id
           }).catch(async (error) => {
             logger.error(error.stack || error);

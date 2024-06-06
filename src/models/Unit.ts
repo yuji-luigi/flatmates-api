@@ -14,15 +14,15 @@ export const unitSchema = new Schema<UnitInterface>(
       type: String,
       required: true
     },
-    mateName: {
-      type: String,
-      required: true
+    tenantName: {
+      type: String
+      // required: true
     },
     owner: {
       type: Schema.Types.ObjectId,
       ref: 'users'
     },
-    mate: {
+    tenant: {
       type: Schema.Types.ObjectId,
       ref: 'users'
     },
@@ -30,6 +30,16 @@ export const unitSchema = new Schema<UnitInterface>(
     unitSpace: {
       type: Schema.Types.ObjectId,
       ref: 'spaces'
+    },
+    /** scala in italian */
+    wing: {
+      type: Schema.Types.ObjectId,
+      required: true
+    },
+    /** piano in italian */
+    floor: {
+      type: Schema.Types.ObjectId,
+      required: true
     },
     /** the condominium */
     space: {
