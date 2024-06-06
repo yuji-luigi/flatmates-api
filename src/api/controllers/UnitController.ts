@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import AuthToken from '../../models/AuthToken';
 import Unit from '../../models/Unit';
 import httpStatus from 'http-status';
+import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
 
 export async function sendUnitsWithAuthToken(req: Request, res: Response, next: NextFunction) {
   try {
@@ -31,23 +32,7 @@ export async function sendUnitsWithAuthToken(req: Request, res: Response, next: 
         $lookup: {
           from: 'invitations',
           let: { unitId: '$_id' },
-          pipeline: [
-            { $match: { $expr: { $eq: ['$unit', '$$unitId'] } } }
-            // {
-            //   $lookup: {
-            //     from: 'authtokens',
-            //     localField: 'authToken',
-            //     foreignField: '_id',
-            //     as: 'authToken'
-            //   }
-            // }
-            // {
-            //   $unwind: {
-            //     path: '$authToken',
-            //     preserveNullAndEmptyArrays: true
-            //   }
-            // }
-          ],
+          pipeline: [{ $match: { $expr: { $eq: ['$unit', '$$unitId'] } } }],
           as: 'invitation'
         }
       },
@@ -74,14 +59,25 @@ export async function sendUnitsWithAuthToken(req: Request, res: Response, next: 
       {
         $project: {
           name: 1,
+          address: '$space.address',
           ownerName: 1,
           tenantName: 1,
           status: 1,
+          postalCode: 'xxx xxxx',
           space: {
             name: 1,
             address: 1
           },
-          authToken: { $ifNull: ['$authToken', null] }
+          authToken: {
+            $ifNull: [
+              {
+                nonce: '$authToken.nonce',
+                linkId: '$authToken.linkId',
+                active: '$authToken.active'
+              },
+              null
+            ]
+          }
         }
       }
     ]);
@@ -94,4 +90,14 @@ export async function sendUnitsWithAuthToken(req: Request, res: Response, next: 
   } catch (error) {
     next(error);
   }
+}
+
+export interface AddressInfo {
+  name: string;
+  address: string;
+  state: string;
+  postalCode: string;
+  cityCode?: string;
+  stateCode?: string;
+  authToken?: AuthTokenInterface;
 }
