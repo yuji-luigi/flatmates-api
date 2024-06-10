@@ -71,6 +71,7 @@ export async function sendUnitsWithAuthToken(req: Request, res: Response, next: 
           authToken: {
             $ifNull: [
               {
+                _id: '$authToken._id',
                 nonce: '$authToken.nonce',
                 linkId: '$authToken.linkId',
                 active: '$authToken.active'
