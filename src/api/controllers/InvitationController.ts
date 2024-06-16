@@ -19,6 +19,9 @@ import { RequestCustom } from '../../types/custom-express/express-custom';
 import { _MSG } from '../../utils/messages';
 import { sendEmail } from '../helpers/nodemailerHelper';
 import { ObjectId } from 'bson';
+import { createEmailVerifyEmailOptions } from '../../lib/node-mailer/createEmailVerifyEmail';
+import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
+import { Document } from 'mongoose';
 
 export async function inviteToSpaceByUserTypeEmail(
   req: RequestCustom & { user: ReqUser; params: { userType: string } },
@@ -141,6 +144,18 @@ export async function acceptInvitationByRegistering(req: Request, res: Response,
 
     await handleAcceptInvitation(aggregatedInvitation, user);
     const invitation = await findAndUpdateInvitationStatus(aggregatedInvitation, 'accepted');
+
+    // TODO: email verification. Send email to user to verify email.
+    // 1. create authTokens for user
+    const authToken = (await AuthToken.create({
+      type: 'email-verify',
+      email: user.email
+    })) as Document & AuthTokenInterface & { type: 'email-verify' };
+
+    // 2. create email options and send email with the options
+
+    const emailOptions = await createEmailVerifyEmailOptions({ email, authToken });
+    await sendEmail(emailOptions);
 
     handleSetCookieOnInvitationSuccess(res, invitation, user);
 

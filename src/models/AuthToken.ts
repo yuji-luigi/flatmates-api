@@ -1,3 +1,4 @@
+import { authTokenTypes } from './../types/mongoose-types/model-types/auth-token-interface';
 import mongoose from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
 import { generateNonceCode, generateRandomStringByLength, replaceSpecialChars } from '../utils/functions';
@@ -22,6 +23,15 @@ export const authTokenSchema = new Schema<AuthTokenInterface>(
     expiresAt: {
       type: Date,
       default: () => new Date(Date.now() + 24 * 60 * 60 * 1000)
+    },
+    email: {
+      type: String,
+      required: false
+    },
+    type: {
+      type: String,
+      enum: authTokenTypes,
+      required: true
     }
   },
   {
@@ -37,3 +47,5 @@ authTokenSchema.plugin(autoPopulate);
 const AuthToken = mongoose.model<AuthTokenInterface>('authTokens', authTokenSchema);
 // export type AuthTokenModel = typeof AuthToken;
 export default AuthToken;
+
+export type AuthTokenDocument = AuthTokenInterface & mongoose.Document;

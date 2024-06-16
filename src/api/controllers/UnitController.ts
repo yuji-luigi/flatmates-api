@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from 'express';
-import AuthToken from '../../models/AuthToken';
 import Unit from '../../models/Unit';
 import httpStatus from 'http-status';
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
@@ -82,7 +81,6 @@ export async function sendUnitsWithAuthToken(req: Request, res: Response, next: 
         }
       }
     ]);
-    console.log(JSON.stringify(units, null, 2));
 
     res.status(httpStatus.OK).json({
       data: units,

@@ -7,7 +7,12 @@ export const translationResources = {
       'Accept Invitation': 'Accept Invitation',
       'Property Manager': 'Property Manager',
       Maintainer: 'Condominium Maintainer',
-      'System Admin': 'Administrator of Flatmates System'
+      'System Admin': 'Administrator of Flatmates System',
+      'Thank you for choosing FlatMate! Almost there to complete registration':
+        'Thank you for choosing FlatMate! Almost there to complete registration',
+      'Click below and insert the code to verify your email.': 'Click below and insert the code to verify your email.',
+      'Click here': 'Click here',
+      'Email Verification': 'Email Verification'
     };
     return translations[key];
   },
@@ -20,7 +25,12 @@ export const translationResources = {
       'Accept Invitation': "Accetta l'invito",
       'Property Manager': 'Amministratore Condominiale',
       Maintainer: 'Manutentore condominiale',
-      'System Admin': 'Amministratore di sistema Flatmates'
+      'System Admin': 'Amministratore di sistema Flatmates',
+      'Thank you for choosing FlatMate! Almost there to complete registration':
+        'Grazie per aver scelto FlatMate! Quasi pronto per completare la registrazione',
+      'Click below and insert the code to verify your email.': 'Clicca qui sotto e inserisci il codice per verificare la tua email.',
+      'Click here': 'Clicca qui',
+      'Email Verification': 'Verifica Email'
     };
     return translations[key];
   }

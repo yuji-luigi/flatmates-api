@@ -24,7 +24,7 @@ export async function verifyPinFromRequest(req: RequestCustom): Promise<{ verifi
     _id: idMongoose,
     nonce: pin,
     active: true
-  }).populate({ path: 'space', select: 'name organization' });
+  });
   const found = data ? true : false;
 
   return { verified: found, authToken: data };

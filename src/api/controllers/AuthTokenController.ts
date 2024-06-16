@@ -127,7 +127,7 @@ export const verifyPinAndSendUserToClient = async (req: RequestCustom, res: Resp
       // data: user
     });
   } catch (err) {
-    logger.error(_MSG.INVALID_ACCESS, err.message);
+    logger.error(_MSG.INVALID_ACCESS, err.stack);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
       details: err.message || err,
       message: _MSG.ERRORS.GENERIC,
