@@ -60,7 +60,6 @@ export async function handleImportFlatmates({
             name: unitSpaceExcel['N.ro'],
             parentId: floorObj._id
           });
-          console.log(unitSpaceToSave?._id.toString());
           // case does not found. create new
           if (!unitSpaceToSave) {
             unitSpaceToSave = new Space({
@@ -96,7 +95,9 @@ export async function handleImportFlatmates({
           await updatingUnit.save();
           result.push(updatingUnit);
 
-          const newAuthToken = await AuthToken.create({});
+          const newAuthToken = await AuthToken.create({
+            type: 'invitation'
+          });
           const displayName = unitSpaceExcel.Inquilino || unitSpaceExcel.Proprietario;
           const foundInvitation = await Invitation.findOne({
             unit: updatingUnit._id,

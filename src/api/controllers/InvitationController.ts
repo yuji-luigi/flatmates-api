@@ -219,7 +219,7 @@ export async function getInvitationByLinkIdAndSendToClient(req: Request, res: Re
 export async function sendAuthTokenOfUnitFromInvitation(req: Request, res: Response, next: NextFunction) {
   try {
     const { status } = req.query;
-    const [authToken] = await AuthToken.aggregate([
+    const authTokens = await AuthToken.aggregate([
       {
         $lookup: {
           from: 'invitations',
@@ -229,14 +229,19 @@ export async function sendAuthTokenOfUnitFromInvitation(req: Request, res: Respo
           pipeline: [
             {
               $match: {
-                status: status,
-                unit: new ObjectId(req.params.idMongoose)
+                $and: [...(status ? [{ status: status }] : [{}]), { unit: new ObjectId(req.params.idMongoose) }]
               }
             }
           ]
         }
       },
       { $unwind: { path: '$invitation', preserveNullAndEmptyArrays: true } },
+      {
+        // at least invitation field is present
+        $match: {
+          invitation: { $exists: true }
+        }
+      },
       {
         $project: {
           _id: 1,
@@ -246,6 +251,9 @@ export async function sendAuthTokenOfUnitFromInvitation(req: Request, res: Respo
         }
       }
     ]);
+    // NOTE: don't destructure for debug purposes. (was returning array with all the authTokens) added existing check
+    const authToken = authTokens[0];
+    // console.log(JSON.stringify(authToken, null, 2));
     res.status(httpStatus.OK).json({
       success: true,
       data: authToken
