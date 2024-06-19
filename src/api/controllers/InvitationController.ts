@@ -145,6 +145,39 @@ export async function acceptInvitationByRegistering(req: Request, res: Response,
     await handleAcceptInvitation(aggregatedInvitation, user);
     const invitation = await findAndUpdateInvitationStatus(aggregatedInvitation, 'accepted');
 
+    handleSetCookieOnInvitationSuccess(res, invitation, user);
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      data: {
+        message: 'Invitation accepted successfully'
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function preRegisterWithVerificationEmail(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { linkId } = req.params;
+    const { email, password, name, surname, password2 } = req.body;
+    if(password !== password2) {
+      throw new ErrorCustom('Passwords do not match', httpStatus.BAD_REQUEST);
+    }
+
+    const aggregatedInvitation = await handleFindPendingInvitationByLinkIdAndEmail(linkId, email);
+
+    const user = await User.create({
+      email,
+      password,
+      name,
+      surname
+    });
+
+    await handleAcceptInvitation(aggregatedInvitation, user);
+    const invitation = await findAndUpdateInvitationStatus(aggregatedInvitation, 'accepted');
+
     // TODO: email verification. Send email to user to verify email.
     // 1. create authTokens for user
     const authToken = (await AuthToken.create({

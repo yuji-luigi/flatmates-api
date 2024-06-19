@@ -14,6 +14,7 @@ import { RoleName } from '../../types/mongoose-types/model-types/role-interface'
 import User from '../../models/User';
 
 /**
+ * @description email is optional for register route
  * @throws ErrorCustom when the invitation is not found as Not Found
  */
 export async function handleFindPendingInvitationByLinkIdAndEmail(linkId: undefined | string, email: string | undefined) {

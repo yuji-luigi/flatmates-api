@@ -6,6 +6,7 @@ import {
   declineInvitationByLinkId,
   getInvitationByLinkIdAndSendToClient,
   inviteToSpaceByUserTypeEmail,
+  preRegisterWithVerificationEmail,
   sendAuthTokenOfUnitFromInvitation
 } from '../controllers/InvitationController';
 import { queryHandler } from '../../middlewares/handleSetQuery';
@@ -21,6 +22,7 @@ router.get('/units/auth-token/:idMongoose', sendAuthTokenOfUnitFromInvitation);
 router.post('/accept-by-login/:linkId', acceptInvitationByLogin);
 router.post('/decline/:linkId', declineInvitationByLinkId);
 router.post('/register/:linkId', acceptInvitationByRegistering);
+router.post('/pre-register-with-email-verification/:linkId', preRegisterWithVerificationEmail);
 
 router.use(handleUserFromRequest);
 router.use(queryHandler);
