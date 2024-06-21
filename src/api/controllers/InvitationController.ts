@@ -22,6 +22,7 @@ import { ObjectId } from 'bson';
 import { createEmailVerifyEmailOptions } from '../../lib/node-mailer/createEmailVerifyEmail';
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
 import { Document } from 'mongoose';
+import VerificationEmail from '../../models/VerifcationEmail';
 
 export async function inviteToSpaceByUserTypeEmail(
   req: RequestCustom & { user: ReqUser; params: { userType: string } },
@@ -162,35 +163,41 @@ export async function preRegisterWithVerificationEmail(req: Request, res: Respon
   try {
     const { linkId } = req.params;
     const { email, password, name, surname, password2 } = req.body;
-    if(password !== password2) {
+    if (password !== password2) {
       throw new ErrorCustom('Passwords do not match', httpStatus.BAD_REQUEST);
     }
 
     const aggregatedInvitation = await handleFindPendingInvitationByLinkIdAndEmail(linkId, email);
 
-    const user = await User.create({
-      email,
-      password,
-      name,
-      surname
-    });
+    // const user = await User.create({
+    //   email,
+    //   password,
+    //   name,
+    //   surname
+    // });
 
-    await handleAcceptInvitation(aggregatedInvitation, user);
+    // await handleAcceptInvitation(aggregatedInvitation, user);
     const invitation = await findAndUpdateInvitationStatus(aggregatedInvitation, 'accepted');
 
     // TODO: email verification. Send email to user to verify email.
     // 1. create authTokens for user
     const authToken = (await AuthToken.create({
       type: 'email-verify',
-      email: user.email
+      email
     })) as Document & AuthTokenInterface & { type: 'email-verify' };
+
+    const newVerificationEmail = await VerificationEmail.create({
+      email,
+      invitation: invitation._id,
+      authToken: authToken._id
+    });
 
     // 2. create email options and send email with the options
 
     const emailOptions = await createEmailVerifyEmailOptions({ email, authToken });
     await sendEmail(emailOptions);
 
-    handleSetCookieOnInvitationSuccess(res, invitation, user);
+    // handleSetCookieOnInvitationSuccess(res, invitation, user);
 
     res.status(httpStatus.OK).json({
       success: true,

@@ -24,10 +24,7 @@ export const authTokenSchema = new Schema<AuthTokenInterface>(
       type: Date,
       default: () => new Date(Date.now() + 24 * 60 * 60 * 1000)
     },
-    email: {
-      type: String,
-      required: false
-    },
+
     type: {
       type: String,
       enum: authTokenTypes,

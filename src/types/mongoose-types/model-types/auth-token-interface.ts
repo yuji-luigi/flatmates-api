@@ -9,7 +9,7 @@ export interface _AuthTokenInterface extends MongooseBaseModel {
 
 export interface EmailAuthTokenInterface extends _AuthTokenInterface {
   type: 'email-verify' | 'password-reset';
-  email: string;
+  // email: string;
 }
 
 export interface InvitationAuthTokenInterface extends _AuthTokenInterface {
