@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { emailVerificationStatuses, VerificationEmailInterface } from '../types/mongoose-types/model-types/email-invitation';
+import { emailVerificationStatuses, VerificationEmailInterface } from '../types/mongoose-types/model-types/verification-email-interface';
 
 const { Schema } = mongoose;
 
@@ -10,6 +10,10 @@ export const VerificationEmailSchema = new Schema<VerificationEmailInterface>(
     email: {
       type: String
       // required: true
+    },
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: 'users'
     },
     invitation: {
       type: Schema.Types.ObjectId,
