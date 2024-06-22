@@ -19,4 +19,4 @@ export interface InvitationAuthTokenInterface extends _AuthTokenInterface {
 export type AuthTokenInterface = EmailAuthTokenInterface | InvitationAuthTokenInterface | _AuthTokenInterface;
 
 export const authTokenTypes = ['email-verify', 'password-reset', 'invitation'] as const;
-type AuthTokenType = (typeof authTokenTypes)[number];
+export type AuthTokenType = (typeof authTokenTypes)[number];
