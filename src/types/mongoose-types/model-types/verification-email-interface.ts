@@ -5,7 +5,6 @@ import { AuthTokenInterface } from './auth-token-interface';
 import { InvitationInterface } from './invitation-interface';
 
 export interface VerificationEmailInterface extends MongooseBaseModel {
-  email: string;
   invitation?: ObjectId;
   user: ObjectId;
   authToken: ObjectId;
