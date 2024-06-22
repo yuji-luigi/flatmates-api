@@ -162,28 +162,31 @@ export async function preRegisterWithVerificationEmail(req: Request, res: Respon
   try {
     const { linkId } = req.params;
     const { email, password, name, surname, password2 } = req.body;
+
+    // TODO: logic for re-registering users.
+    // 1. aggregate VerificationEmail. by invitation id.
+    // 2 if it exists, then update user info and update email of verification email.
+    // 3. send email with the updated verification email.
+
     if (password !== password2) {
       throw new ErrorCustom('Passwords do not match', httpStatus.BAD_REQUEST);
     }
 
     const aggregatedInvitation = await getInvitationByAuthTokenLinkId(linkId, {
-      invitationStatus: 'pending'
+      invitationStatus: { $in: ['pending', 'pending-register'] }
     });
+
     if (!aggregatedInvitation) {
       throw new ErrorCustom('Invitation not found', httpStatus.NOT_FOUND);
     }
 
-    const user = await User.create({
+    const user = new User({
       email,
       password,
       name,
       surname
     });
 
-    // await handleAcceptInvitation(aggregatedInvitation, user);
-    const invitation = await findAndUpdateInvitationStatus(aggregatedInvitation, 'pending-register');
-
-    // TODO: email verification. Send email to user to verify email.
     // 1. create authTokens for user
     const authToken = (await AuthToken.create({
       type: 'email-verify'
@@ -191,7 +194,7 @@ export async function preRegisterWithVerificationEmail(req: Request, res: Respon
 
     const newVerificationEmail = await VerificationEmail.create({
       user,
-      invitation: invitation._id,
+      invitation: aggregatedInvitation._id,
       authToken: authToken._id
     });
 
@@ -203,7 +206,9 @@ export async function preRegisterWithVerificationEmail(req: Request, res: Respon
       user: user.toObject()
     });
 
-    // handleSetCookieOnInvitationSuccess(res, invitation, user);
+    await user.save();
+
+    await findAndUpdateInvitationStatus(aggregatedInvitation, 'pending-register');
 
     res.status(httpStatus.OK).json({
       success: true,

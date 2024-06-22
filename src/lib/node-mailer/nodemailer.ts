@@ -1,10 +1,13 @@
 import Mail from 'nodemailer/lib/mailer';
-import vars from '../../utils/globalVariables';
+import vars, { rootDir } from '../../utils/globalVariables';
 
 import nodemailer from 'nodemailer';
 import ejs from 'ejs';
 import { VerificationEmailInterfaceHydrated } from '../../types/mongoose-types/model-types/verification-email-interface';
 import { AuthTokenType } from '../../types/mongoose-types/model-types/auth-token-interface';
+
+const { gmailAddress, gmailAppPassword, displayMail, frontendUrl, testMail } = vars;
+const EMAIL_TEMPLATE_PATH = `${rootDir}/src/email-template`;
 
 // const REFRESH_TOKEN = 'YOUR_REFRESH_TOKEN';
 
@@ -45,7 +48,8 @@ export async function sendVerificationEmail(verificationEmail: VerificationEmail
   try {
     const fullname = `${user.name} ${user.surname}`;
     const linkUrl = `${vars.frontendUrl}/auth/verify-email/${authToken.linkId}`;
-    const html = await ejs.renderFile(`auth-token-type/${authToken.type}.ejs`, { fullname, linkUrl });
+    // get root path of the project
+    const html = await ejs.renderFile(`${EMAIL_TEMPLATE_PATH}/auth-token-type/${authToken.type}.ejs`, { fullname, linkUrl });
     const subjectKey = authToken.type || 'default';
 
     const result = await transporter.sendMail({

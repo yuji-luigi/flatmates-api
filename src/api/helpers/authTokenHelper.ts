@@ -125,12 +125,13 @@ export function typeGuardAuthTokenSpaceOrg(
   // if (!isObjectIdOrganization(authToken.space.organization)) throw new Error('organization is not ObjectId');
   return true;
 }
+type InvitationStatusQuery = invitationStatus | { $or: invitationStatus[] } | { $and: invitationStatus[] } | { $in: invitationStatus[] };
 
 export interface InvitationByLinkId {
   _id: ObjectId;
   // email: string;
   userType: RoleName;
-  status: invitationStatus;
+  status: InvitationStatusQuery;
   createdBy: { email: string; surname: string; name: string };
   space: { _id: ObjectId; name: string; address: string };
 }
@@ -140,7 +141,7 @@ export async function getInvitationByAuthTokenLinkId(
   linkId: undefined | string,
   options?: {
     additionalMatchFields?: Record<string, string | undefined>;
-    invitationStatus?: invitationStatus;
+    invitationStatus?: InvitationStatusQuery;
     hydrate?: false | undefined;
   }
 ): Promise<InvitationByLinkId | undefined>;
@@ -149,7 +150,7 @@ export async function getInvitationByAuthTokenLinkId(
   linkId: undefined | string,
   options?: {
     additionalMatchFields?: Record<string, string | undefined>;
-    invitationStatus?: invitationStatus;
+    invitationStatus?: InvitationStatusQuery;
     hydrate: true;
   }
 ): Promise<(InvitationInterface & Document) | undefined>;
@@ -158,7 +159,7 @@ export async function getInvitationByAuthTokenLinkId(
   linkId: undefined | string,
   options: {
     additionalMatchFields?: Record<string, string | undefined>;
-    invitationStatus?: invitationStatus;
+    invitationStatus?: invitationStatus | { $or: invitationStatus[] } | { $and: invitationStatus[] } | { $in: invitationStatus[] };
     hydrate?: boolean;
   } = {}
 ): Promise<InvitationByLinkId | (InvitationInterface & Document) | undefined> {
