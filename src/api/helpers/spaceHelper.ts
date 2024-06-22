@@ -199,6 +199,7 @@ export async function updateSpaceHasPropertyManagerRecursively(spaceId: ObjectId
     slug: '',
     active: false,
     cover: undefined,
+    locale: 'it',
     email: '',
     loggedAs: RoleCache.property_manager
   };

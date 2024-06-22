@@ -49,7 +49,7 @@ export async function sendVerificationEmail(verificationEmail: VerificationEmail
     const fullname = `${user.name} ${user.surname}`;
     const linkUrl = `${vars.frontendUrl}/auth/verify-email/${authToken.linkId}`;
     // get root path of the project
-    const html = await ejs.renderFile(`${EMAIL_TEMPLATE_PATH}/auth-token-type/${authToken.type}.ejs`, { fullname, linkUrl });
+    const html = await ejs.renderFile(`${EMAIL_TEMPLATE_PATH}/auth-token-type/${authToken.type}.ejs`, { fullname, linkUrl, authToken });
     const subjectKey = authToken.type || 'default';
 
     const result = await transporter.sendMail({

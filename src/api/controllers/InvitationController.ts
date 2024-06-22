@@ -161,7 +161,7 @@ export async function acceptInvitationByRegistering(req: Request, res: Response,
 export async function preRegisterWithVerificationEmail(req: Request, res: Response, next: NextFunction) {
   try {
     const { linkId } = req.params;
-    const { email, password, name, surname, password2 } = req.body;
+    const { email, password, name, surname, password2, locale } = req.body;
 
     // TODO: logic for re-registering users.
     // 1. aggregate VerificationEmail. by invitation id.
@@ -184,7 +184,8 @@ export async function preRegisterWithVerificationEmail(req: Request, res: Respon
       email,
       password,
       name,
-      surname
+      surname,
+      locale
     });
 
     // 1. create authTokens for user

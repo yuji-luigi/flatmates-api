@@ -7,9 +7,11 @@
   </head>
   <body>
     <h1>Thank you for registering to Flatmate, <%= fullname %></h1>
+
+    <h2>CODE: <%= authToken.nonce %></h2>
     <p>
       Please click the following link to verify your email address:
-      <a href="<%= linkUrl %>">Verify email</a>
+      <a href="<%= linkUrl %>">FlatMate</a>
     </p>
     <p>If you didn't request this, you can ignore this email.</p>
   </body>

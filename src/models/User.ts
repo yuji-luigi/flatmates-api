@@ -13,6 +13,7 @@ import { _MSG } from '../utils/messages';
 import AccessController from './AccessPermission';
 import { JwtSignPayload } from '../lib/jwt/jwtTypings';
 import { ErrorCustom } from '../lib/ErrorCustom';
+import { supportedLocales } from '../lib/locale/supportedLocales';
 
 export type modules = {
   [key: string]: boolean;
@@ -48,7 +49,11 @@ export const userSchema = new Schema<IUser, UserModel>(
       ref: 'uploads',
       autopopulate: true
     },
-
+    locale: {
+      type: String,
+      enum: supportedLocales,
+      default: 'it'
+    },
     isSuperAdmin: {
       type: Boolean,
       default: false
