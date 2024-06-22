@@ -1,7 +1,7 @@
 import httpStatus from 'http-status';
 import { ErrorCustom } from '../../lib/ErrorCustom';
 import { ReqUser } from '../../lib/jwt/jwtTypings';
-import { RoleCache, roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
+import { RoleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
 import AccessPermission from '../../models/AccessPermission';
 import Invitation from '../../models/Invitation';
 import { InvitationInterface, invitationStatus } from '../../types/mongoose-types/model-types/invitation-interface';

@@ -4,19 +4,6 @@ import { translationResources } from './translations';
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
 import { Document } from 'mongoose';
 
-export function createEmailVerifyEmailOptions(args: {
-  email: string;
-  authToken: AuthTokenInterface & Document & { type: 'email-verify' };
-}): MailOptions {
-  const { email } = args;
-  return {
-    from: vars.displayMail,
-    to: email,
-    subject: `FlatMate: Email Verification`,
-    html: getHtml({ ...args })
-  };
-}
-
 function getHtml({
   locale = 'it',
   authToken

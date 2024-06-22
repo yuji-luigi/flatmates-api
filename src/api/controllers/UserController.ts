@@ -9,7 +9,7 @@ import User from '../../models/User';
 import { _MSG } from '../../utils/messages';
 import { deleteEmptyFields, emptyFieldsToUndefined } from '../../utils/functions';
 import { createMailOptionsForUserToken } from '../helpers/usersHelper';
-import { sendEmail } from '../helpers/nodemailerHelper';
+import { sendEmail } from '../../lib/node-mailer/nodemailer';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { checkAuthTokenForError, findAuthTokenFromCookie } from '../helpers/authTokenHelper';
 import { PipelineStage } from 'mongoose';

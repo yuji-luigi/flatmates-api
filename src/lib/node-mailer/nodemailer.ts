@@ -2,6 +2,9 @@ import Mail from 'nodemailer/lib/mailer';
 import vars from '../../utils/globalVariables';
 
 import nodemailer from 'nodemailer';
+import ejs from 'ejs';
+import { VerificationEmailInterfaceHydrated } from '../../types/mongoose-types/model-types/verification-email-interface';
+import { AuthTokenType } from '../../types/mongoose-types/model-types/auth-token-interface';
 
 // const REFRESH_TOKEN = 'YOUR_REFRESH_TOKEN';
 
@@ -22,6 +25,35 @@ export async function sendEmail(mailOptions: Mail.Options) {
   try {
     const result = await transporter.sendMail(mailOptions);
     console.log('Email sent: ' + result.response);
+    console.log(result);
+    return result;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
+const subject: Record<AuthTokenType | 'default', string> = {
+  'email-verify': 'Email Verification',
+  'password-reset': 'Password Reset',
+  invitation: 'Invitation',
+  default: 'Email Verification'
+};
+
+export async function sendVerificationEmail(verificationEmail: VerificationEmailInterfaceHydrated) {
+  const { user, authToken } = verificationEmail;
+  try {
+    const fullname = `${user.name} ${user.surname}`;
+    const linkUrl = `${vars.frontendUrl}/auth/verify-email/${authToken.linkId}`;
+    const html = await ejs.renderFile(`auth-token-type/${authToken.type}.ejs`, { fullname, linkUrl });
+    const subjectKey = authToken.type || 'default';
+
+    const result = await transporter.sendMail({
+      to: user.email,
+      from: vars.displayMail,
+      subject: subject[subjectKey],
+      html
+    });
     console.log(result);
     return result;
   } catch (error) {

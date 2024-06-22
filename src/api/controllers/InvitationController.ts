@@ -17,9 +17,8 @@ import { createInvitationEmail } from '../../lib/node-mailer/createInvitationMai
 import Invitation from '../../models/Invitation';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { _MSG } from '../../utils/messages';
-import { sendEmail } from '../helpers/nodemailerHelper';
+import { sendEmail, sendVerificationEmail } from '../../lib/node-mailer/nodemailer';
 import { ObjectId } from 'bson';
-import { createEmailVerifyEmailOptions } from '../../lib/node-mailer/createEmailVerifyEmail';
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
 import { Document } from 'mongoose';
 import VerificationEmail from '../../models/VerifcationEmail';
@@ -167,35 +166,42 @@ export async function preRegisterWithVerificationEmail(req: Request, res: Respon
       throw new ErrorCustom('Passwords do not match', httpStatus.BAD_REQUEST);
     }
 
-    const aggregatedInvitation = await handleFindPendingInvitationByLinkIdAndEmail(linkId, email);
+    const aggregatedInvitation = await getInvitationByAuthTokenLinkId(linkId, {
+      invitationStatus: 'pending'
+    });
+    if (!aggregatedInvitation) {
+      throw new ErrorCustom('Invitation not found', httpStatus.NOT_FOUND);
+    }
 
-    // const user = await User.create({
-    //   email,
-    //   password,
-    //   name,
-    //   surname
-    // });
+    const user = await User.create({
+      email,
+      password,
+      name,
+      surname
+    });
 
     // await handleAcceptInvitation(aggregatedInvitation, user);
-    const invitation = await findAndUpdateInvitationStatus(aggregatedInvitation, 'accepted');
+    const invitation = await findAndUpdateInvitationStatus(aggregatedInvitation, 'pending-register');
 
     // TODO: email verification. Send email to user to verify email.
     // 1. create authTokens for user
     const authToken = (await AuthToken.create({
-      type: 'email-verify',
-      email
+      type: 'email-verify'
     })) as Document & AuthTokenInterface & { type: 'email-verify' };
 
     const newVerificationEmail = await VerificationEmail.create({
-      email,
+      user,
       invitation: invitation._id,
       authToken: authToken._id
     });
 
     // 2. create email options and send email with the options
 
-    const emailOptions = await createEmailVerifyEmailOptions({ email, authToken });
-    await sendEmail(emailOptions);
+    await sendVerificationEmail({
+      ...newVerificationEmail.toObject(),
+      authToken: authToken.toObject(),
+      user: user.toObject()
+    });
 
     // handleSetCookieOnInvitationSuccess(res, invitation, user);
 

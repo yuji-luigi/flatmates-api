@@ -6,7 +6,7 @@ import { deleteEmptyFields } from '../../utils/functions';
 import { getFileDirName, saveInStorage, separateFiles } from '../helpers/uploadFileHelper';
 import Upload from '../../models/Upload';
 import { RequestCustom } from '../../types/custom-express/express-custom';
-import { sendEmail } from '../helpers/nodemailerHelper';
+import { sendEmail } from '../../lib/node-mailer/nodemailer';
 import { IMaintenance } from '../../types/mongoose-types/model-types/maintenance-interface';
 import { createOptionsForMaintenance } from '../helpers/maintenanceHelper';
 import { IUpload } from '../../types/mongoose-types/model-types/upload-interface';
