@@ -21,7 +21,7 @@ import { sendEmail, sendVerificationEmail } from '../../lib/node-mailer/nodemail
 import { ObjectId } from 'bson';
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
 import { Document } from 'mongoose';
-import VerificationEmail from '../../models/VerifcationEmail';
+import VerificationEmail from '../../models/VerificationEmail';
 
 export async function inviteToSpaceByUserTypeEmail(
   req: RequestCustom & { user: ReqUser; params: { userType: string } },
@@ -163,11 +163,6 @@ export async function preRegisterWithVerificationEmail(req: Request, res: Respon
     const { linkId } = req.params;
     const { email, password, name, surname, password2, locale } = req.body;
 
-    // TODO: logic for re-registering users.
-    // 1. aggregate VerificationEmail. by invitation id.
-    // 2 if it exists, then update user info and update email of verification email.
-    // 3. send email with the updated verification email.
-
     if (password !== password2) {
       throw new ErrorCustom('Passwords do not match', httpStatus.BAD_REQUEST);
     }
@@ -179,37 +174,67 @@ export async function preRegisterWithVerificationEmail(req: Request, res: Respon
     if (!aggregatedInvitation) {
       throw new ErrorCustom('Invitation not found', httpStatus.NOT_FOUND);
     }
+    // TODO: logic for re-registering users.
+    // 1. check if the invitation is pending-register and aggregate VerificationEmail. by invitation id.
+    if (aggregatedInvitation.status === 'pending-register') {
+      const verificationEmail = await VerificationEmail.findOne({
+        invitation: aggregatedInvitation._id
+      });
+      if (!verificationEmail) {
+        throw new ErrorCustom('Verification email not found', httpStatus.NOT_FOUND);
+      }
 
-    const user = new User({
-      email,
-      password,
-      name,
-      surname,
-      locale
-    });
+      const upUser = await User.findById(verificationEmail.user);
+      if (!upUser) {
+        throw new ErrorCustom('User not found', httpStatus.NOT_FOUND);
+      }
+      await AuthToken.deleteOne({ _id: verificationEmail.authToken });
+      const newAuthToken = await AuthToken.create({
+        type: 'email-verify'
+      });
+      verificationEmail.authToken = newAuthToken._id;
+      upUser.email = email;
+      upUser.password = password;
+      upUser.name = name;
+      upUser.surname = surname;
+      upUser.locale = locale;
+      await upUser.save();
+      await sendVerificationEmail({
+        ...verificationEmail.toObject(),
+        authToken: newAuthToken.toObject(),
+        user: upUser.toObject()
+      });
+    } else {
+      const user = new User({
+        email,
+        password,
+        name,
+        surname,
+        locale
+      });
 
-    // 1. create authTokens for user
-    const authToken = (await AuthToken.create({
-      type: 'email-verify'
-    })) as Document & AuthTokenInterface & { type: 'email-verify' };
+      // 1. create authTokens for user
+      const authToken = (await AuthToken.create({
+        type: 'email-verify'
+      })) as Document & AuthTokenInterface & { type: 'email-verify' };
 
-    const newVerificationEmail = await VerificationEmail.create({
-      user,
-      invitation: aggregatedInvitation._id,
-      authToken: authToken._id
-    });
+      const newVerificationEmail = await VerificationEmail.create({
+        user,
+        invitation: aggregatedInvitation._id,
+        authToken: authToken._id
+      });
 
-    // 2. create email options and send email with the options
+      // 2. create email options and send email with the options
 
-    await sendVerificationEmail({
-      ...newVerificationEmail.toObject(),
-      authToken: authToken.toObject(),
-      user: user.toObject()
-    });
+      await sendVerificationEmail({
+        ...newVerificationEmail.toObject(),
+        authToken: authToken.toObject(),
+        user: user.toObject()
+      });
 
-    await user.save();
-
-    await findAndUpdateInvitationStatus(aggregatedInvitation, 'pending-register');
+      await user.save();
+      await findAndUpdateInvitationStatus(aggregatedInvitation, 'pending-register');
+    }
 
     res.status(httpStatus.OK).json({
       success: true,
