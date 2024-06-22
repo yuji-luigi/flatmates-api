@@ -1,5 +1,5 @@
 import { RoleName } from './../types/mongoose-types/model-types/role-interface';
-import { Schema, model } from 'mongoose';
+import { Document, Schema, model } from 'mongoose';
 import bcrypt from 'bcrypt';
 import httpStatus from 'http-status';
 import moment from 'moment-timezone';
@@ -107,6 +107,33 @@ userSchema.pre('save', async function save(next) {
     return next();
   } catch (error) {
     return next(error);
+  }
+});
+
+userSchema.post('save', function (error: any, _doc: Document, next: (err?: any) => void) {
+  if (error.name === 'MongoServerError' && error.code === 11000) {
+    // Handle duplicate key error
+    const msgArray = Object.entries(error.keyValue).map(([key, value]) => {
+      return `${key}: ${value} is already registered. Please use another ${key}.`;
+    });
+    const message = msgArray.join(' ');
+    next(
+      new APIError({
+        message,
+        errors: [
+          {
+            field: 'email',
+            location: 'body',
+            messages: ['"email" already exists']
+          }
+        ],
+        status: httpStatus.CONFLICT,
+        isPublic: true,
+        stack: error.stack
+      })
+    );
+  } else {
+    next(error);
   }
 });
 
