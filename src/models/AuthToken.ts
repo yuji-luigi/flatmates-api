@@ -32,6 +32,14 @@ export const authTokenSchema = new Schema<AuthTokenInterface>(
     }
   },
   {
+    methods: {
+      renew: async function () {
+        this.expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        this.nonce = generateNonceCode();
+        this.linkId = replaceSpecialChars(generateRandomStringByLength(80));
+        return this.save();
+      }
+    },
     versionKey: false,
     timestamps: true
   }

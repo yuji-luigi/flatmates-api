@@ -3,9 +3,12 @@ import express, { Response } from 'express';
 const router = express.Router();
 
 import {
+  checkAuthTokenByCookie,
   generateNewAuthTokenForEntity,
+  renewalAuthTokensByParams,
   sendAuthTokenByIdsToClient,
   sendLinkIdToClient,
+  verifyPinAndLinkId,
   verifyPinAndSendUserToClient
 } from '../controllers/AuthTokenController';
 import { sendNotImplemented } from '../controllers/CrudController';
@@ -20,6 +23,9 @@ router.get('/', (_req: RequestCustom, res: Response) => {
 });
 
 // not authenticated route
+router.post('/renew', renewalAuthTokensByParams);
+router.get('/check-by-cookie', checkAuthTokenByCookie);
+router.post('/verify-pin/:linkId', verifyPinAndLinkId);
 router.post('/verify-pin/:linkId/:idMongoose/users', verifyPinAndSendUserToClient);
 
 router.get('/maintenances/file-upload/:linkId/:idMongoose', isLoggedIn(), authUserMaintenanceByJWT);

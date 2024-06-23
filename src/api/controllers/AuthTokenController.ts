@@ -10,6 +10,10 @@ import { sensitiveCookieOptions } from '../../utils/globalVariables';
 import { signJwt } from '../../lib/jwt/jwtUtils';
 import { JwtSignPayload } from '../../lib/jwt/jwtTypings';
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
+import { ErrorCustom } from '../../lib/ErrorCustom';
+import { auth } from 'google-auth-library';
+import { Auth } from 'googleapis';
+import { generateNonceCode, generateRandomStringByLength, replaceSpecialChars } from '../../utils/functions';
 
 const entity = 'authTokens';
 //= ===============================================================================
@@ -97,6 +101,91 @@ export const verifyPinAndSendBooleanToClient = async (req: RequestCustom, res: R
     res.status(err).json({
       message: err.message || err
     });
+  }
+};
+
+// for checking the nonce is valid to linkId
+export const verifyPinAndLinkId = async (req: RequestCustom, res: Response) => {
+  try {
+    // verified is when authToken is found. so this is not necessary variable now.
+
+    const authToken = await AuthToken.findOne({
+      linkId: req.params.linkId
+    });
+    if (authToken === null) {
+      throw new ErrorCustom(_MSG.OBJ_NOT_FOUND, httpStatus.NOT_FOUND);
+    }
+    if (authToken.nonce !== +req.body.nonce) {
+      throw new ErrorCustom(_MSG.INVALID_PIN, httpStatus.BAD_REQUEST);
+    }
+    if (!authToken.active || authToken.expiresAt < new Date()) {
+      throw new ErrorCustom(_MSG.EXPIRED, httpStatus.BAD_REQUEST);
+    }
+    // case 1: pin not verified
+    res.cookie('auth-token', stringifyAuthToken(authToken), sensitiveCookieOptions);
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: _MSG.SUCCESS,
+      data: 'verified'
+    });
+  } catch (err) {
+    logger.error(_MSG.INVALID_ACCESS, err.stack);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: err.message || err,
+      success: false
+    });
+  }
+};
+
+// for checking the nonce is valid to linkId
+export const checkAuthTokenByCookie = async (req: RequestCustom, res: Response) => {
+  try {
+    // verified is when authToken is found. so this is not necessary variable now.
+    const authTokenCookie = decodeURIComponent(req.cookies['auth-token']);
+    const authTokenCookieObj = JSON.parse(authTokenCookie);
+    const foundAuthToken = authTokenCookie ? await AuthToken.findOne(authTokenCookieObj) : null;
+    if (!foundAuthToken) {
+      throw new ErrorCustom(_MSG.INVALID_ACCESS, httpStatus.FORBIDDEN);
+    }
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: _MSG.SUCCESS,
+      data: 'verified'
+    });
+  } catch (err) {
+    logger.error(err.stack);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: err.message || err,
+      success: false
+    });
+  }
+};
+
+export const renewalAuthTokensByParams = async (req: RequestCustom, res: Response) => {
+  try {
+    const { _id } = req.query;
+    const authTokens = await AuthToken.find({
+      _id
+    });
+    const bulkOps = authTokens.map((token) => ({
+      updateOne: {
+        filter: { _id: token._id },
+        update: {
+          $set: {
+            expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
+            nonce: generateNonceCode(),
+            linkId: replaceSpecialChars(generateRandomStringByLength(80))
+          }
+        }
+      }
+    }));
+
+    // Perform bulk write
+    await AuthToken.bulkWrite(bulkOps);
+    res.send('success');
+  } catch (error) {
+    res.send('error');
   }
 };
 
