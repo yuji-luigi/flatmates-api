@@ -19,9 +19,10 @@ import httpStatus from 'http-status';
 export async function verifyPinFromRequest(req: RequestCustom): Promise<{ verified: boolean; authToken?: AuthTokenInterface | null }> {
   const { linkId, idMongoose } = req.params;
   const { pin } = req.body;
+
   const data = await AuthToken.findOne({
+    ...(idMongoose && { _id: idMongoose }),
     linkId,
-    _id: idMongoose,
     nonce: pin,
     active: true
   });
