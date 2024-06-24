@@ -121,6 +121,8 @@ export const verifyPinAndLinkId = async (req: RequestCustom, res: Response) => {
     if (!authToken.active || authToken.expiresAt < new Date()) {
       throw new ErrorCustom(_MSG.EXPIRED, httpStatus.BAD_REQUEST);
     }
+    authToken.validatedAt = new Date();
+    await authToken.save();
     // case 1: pin not verified
     res.cookie('auth-token', stringifyAuthToken(authToken), sensitiveCookieOptions);
 

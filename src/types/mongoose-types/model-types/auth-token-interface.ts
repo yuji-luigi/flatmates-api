@@ -4,6 +4,7 @@ export interface _AuthTokenInterface extends MongooseBaseModel {
   linkId: string;
   active: boolean;
   expiresAt: Date;
+  validatedAt: Date;
   type?: AuthTokenType;
 }
 

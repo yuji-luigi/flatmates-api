@@ -24,7 +24,10 @@ export const authTokenSchema = new Schema<AuthTokenInterface>(
       type: Date,
       default: () => new Date(Date.now() + 24 * 60 * 60 * 1000)
     },
-
+    validatedAt: {
+      type: Date,
+      immutable: true
+    },
     type: {
       type: String,
       enum: authTokenTypes,
