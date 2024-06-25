@@ -121,8 +121,20 @@ export const verifyPinAndLinkId = async (req: RequestCustom, res: Response) => {
     if (!authToken.active || authToken.expiresAt < new Date()) {
       throw new ErrorCustom(_MSG.EXPIRED, httpStatus.BAD_REQUEST);
     }
-    authToken.validatedAt = new Date();
-    await authToken.save();
+    // validatedAt is earlier than 15 minutes ago throw error
+    if (authToken.validatedAt && authToken.validatedAt < new Date(Date.now() - 1000 * 60 * 15)) {
+      throw new ErrorCustom(
+        'qr-code is expired. Please contact administrator and re-generate the qr-code along with 6 digits code.' /* 'qr_code_expired' */,
+        httpStatus.BAD_REQUEST
+      );
+    }
+    if (authToken.validatedAt < new Date()) {
+      throw new ErrorCustom(_MSG.EXPIRED, httpStatus.BAD_REQUEST);
+    }
+    if (!authToken.validatedAt) {
+      authToken.validatedAt = new Date();
+      await authToken.save();
+    }
     // case 1: pin not verified
     res.cookie('auth-token', stringifyAuthToken(authToken), sensitiveCookieOptions);
 
