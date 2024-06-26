@@ -14,6 +14,7 @@ import { ErrorCustom } from '../../lib/ErrorCustom';
 import { auth } from 'google-auth-library';
 import { Auth } from 'googleapis';
 import { generateNonceCode, generateRandomStringByLength, replaceSpecialChars } from '../../utils/functions';
+import { AnyBulkWriteOperation, BulkOperationBase } from 'mongodb';
 
 const entity = 'authTokens';
 //= ===============================================================================
@@ -182,7 +183,7 @@ export const renewAuthTokensByParams = async (req: RequestCustom, res: Response,
     const authTokens = await AuthToken.find({
       _id
     });
-    const bulkOps = authTokens.map((token) => ({
+    const bulkOps: AnyBulkWriteOperation<AuthTokenInterface>[] = authTokens.map((token) => ({
       updateOne: {
         filter: { _id: token._id },
         update: {
@@ -190,10 +191,11 @@ export const renewAuthTokensByParams = async (req: RequestCustom, res: Response,
             expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
             nonce: generateNonceCode(),
             linkId: replaceSpecialChars(generateRandomStringByLength(80))
+            // validatedAt: null as any
           },
 
           $unset: {
-            validatedAt: 1 as any
+            validatedAt: 1
           }
           //remove value
         }
