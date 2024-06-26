@@ -4,10 +4,9 @@ import { RequestCustom } from '../types/custom-express/express-custom';
 import { _MSG } from '../utils/messages';
 import { ErrorCustom } from '../lib/ErrorCustom';
 import { ReqUser } from '../lib/jwt/jwtTypings';
-import { RoleCache, roleCache } from '../lib/mongoose/mongoose-cache/role-cache';
+import { roleCache } from '../lib/mongoose/mongoose-cache/role-cache';
 import { RoleName } from '../types/mongoose-types/model-types/role-interface';
 import Space from '../models/Space';
-import { ObjectId } from 'bson';
 
 export const isLoggedIn = (roles?: RoleName[]) => async (req: RequestCustom, _res: Response, next: NextFunction) => {
   try {
