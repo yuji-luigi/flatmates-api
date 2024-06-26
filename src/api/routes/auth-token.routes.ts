@@ -36,11 +36,13 @@ router.use(handleUserFromRequest);
 router.use(queryHandler);
 
 router.post('/renew', isLoggedIn(['property_manager', 'system_admin']), renewAuthTokensByParams);
+//TODO: VERIFY AND REMOVE
 router.get('/qr-code/:entity/:idMongoose', sendAuthTokenByIdsToClient);
 
 // GENERIC crud routes
 router.get('/:idMongoose', sendLinkIdToClient);
 router.get('/:entity/with-pagination', sendNotImplemented);
+//TODO: VERIFY AND REMOVE
 router.get('/:linkId/:idMongoose', sendAuthTokenByIdsToClient);
 // VERIF NONCE/PIN
 

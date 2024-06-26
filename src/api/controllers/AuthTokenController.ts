@@ -4,7 +4,7 @@ import logger from '../../lib/logger';
 
 import { _MSG } from '../../utils/messages';
 import AuthToken from '../../models/AuthToken';
-import { stringifyAuthToken, typeGuardAuthTokenSpaceOrg, verifyPinFromRequest } from '../helpers/authTokenHelper';
+import { stringifyAuthToken, typeGuardAuthTokenSpaceOrg, verifyAuthTokenByNonceAndLinkId, verifyPinFromRequest } from '../helpers/authTokenHelper';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { sensitiveCookieOptions } from '../../utils/globalVariables';
 import { signJwt } from '../../lib/jwt/jwtUtils';
@@ -44,6 +44,8 @@ export const sendQrCodeByEntityAndIdMongoose = async (req: Request, res: Respons
     });
   }
 };
+
+// TODO: VERIFY AND REMOVE. BUT RETURNS ONLY LINKID TO CLIENT WICTH IS PAYLOAD OF THE REQUEST
 export const sendAuthTokenByIdsToClient = async (req: Request, res: Response) => {
   try {
     const { linkId, idMongoose } = req.params;
@@ -110,9 +112,10 @@ export const verifyPinAndLinkId = async (req: RequestCustom, res: Response) => {
   try {
     // verified is when authToken is found. so this is not necessary variable now.
 
-    const authToken = await AuthToken.findOne({
+    const authToken = await verifyAuthTokenByNonceAndLinkId({ linkId: req.params.linkId, nonce: req.body.nonce }); /* AuthToken.findOne({
       linkId: req.params.linkId
     });
+
     if (authToken === null) {
       throw new ErrorCustom(_MSG.OBJ_NOT_FOUND, httpStatus.NOT_FOUND);
     }
@@ -125,17 +128,18 @@ export const verifyPinAndLinkId = async (req: RequestCustom, res: Response) => {
     // validatedAt is earlier than 15 minutes ago throw error
     if (authToken.validatedAt && authToken.validatedAt < new Date(Date.now() - 1000 * 60 * 15)) {
       throw new ErrorCustom(
-        'qr-code is expired. Please contact administrator and re-generate the qr-code along with 6 digits code.' /* 'qr_code_expired' */,
+        'qr-code is expired. Please contact administrator and re-generate the qr-code along with 6 digits code.' ,
         httpStatus.BAD_REQUEST
       );
     }
-    if (authToken.validatedAt < new Date()) {
+    // 30 minutes after validation, the qr-code will expired
+    if (authToken.validatedAt < new Date(Date.now() - 1000 * 60 * 30)) {
       throw new ErrorCustom(_MSG.EXPIRED, httpStatus.BAD_REQUEST);
     }
     if (!authToken.validatedAt) {
       authToken.validatedAt = new Date();
       await authToken.save();
-    }
+    } */
     // case 1: pin not verified
     res.cookie('auth-token', stringifyAuthToken(authToken), sensitiveCookieOptions);
 
@@ -145,7 +149,7 @@ export const verifyPinAndLinkId = async (req: RequestCustom, res: Response) => {
       data: 'verified'
     });
   } catch (err) {
-    logger.error(_MSG.INVALID_ACCESS, err.stack);
+    logger.error(err.stack);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
       message: err.message || err,
       success: false
@@ -155,6 +159,29 @@ export const verifyPinAndLinkId = async (req: RequestCustom, res: Response) => {
 
 // for checking the nonce is valid to linkId
 export const checkAuthTokenByCookie = async (req: RequestCustom, res: Response) => {
+  try {
+    // verified is when authToken is found. so this is not necessary variable now.
+    const authTokenCookie = decodeURIComponent(req.cookies['auth-token']);
+    const authTokenCookieObj = JSON.parse(authTokenCookie);
+    const foundAuthToken = authTokenCookie ? await AuthToken.findOne(authTokenCookieObj) : null;
+    if (!foundAuthToken) {
+      throw new ErrorCustom(_MSG.INVALID_ACCESS, httpStatus.FORBIDDEN);
+    }
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: _MSG.SUCCESS,
+      data: 'verified'
+    });
+  } catch (err) {
+    logger.error(err.stack);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: err.message || err,
+      success: false
+    });
+  }
+};
+// for checking the nonce is valid to linkId
+export const confirmAuthTokenByTypeAndCookie = async (req: RequestCustom, res: Response) => {
   try {
     // verified is when authToken is found. so this is not necessary variable now.
     const authTokenCookie = decodeURIComponent(req.cookies['auth-token']);

@@ -31,6 +31,38 @@ export async function verifyPinFromRequest(req: RequestCustom): Promise<{ verifi
   return { verified: found, authToken: data };
 }
 
+export async function verifyAuthTokenByNonceAndLinkId({ nonce, linkId }: { nonce: string; linkId: string }) {
+  const authToken = await AuthToken.findOne({
+    linkId
+  });
+
+  if (authToken === null) {
+    throw new ErrorCustom(_MSG.OBJ_NOT_FOUND, httpStatus.NOT_FOUND);
+  }
+  if (authToken.nonce !== +nonce) {
+    throw new ErrorCustom(_MSG.INVALID_PIN, httpStatus.BAD_REQUEST);
+  }
+  if (!authToken.active || authToken.expiresAt < new Date()) {
+    throw new ErrorCustom(_MSG.EXPIRED, httpStatus.BAD_REQUEST);
+  }
+  // validatedAt is earlier than 15 minutes ago throw error
+  if (authToken.validatedAt && authToken.validatedAt < new Date(Date.now() - 1000 * 60 * 15)) {
+    throw new ErrorCustom(
+      'qr-code is expired. Please contact administrator and re-generate the qr-code along with 6 digits code.' /* 'qr_code_expired' */,
+      httpStatus.BAD_REQUEST
+    );
+  }
+  // 30 minutes after validation, the qr-code will expired
+  if (authToken.validatedAt < new Date(Date.now() - 1000 * 60 * 30)) {
+    throw new ErrorCustom(_MSG.EXPIRED, httpStatus.BAD_REQUEST);
+  }
+  if (!authToken.validatedAt) {
+    authToken.validatedAt = new Date();
+    await authToken.save();
+  }
+  return authToken;
+}
+
 /**
  * @description stringify _id and linkId of authToken document. !!includes nonce!! */
 export function stringifyAuthToken(authToken: AuthTokenInterface): string {
