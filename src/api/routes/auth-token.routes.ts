@@ -23,7 +23,6 @@ router.get('/', (_req: RequestCustom, res: Response) => {
 });
 
 // not authenticated route
-router.post('/renew', renewalAuthTokensByParams);
 router.get('/check-by-cookie', checkAuthTokenByCookie);
 router.post('/verify-pin/:linkId', verifyPinAndLinkId);
 router.post('/verify-pin/:linkId/:idMongoose/users', verifyPinAndSendUserToClient);
@@ -36,6 +35,7 @@ router.post('/maintenances/file-upload/:linkId/:idMongoose', authUserMaintenance
 router.use(handleUserFromRequest);
 router.use(queryHandler);
 
+router.post('/renew', isLoggedIn(['property_manager', 'system_admin']), renewalAuthTokensByParams);
 router.get('/qr-code/:entity/:idMongoose', sendAuthTokenByIdsToClient);
 
 // GENERIC crud routes
