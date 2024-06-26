@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import httpStatus from 'http-status';
 import logger from '../../lib/logger';
 
@@ -176,7 +176,7 @@ export const checkAuthTokenByCookie = async (req: RequestCustom, res: Response) 
   }
 };
 
-export const renewalAuthTokensByParams = async (req: RequestCustom, res: Response) => {
+export const renewAuthTokensByParams = async (req: RequestCustom, res: Response, next: NextFunction) => {
   try {
     const { _id } = req.query;
     const authTokens = await AuthToken.find({
@@ -190,16 +190,23 @@ export const renewalAuthTokensByParams = async (req: RequestCustom, res: Respons
             expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
             nonce: generateNonceCode(),
             linkId: replaceSpecialChars(generateRandomStringByLength(80))
+          },
+
+          $unset: {
+            validatedAt: 1 as any
           }
+          //remove value
         }
       }
     }));
 
     // Perform bulk write
     await AuthToken.bulkWrite(bulkOps);
-    res.send('success');
+    res.status(httpStatus.OK).json({
+      message: _MSG.SUCCESS
+    });
   } catch (error) {
-    res.send('error');
+    next(error);
   }
 };
 
