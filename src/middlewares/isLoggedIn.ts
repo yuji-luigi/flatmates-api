@@ -17,7 +17,7 @@ export const isLoggedIn = (roles?: RoleName[]) => async (req: RequestCustom, _re
         return next();
       }
       if (roles?.length) {
-        const spaceId = user.currentSpace?._id; /* || req.params.spaceId || req.params.idMongoose || req.params.parentId; */
+        const spaceId = user.currentSpace?._id?.toString(); /* || req.params.spaceId || req.params.idMongoose || req.params.parentId; */
         await checkForPermission(roles, user, spaceId);
       }
 
@@ -38,7 +38,7 @@ export function isSuperAdmin(req: RequestCustom, _res: Response, next: NextFunct
 }
 
 /** @throws ErrorCustom. check for roles array and user.currentAccessPermission.role */
-async function checkForPermission(roles: RoleName[], user: ReqUser, spaceId: string | undefined | null | ObjectId) {
+async function checkForPermission(roles: RoleName[], user: ReqUser, spaceId: string | undefined | null) {
   if (!spaceId) {
     throw new ErrorCustom(_MSG.ERRORS.INTERNAL_SERVER_ERROR, httpStatus.INTERNAL_SERVER_ERROR, 'SpaceId is not defined somehow... This is a bug.');
   }
