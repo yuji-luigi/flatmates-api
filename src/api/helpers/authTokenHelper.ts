@@ -46,17 +46,13 @@ export async function verifyAuthTokenByNonceAndLinkId({ nonce, linkId }: { nonce
     throw new ErrorCustom(_MSG.EXPIRED, httpStatus.BAD_REQUEST);
   }
   // validatedAt is earlier than 15 minutes ago throw error
-  if (authToken.validatedAt && authToken.validatedAt < new Date(Date.now() - 1000 * 60 * 15)) {
+  if (authToken.validatedAt && authToken.isNotValidValidatedAt()) {
     throw new ErrorCustom(
       'qr-code is expired. Please contact administrator and re-generate the qr-code along with 6 digits code.' /* 'qr_code_expired' */,
       httpStatus.BAD_REQUEST
     );
   }
 
-  // 30 minutes after validation, the qr-code will expired
-  if (authToken.validatedAt < new Date(Date.now() - 1000 * 60 * 30)) {
-    throw new ErrorCustom(_MSG.EXPIRED, httpStatus.BAD_REQUEST);
-  }
   if (!authToken.validatedAt) {
     authToken.validatedAt = new Date();
     await authToken.save();

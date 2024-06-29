@@ -6,6 +6,7 @@ export interface _AuthTokenInterface extends MongooseBaseModel {
   expiresAt: Date;
   validatedAt: Date;
   type?: AuthTokenType;
+  isNotValidValidatedAt: () => boolean;
 }
 
 export interface EmailAuthTokenInterface extends _AuthTokenInterface {

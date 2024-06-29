@@ -21,6 +21,7 @@ import Unit from '../../models/Unit';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { InvitationInterface } from '../../types/mongoose-types/model-types/invitation-interface';
 import { RoleCache, roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
+import { auth } from 'google-auth-library';
 
 const entity = 'authTokens';
 //= ===============================================================================
@@ -123,6 +124,11 @@ export const verifyEmailRegisterInhabitant = async (req: RequestCustom, res: Res
     // const authToken = await verifyAuthTokenByNonceAndLinkId({ linkId: req.params.linkId, nonce: req.body.nonce });
     const authToken = await AuthToken.findOne({ linkId: req.params.linkId });
     if (!authToken) throw new ErrorCustom(_MSG.INVALID_ACCESS, httpStatus.FORBIDDEN);
+
+    if (!authToken.active || authToken.isNotValidValidatedAt()) {
+      throw new ErrorCustom('Tuo account é già attivato.', httpStatus.FORBIDDEN);
+    }
+
     const results: { user: IUser; invitation: InvitationInterface }[] = await VerificationEmail.aggregate([
       { $match: { authToken: authToken._id } },
       {
@@ -181,9 +187,9 @@ export const verifyEmailRegisterInhabitant = async (req: RequestCustom, res: Res
      * 2.
      */
 
-    const _updatedUser = await User.updateOne({ _id: user._id }, { active: true }, { new: true, runValidators: true }); /* .session(session) */
-    const _updatedUnit = await Unit.updateOne({ _id: invitation.unit }, { user: user._id }, { new: true, runValidators: true });
-    const _updatedInvitation = await Invitation.updateOne(
+    await User.updateOne({ _id: user._id }, { active: true }, { new: true, runValidators: true }); /* .session(session) */
+    await Unit.updateOne({ _id: invitation.unit }, { user: user._id }, { new: true, runValidators: true });
+    await Invitation.updateOne(
       { _id: invitation._id },
       { status: 'completed-register', acceptedAt: new Date() },
       { new: true, runValidators: true }
@@ -194,12 +200,15 @@ export const verifyEmailRegisterInhabitant = async (req: RequestCustom, res: Res
 
     // TODO: 1.SEND THANK YOU FOR REGISTERING WELCOME EMAIL
     // TODO: 1 connect user and space.(Create AccessPermission)
-    const _newAC = await AccessPermission.create({
+    await AccessPermission.create({
       user: user._id,
       space: invitation.space,
       role: RoleCache[invitation.userType]
     });
 
+    authToken.active = false;
+    authToken.validatedAt = new Date();
+    await authToken.save();
     // res.cookie('auth-token', stringifyAuthToken(authToken), sensitiveCookieOptions);
 
     res.status(httpStatus.OK).json({
