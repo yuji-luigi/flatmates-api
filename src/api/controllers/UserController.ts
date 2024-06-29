@@ -7,14 +7,12 @@ import { aggregateWithPagination, checkDuplicateEmail, convert_idToMongooseId } 
 import vars from '../../utils/globalVariables';
 import User from '../../models/User';
 import { _MSG } from '../../utils/messages';
-import { chunkArray, deleteEmptyFields, emptyFieldsToUndefined } from '../../utils/functions';
-import { createMailOptionsForUserToken, createUserExcelPromises, userExcelData } from '../helpers/usersHelper';
-import { convertExcelToJson } from '../../utils/excelHelper';
-import { sendEmail } from '../helpers/nodemailerHelper';
+import { deleteEmptyFields, emptyFieldsToUndefined } from '../../utils/functions';
+import { createMailOptionsForUserToken } from '../helpers/usersHelper';
+import { sendEmail } from '../../lib/node-mailer/nodemailer';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { checkAuthTokenForError, findAuthTokenFromCookie } from '../helpers/authTokenHelper';
 import { PipelineStage } from 'mongoose';
-import ErrorEx from '../../errors/extendable.error';
 import { deleteCrudObjectByIdAndSendDataWithPagination } from './DataTableController';
 import AccessController from '../../models/AccessPermission';
 import { ErrorCustom } from '../../lib/ErrorCustom';
@@ -262,54 +260,54 @@ export async function deleteOrganizationCookie(_req: RequestCustom, res: Respons
   });
 }
 
-export async function importExcelFromClient(req: RequestCustom, res: Response) {
+export async function importExcelFromClient(_req: RequestCustom, res: Response) {
   try {
-    const fileFromClient = req.files?.file;
-    if (!fileFromClient) {
-      throw new ErrorCustom('Please select a file to upload', httpStatus.BAD_REQUEST);
-    }
-    // Parse the file based on its type
-    const data = convertExcelToJson<userExcelData>(fileFromClient);
-    const space = req.user.currentSpace?._id;
-    if (!space)
-      throw new ErrorEx({
-        status: httpStatus.INTERNAL_SERVER_ERROR,
-        message: 'Please set the select input value in some building/space',
-        stack: 'importExcelFromClient',
-        detail: 'detail'
-      });
+    // const fileFromClient = req.files?.file;
+    // if (!fileFromClient) {
+    //   throw new ErrorCustom('Please select a file to upload', httpStatus.BAD_REQUEST);
+    // }
+    // // Parse the file based on its type
+    // const data = convertExcelToJson(fileFromClient);
+    // const space = req.user.currentSpace?._id;
+    // if (!space)
+    //   throw new ErrorEx({
+    //     status: httpStatus.INTERNAL_SERVER_ERROR,
+    //     message: 'Please set the select input value in some building/space',
+    //     stack: 'importExcelFromClient',
+    //     detail: 'detail'
+    //   });
 
-    // SECOND IMPLEMENTATION: PROMISE.ALL
-    const promises = createUserExcelPromises({ excelData: data, space });
-    const CHUNK_SIZE = 100;
-    const chunks = chunkArray(promises, CHUNK_SIZE);
-    for (const chunk of chunks) {
-      // Execute each promise in the chunk so every 100 promises are executed in parallel
-      await Promise.all(chunk.map((fn) => fn()));
-    }
-    //todo:
-    // const userQueries = data.map((excelData) => {
-    //   return {
-    //     name: excelData.name,
-    //     surname: excelData.surname,
-    //     spaces: { $in: [space] }
-    //   };
-    // });
-    // const foundUsers = await User.find({ $or: userQueries }, '_id');
+    // // SECOND IMPLEMENTATION: PROMISE.ALL
+    // const promises = createUserExcelPromises({ excelData: data, space });
+    // const CHUNK_SIZE = 100;
+    // const chunks = chunkArray(promises, CHUNK_SIZE);
+    // for (const chunk of chunks) {
+    //   // Execute each promise in the chunk so every 100 promises are executed in parallel
+    //   await Promise.all(chunk.map((fn) => fn()));
+    // }
+    // //todo:
+    // // const userQueries = data.map((excelData) => {
+    // //   return {
+    // //     name: excelData.name,
+    // //     surname: excelData.surname,
+    // //     spaces: { $in: [space] }
+    // //   };
+    // // });
+    // // const foundUsers = await User.find({ $or: userQueries }, '_id');
 
-    // todo:
-    // await handleCreateAuthTokensForUser(
-    //   foundUsers.map((user) => user._id),
-    //   req.user.spaceId
-    // );
+    // // todo:
+    // // await handleCreateAuthTokensForUser(
+    // //   foundUsers.map((user) => user._id),
+    // //   req.user.spaceId
+    // // );
 
-    const users = await aggregateWithPagination(req.query, 'users');
+    // const users = await aggregateWithPagination(req.query, 'users');
 
     res.status(httpStatus.OK).json({
       collection: 'users',
       success: true,
-      data: users[0].paginatedResult || [],
-      totalDocuments: users[0].counts[0]?.total || 0,
+      // data: users[0].paginatedResult || [],
+      // totalDocuments: users[0].counts[0]?.total || 0,
       message: 'Data saved successfully'
     });
   } catch (error) {

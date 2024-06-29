@@ -16,7 +16,8 @@ const mockUsers: Omit<UserBase, '_id' | 'slug'>[] = [
     password: 'user$$$',
     isSuperAdmin: true,
     phone: '1234567890',
-    active: true
+    active: true,
+    locale: 'it'
   }
 ];
 

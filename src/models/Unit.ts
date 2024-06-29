@@ -1,34 +1,64 @@
 import mongoose from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
-import { UnitInterface } from '../types/mongoose-types/model-types/unit-interface';
+import { UnitInterface, unitStatus } from '../types/mongoose-types/model-types/unit-interface';
 
 const { Schema } = mongoose;
 
 export const unitSchema = new Schema<UnitInterface>(
   {
-    name: String,
-    surname: String,
-    email: String,
-    authToken: {
+    name: {
+      type: String,
+      required: true
+    },
+    ownerName: {
+      type: String,
+      required: true
+    },
+    tenantName: {
+      type: String
+      // required: true
+    },
+    owner: {
       type: Schema.Types.ObjectId,
-      ref: 'authTokens'
+      ref: 'users'
+    },
+    tenant: {
+      type: Schema.Types.ObjectId,
+      ref: 'users'
+    },
+    /** the tip space. */
+    unitSpace: {
+      type: Schema.Types.ObjectId,
+      ref: 'spaces',
+      required: true
+    },
+    /** scala in italian */
+    wing: {
+      type: Schema.Types.ObjectId,
+      ref: 'spaces',
+      required: true
+    },
+    /** piano in italian */
+    floor: {
+      type: Schema.Types.ObjectId,
+      ref: 'spaces',
+      required: true
+    },
+    /** the condominium */
+    space: {
+      type: Schema.Types.ObjectId,
+      ref: 'spaces',
+      required: true
+    },
+    status: {
+      type: String,
+      enum: unitStatus,
+      default: 'idle',
+      required: true
     },
     user: {
       type: Schema.Types.ObjectId,
-      ref: 'users',
-      autopopulate: true
-    },
-    tailSpace: {
-      type: Schema.Types.ObjectId,
-      ref: 'spaces'
-    },
-    space: {
-      type: Schema.Types.ObjectId,
-      ref: 'spaces'
-    },
-    organization: {
-      type: Schema.Types.ObjectId,
-      ref: 'organizations'
+      ref: 'users'
     }
   },
   {
@@ -41,4 +71,4 @@ unitSchema.statics = {};
 
 unitSchema.plugin(autoPopulate);
 
-export default mongoose.model('authTokens', unitSchema);
+export default mongoose.model('units', unitSchema);

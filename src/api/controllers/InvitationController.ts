@@ -17,7 +17,11 @@ import { createInvitationEmail } from '../../lib/node-mailer/createInvitationMai
 import Invitation from '../../models/Invitation';
 import { RequestCustom } from '../../types/custom-express/express-custom';
 import { _MSG } from '../../utils/messages';
-import { sendEmail } from '../helpers/nodemailerHelper';
+import { sendEmail, sendVerificationEmail } from '../../lib/node-mailer/nodemailer';
+import { ObjectId } from 'bson';
+import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
+import { Document } from 'mongoose';
+import VerificationEmail from '../../models/VerificationEmail';
 
 export async function inviteToSpaceByUserTypeEmail(
   req: RequestCustom & { user: ReqUser; params: { userType: string } },
@@ -34,7 +38,9 @@ export async function inviteToSpaceByUserTypeEmail(
 
     await checkCanCreateInvitation({ email, space, userType: userTypeName });
 
-    const authToken = new AuthToken();
+    const authToken = new AuthToken({
+      type: 'invitation'
+    });
 
     await authToken.save();
 
@@ -154,6 +160,95 @@ export async function acceptInvitationByRegistering(req: Request, res: Response,
   }
 }
 
+export async function preRegisterWithVerificationEmail(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { linkId } = req.params;
+    const { email, password, name, surname, password2, locale } = req.body;
+
+    if (password !== password2) {
+      throw new ErrorCustom('Passwords do not match', httpStatus.BAD_REQUEST);
+    }
+
+    const aggregatedInvitation = await getInvitationByAuthTokenLinkId(linkId, {
+      invitationStatus: { $in: ['pending', 'pending-register'] }
+    });
+
+    if (!aggregatedInvitation) {
+      throw new ErrorCustom('Invitation not found', httpStatus.NOT_FOUND);
+    }
+    // 1. check if the invitation is pending-register and aggregate VerificationEmail. by invitation id.
+    if (aggregatedInvitation.status === 'pending-register') {
+      const verificationEmail = await VerificationEmail.findOne({
+        invitation: aggregatedInvitation._id
+      });
+      if (!verificationEmail) {
+        throw new ErrorCustom('Verification email not found', httpStatus.NOT_FOUND);
+      }
+
+      const upUser = await User.findById(verificationEmail.user);
+      if (!upUser) {
+        throw new ErrorCustom('User not found', httpStatus.NOT_FOUND);
+      }
+      await AuthToken.deleteOne({ _id: verificationEmail.authToken });
+      const newAuthToken = await AuthToken.create({
+        type: 'email-verify'
+      });
+      verificationEmail.authToken = newAuthToken._id;
+      upUser.email = email;
+      upUser.password = password;
+      upUser.name = name;
+      upUser.surname = surname;
+      upUser.locale = locale;
+      await upUser.save();
+      await verificationEmail.save();
+      await sendVerificationEmail({
+        ...verificationEmail.toObject(),
+        authToken: newAuthToken.toObject(),
+        user: upUser.toObject()
+      });
+    } else {
+      const user = new User({
+        email,
+        password,
+        name,
+        surname,
+        locale
+      });
+
+      // 1. create authTokens for user
+      const authToken = (await AuthToken.create({
+        type: 'email-verify'
+      })) as Document & AuthTokenInterface & { type: 'email-verify' };
+
+      const newVerificationEmail = await VerificationEmail.create({
+        user,
+        invitation: aggregatedInvitation._id,
+        authToken: authToken._id
+      });
+
+      // 2. create email options and send email with the options
+
+      await sendVerificationEmail({
+        ...newVerificationEmail.toObject(),
+        authToken: authToken.toObject(),
+        user: user.toObject()
+      });
+
+      await user.save();
+      await findAndUpdateInvitationStatus(aggregatedInvitation, 'pending-register');
+    }
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      data: {
+        message: 'Invitation accepted successfully'
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function acceptInvitationByLoggedUserAndLinkId(req: Request & { user: ReqUser }, res: Response, next: NextFunction) {
   try {
     const { linkId } = req.params;
@@ -194,6 +289,53 @@ export async function getInvitationByLinkIdAndSendToClient(req: Request, res: Re
     res.status(httpStatus.OK).json({
       success: true,
       data
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function sendAuthTokenOfUnitFromInvitation(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { status } = req.query;
+    const authTokens = await AuthToken.aggregate([
+      {
+        $lookup: {
+          from: 'invitations',
+          localField: '_id',
+          foreignField: 'authToken',
+          as: 'invitation',
+          pipeline: [
+            {
+              $match: {
+                $and: [...(status ? [{ status: status }] : [{}]), { unit: new ObjectId(req.params.idMongoose) }]
+              }
+            }
+          ]
+        }
+      },
+      { $unwind: { path: '$invitation', preserveNullAndEmptyArrays: true } },
+      {
+        // at least invitation field is present
+        $match: {
+          invitation: { $exists: true }
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          active: 1,
+          linkId: 1,
+          nonce: 1
+        }
+      }
+    ]);
+    // NOTE: don't destructure for debug purposes. (was returning array with all the authTokens) added existing check
+    const authToken = authTokens[0];
+    // console.log(JSON.stringify(authToken, null, 2));
+    res.status(httpStatus.OK).json({
+      success: true,
+      data: authToken
     });
   } catch (error) {
     next(error);

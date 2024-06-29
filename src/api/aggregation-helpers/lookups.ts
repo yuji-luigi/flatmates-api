@@ -63,5 +63,13 @@ export const LOOKUP_PIPELINE_STAGES: Record<Entities, PipelineStage.FacetPipelin
   authTokens: [],
   roles: [],
   accessPermissions: [],
-  invitations: []
+  invitations: [],
+  units: [
+    { $lookup: { from: 'spaces', localField: 'space', foreignField: '_id', as: 'space' } },
+    { $unwind: '$space' },
+    { $lookup: { from: 'users', localField: 'owner', foreignField: '_id', as: 'owner' } },
+    { $unwind: { path: '$owner', preserveNullAndEmptyArrays: true } },
+    { $lookup: { from: 'users', localField: 'tenant', foreignField: '_id', as: 'tenant' } },
+    { $unwind: { path: '$tenant', preserveNullAndEmptyArrays: true } }
+  ]
 };

@@ -6,6 +6,7 @@ import { MongooseBaseModel } from './base-types/base-model-interface';
 import { LoginInstanceMethods, tokenGeneratePayload } from '../../universal-mongoose-model/user-base-interface';
 import { Model } from 'mongoose';
 import { ObjectId } from 'mongodb';
+import { SupportedLocales } from '../../../lib/locale/supportedLocales';
 export type UserError = {
   status?: number;
   isPublic?: boolean;
@@ -35,6 +36,7 @@ export interface UserBaseOptionalPassword {
   phone?: string | undefined;
   isSuperAdmin: boolean;
   slug: string;
+  locale: SupportedLocales;
   // role: ObjectId | RoleInterface;
   // adminOf: ISpace[];
   active: boolean;

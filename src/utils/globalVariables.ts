@@ -51,6 +51,7 @@ const vars = {
   redirectUrl: frontendUrl + '/' + process.env.REDIRECT_URL,
   ocrSpaceSecret: process.env.OCR_SECRET,
   openAiSecret: process.env.OPEN_AI_SECRET,
+  verifEmailRootFrontend: `${frontendUrl}/auth/verification-emails`,
   ...(!PROD && devVars)
 };
 

@@ -53,6 +53,9 @@ export default MSG;
 // TODO: MAKE THEM INDIVUSUAL SO THAT SINGLE MSG WILL BE EXPORTED
 
 export const _MSG = {
+  INVALID_PIN: 'Pin non valido',
+  EXPIRED: 'Link scaduto',
+  SUCCESS: 'operazione avvenuta con successo',
   OBJ_CREATED: 'Creazione oggetto avvenuto con successo',
   OBJ_UPDATED: 'Aggiornamento oggetto avvenuto con successo',
   OBJ_DELETED: 'Eliminazione oggetto avvenuto con successo',

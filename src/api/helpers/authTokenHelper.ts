@@ -1,4 +1,4 @@
-import AuthToken from '../../models/AuthToken';
+import AuthToken, { AuthTokenDocument } from '../../models/AuthToken';
 import Invitation from '../../models/Invitation';
 
 import { RequestCustom } from '../../types/custom-express/express-custom';
@@ -19,15 +19,45 @@ import httpStatus from 'http-status';
 export async function verifyPinFromRequest(req: RequestCustom): Promise<{ verified: boolean; authToken?: AuthTokenInterface | null }> {
   const { linkId, idMongoose } = req.params;
   const { pin } = req.body;
+
   const data = await AuthToken.findOne({
+    ...(idMongoose && { _id: idMongoose }),
     linkId,
-    _id: idMongoose,
     nonce: pin,
     active: true
-  }).populate({ path: 'space', select: 'name organization' });
+  });
   const found = data ? true : false;
 
   return { verified: found, authToken: data };
+}
+
+export async function verifyAuthTokenByNonceAndLinkId({ nonce, linkId }: { nonce: string; linkId: string }): Promise<AuthTokenDocument> {
+  const authToken = await AuthToken.findOne({
+    linkId
+  });
+
+  if (authToken === null) {
+    throw new ErrorCustom(_MSG.OBJ_NOT_FOUND, httpStatus.NOT_FOUND);
+  }
+  if (authToken.nonce !== +nonce) {
+    throw new ErrorCustom(_MSG.INVALID_PIN, httpStatus.BAD_REQUEST);
+  }
+  if (!authToken.active || authToken.expiresAt < new Date()) {
+    throw new ErrorCustom(_MSG.EXPIRED, httpStatus.BAD_REQUEST);
+  }
+  // validatedAt is earlier than 15 minutes ago throw error
+  if (authToken.validatedAt && authToken.isNotValidValidatedAt()) {
+    throw new ErrorCustom(
+      'qr-code is expired. Please contact administrator and re-generate the qr-code along with 6 digits code.' /* 'qr_code_expired' */,
+      httpStatus.BAD_REQUEST
+    );
+  }
+
+  if (!authToken.validatedAt) {
+    authToken.validatedAt = new Date();
+    await authToken.save();
+  }
+  return authToken;
 }
 
 /**
@@ -125,12 +155,13 @@ export function typeGuardAuthTokenSpaceOrg(
   // if (!isObjectIdOrganization(authToken.space.organization)) throw new Error('organization is not ObjectId');
   return true;
 }
+type InvitationStatusQuery = invitationStatus | { $or: invitationStatus[] } | { $and: invitationStatus[] } | { $in: invitationStatus[] };
 
 export interface InvitationByLinkId {
   _id: ObjectId;
   // email: string;
   userType: RoleName;
-  status: invitationStatus;
+  status: InvitationStatusQuery;
   createdBy: { email: string; surname: string; name: string };
   space: { _id: ObjectId; name: string; address: string };
 }
@@ -140,7 +171,7 @@ export async function getInvitationByAuthTokenLinkId(
   linkId: undefined | string,
   options?: {
     additionalMatchFields?: Record<string, string | undefined>;
-    invitationStatus?: invitationStatus;
+    invitationStatus?: InvitationStatusQuery;
     hydrate?: false | undefined;
   }
 ): Promise<InvitationByLinkId | undefined>;
@@ -149,7 +180,7 @@ export async function getInvitationByAuthTokenLinkId(
   linkId: undefined | string,
   options?: {
     additionalMatchFields?: Record<string, string | undefined>;
-    invitationStatus?: invitationStatus;
+    invitationStatus?: InvitationStatusQuery;
     hydrate: true;
   }
 ): Promise<(InvitationInterface & Document) | undefined>;
@@ -158,7 +189,7 @@ export async function getInvitationByAuthTokenLinkId(
   linkId: undefined | string,
   options: {
     additionalMatchFields?: Record<string, string | undefined>;
-    invitationStatus?: invitationStatus;
+    invitationStatus?: invitationStatus | { $or: invitationStatus[] } | { $and: invitationStatus[] } | { $in: invitationStatus[] };
     hydrate?: boolean;
   } = {}
 ): Promise<InvitationByLinkId | (InvitationInterface & Document) | undefined> {
@@ -170,7 +201,7 @@ export async function getInvitationByAuthTokenLinkId(
       }
     }
   ];
-  const [invitation] = await AuthToken.aggregate<InvitationByLinkId | undefined>([
+  const invitations = await AuthToken.aggregate<InvitationByLinkId | undefined>([
     {
       $match: {
         linkId: linkId
@@ -236,6 +267,7 @@ export async function getInvitationByAuthTokenLinkId(
     error.message = 'error finding invitation';
     throw new ErrorCustom(error, httpStatus.INTERNAL_SERVER_ERROR);
   });
+  const invitation = invitations[0];
   if (options.hydrate && invitation) {
     const mongooseInvitation = Invitation.hydrate(invitation);
     return mongooseInvitation;

@@ -1,25 +1,33 @@
-import express, { Request, Response } from 'express';
+import express, { Response } from 'express';
 
 const router = express.Router();
 
 import {
+  checkAuthTokenByCookie,
   generateNewAuthTokenForEntity,
+  generateNewAuthTokenInvitationForUnit,
+  renewAuthTokensByParams,
   sendAuthTokenByIdsToClient,
   sendLinkIdToClient,
-  verifyPinAndSendUserToClient
+  verifyPinAndLinkId,
+  verifyPinAndSendUserToClient,
+  verifyEmailRegisterInhabitant
 } from '../controllers/AuthTokenController';
 import { sendNotImplemented } from '../controllers/CrudController';
 import { handleUserFromRequest } from '../../middlewares/handleUserFromRequest';
 import { queryHandler } from '../../middlewares/handleSetQuery';
-import { ADMIN } from '../../middlewares/auth-middlewares';
 import { isLoggedIn } from '../../middlewares/isLoggedIn';
 import { authUserMaintenanceByJWT, authUserMaintenanceFiles, checkIsActiveMaintainerFromClient } from '../controllers/MaintenanceController';
+import { RequestCustom } from '../../types/custom-express/express-custom';
 
-router.get('/', (req: Request, res: Response) => {
+router.get('/', (_req: RequestCustom, res: Response) => {
   res.send('API is working');
 });
 
 // not authenticated route
+router.get('/check-by-cookie', checkAuthTokenByCookie);
+router.post('/verify-pin/:linkId', verifyPinAndLinkId);
+router.post('/verify-email/inhabitant/:linkId', verifyEmailRegisterInhabitant);
 router.post('/verify-pin/:linkId/:idMongoose/users', verifyPinAndSendUserToClient);
 
 router.get('/maintenances/file-upload/:linkId/:idMongoose', isLoggedIn(), authUserMaintenanceByJWT);
@@ -30,16 +38,24 @@ router.post('/maintenances/file-upload/:linkId/:idMongoose', authUserMaintenance
 router.use(handleUserFromRequest);
 router.use(queryHandler);
 
+router.post('/renew', isLoggedIn(['property_manager', 'system_admin']), renewAuthTokensByParams);
+//TODO: VERIFY AND REMOVE
+router.get('/qr-code/:entity/:idMongoose', sendAuthTokenByIdsToClient);
+
 // GENERIC crud routes
 router.get('/:idMongoose', sendLinkIdToClient);
 router.get('/:entity/with-pagination', sendNotImplemented);
+//TODO: VERIFY AND REMOVE
 router.get('/:linkId/:idMongoose', sendAuthTokenByIdsToClient);
 // VERIF NONCE/PIN
 
 router.put('/:linkId/:idMongoose', sendNotImplemented);
 router.post('/:entity/with-pagination', sendNotImplemented);
 
+// TODO: DEPRECATE THIS?
 router.post('/generate-new/:entity/:idMongoose', isLoggedIn(), generateNewAuthTokenForEntity);
+
+router.post('/invitations/units/:idMongoose', isLoggedIn(), generateNewAuthTokenInvitationForUnit);
 
 router.delete('/:linkId/:idMongoose', sendNotImplemented);
 

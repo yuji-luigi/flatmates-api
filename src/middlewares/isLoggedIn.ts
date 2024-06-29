@@ -16,7 +16,7 @@ export const isLoggedIn = (roles?: RoleName[]) => async (req: RequestCustom, _re
         return next();
       }
       if (roles?.length) {
-        const spaceId = req.params.spaceId || req.params.idMongoose || req.params.parentId;
+        const spaceId = user.currentSpace?._id?.toString(); /* || req.params.spaceId || req.params.idMongoose || req.params.parentId; */
         await checkForPermission(roles, user, spaceId);
       }
 
@@ -40,6 +40,14 @@ export function isSuperAdmin(req: RequestCustom, _res: Response, next: NextFunct
 async function checkForPermission(roles: RoleName[], user: ReqUser, spaceId: string | undefined | null) {
   if (!spaceId) {
     throw new ErrorCustom(_MSG.ERRORS.INTERNAL_SERVER_ERROR, httpStatus.INTERNAL_SERVER_ERROR, 'SpaceId is not defined somehow... This is a bug.');
+  }
+  if (!user.currentAccessPermission) {
+    throw new ErrorCustom(_MSG.NOT_AUTHORIZED, httpStatus.UNAUTHORIZED);
+  }
+  // roleCache.allRoles returns all roles in the system. role should be renamed to userType
+  const roleIds = roleCache.allRoles.filter((role) => roles.includes(role.name)).map((role) => role._id.toString());
+  if (!roleIds.includes(user.currentAccessPermission?.role.toString())) {
+    throw new ErrorCustom(_MSG.NOT_AUTHORIZED, httpStatus.UNAUTHORIZED, 'access failed for role filtering.');
   }
   // TODO: CHECK IF THIS WOKS  WITH POSTMAN OR OTHER CLIENTS.
   const space = await Space.findById(spaceId);
