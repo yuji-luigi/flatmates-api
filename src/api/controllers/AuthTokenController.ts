@@ -5,7 +5,7 @@ import logger from '../../lib/logger';
 import { _MSG } from '../../utils/messages';
 import AuthToken from '../../models/AuthToken';
 import { stringifyAuthToken, typeGuardAuthTokenSpaceOrg, verifyAuthTokenByNonceAndLinkId, verifyPinFromRequest } from '../helpers/authTokenHelper';
-import { RequestCustom } from '../../types/custom-express/express-custom';
+import { RequestCustom, RequestCustomWithUser } from '../../types/custom-express/express-custom';
 import { sensitiveCookieOptions } from '../../utils/globalVariables';
 import { signJwt } from '../../lib/jwt/jwtUtils';
 import { JwtSignPayload } from '../../lib/jwt/jwtTypings';
@@ -20,6 +20,7 @@ import AccessPermission from '../../models/AccessPermission';
 import Unit from '../../models/Unit';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { InvitationInterface } from '../../types/mongoose-types/model-types/invitation-interface';
+import { RoleCache, roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
 
 const entity = 'authTokens';
 //= ===============================================================================
@@ -113,14 +114,15 @@ export const verifyPinAndSendBooleanToClient = async (req: RequestCustom, res: R
 };
 
 // for checking the nonce is valid to linkId
-export const verifyPinForEmailVerification = async (req: RequestCustom, res: Response) => {
+export const verifyEmailRegisterInhabitant = async (req: RequestCustom, res: Response) => {
   try {
     // const session = await startSession();
     // session.startTransaction();
     // verified is when authToken is found. so this is not necessary variable now.
 
-    const authToken = await verifyAuthTokenByNonceAndLinkId({ linkId: req.params.linkId, nonce: req.body.nonce });
-
+    // const authToken = await verifyAuthTokenByNonceAndLinkId({ linkId: req.params.linkId, nonce: req.body.nonce });
+    const authToken = await AuthToken.findOne({ linkId: req.params.linkId });
+    if (!authToken) throw new ErrorCustom(_MSG.INVALID_ACCESS, httpStatus.FORBIDDEN);
     const results: { user: IUser; invitation: InvitationInterface }[] = await VerificationEmail.aggregate([
       { $match: { authToken: authToken._id } },
       {
@@ -149,7 +151,7 @@ export const verifyPinForEmailVerification = async (req: RequestCustom, res: Res
         $project: {
           authToken: 1,
           user: { _id: 1, active: 1 },
-          invitation: { _id: 1, status: 1 }
+          invitation: { _id: 1, status: 1, space: 1, userType: 1 }
         }
       }
     ]);
@@ -178,14 +180,13 @@ export const verifyPinForEmailVerification = async (req: RequestCustom, res: Res
 
     // TODO: 1.SEND THANK YOU FOR REGISTERING WELCOME EMAIL
     // TODO: 1 connect user and space.(Create AccessPermission)
-    const _newAC = AccessPermission.create({
+    const _newAC = await AccessPermission.create({
       user: user._id,
       space: invitation.space,
-      role: invitation.userType
+      role: RoleCache[invitation.userType]
     });
 
-    // TODO: 2. give jwt token to user
-    res.cookie('auth-token', stringifyAuthToken(authToken), sensitiveCookieOptions);
+    // res.cookie('auth-token', stringifyAuthToken(authToken), sensitiveCookieOptions);
 
     res.status(httpStatus.OK).json({
       success: true,
@@ -343,6 +344,7 @@ export const verifyPinAndSendUserToClient = async (req: RequestCustom, res: Resp
   }
 };
 
+// TODO: DEPRECATE THIS?
 export async function generateNewAuthTokenForEntity(req: RequestCustom, res: Response) {
   try {
     const foundAuthTokens = await AuthToken.find({
@@ -358,6 +360,52 @@ export async function generateNewAuthTokenForEntity(req: RequestCustom, res: Res
     });
   } catch (error) {
     logger.error(error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      collection: entity,
+      message: error.message || error
+    });
+  }
+}
+
+export async function generateNewAuthTokenInvitationForUnit(req: RequestCustomWithUser, res: Response, next: NextFunction) {
+  try {
+    const foundUnit = await Unit.findById(req.params.idMongoose);
+    if (!foundUnit) {
+      throw new ErrorCustom(_MSG.NOT_FOUND_ID(entity, req.params.idMongoose || 'non specificato'), httpStatus.NOT_FOUND);
+    }
+    const newAuthToken = await AuthToken.create({
+      type: 'invitation'
+    });
+
+    const _newInvitation = await Invitation.create({
+      userType: 'inhabitant',
+      status: 'pending',
+      unit: foundUnit._id,
+      space: foundUnit.space,
+      createdBy: req.user._id,
+      authToken: newAuthToken._id,
+      displayName: foundUnit.tenantName || foundUnit.ownerName
+    }).catch(async (error) => {
+      logger.error(error.stack || error);
+      await newAuthToken.deleteOne();
+      throw error;
+    });
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: entity,
+      data: {
+        _id: newAuthToken._id,
+        linkId: newAuthToken.linkId,
+        nonce: newAuthToken.nonce,
+        active: newAuthToken.active
+      }
+    });
+  } catch (error) {
+    logger.error(error);
+    next(error);
+    return;
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
       success: false,
       collection: entity,

@@ -15,6 +15,7 @@ import routes from './api/routes';
 import strategies from './lib/jwt/resolveUserJwt';
 import mongooseConnector from './lib/mongoose/initMongoose';
 import { errorLogger, errorResponder } from './middlewares/errorHandler';
+import AuthToken from './models/AuthToken';
 // import { seedRoles } from './lib/mongoose/seed/mongoose-seeder';
 
 mongooseConnector.init();

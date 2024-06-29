@@ -12,6 +12,7 @@ export const invitationSchema = new Schema<InvitationInterface>(
       type: Schema.Types.ObjectId,
       ref: 'users'
     },
+    // NOTE: now priority to tenant and owner. but eventually set only owner. ask property manager in real world
     displayName: {
       type: String
     },
@@ -23,7 +24,8 @@ export const invitationSchema = new Schema<InvitationInterface>(
     },
     space: {
       type: Schema.Types.ObjectId,
-      ref: 'spaces'
+      ref: 'spaces',
+      required: true
     },
     userType: {
       type: String,
@@ -62,9 +64,14 @@ invitationSchema.pre('save', async function (next) {
       // NOTE: case for property_manager and maintainer
       { $and: [{ email: { $exists: true } }, { email: this.email }], space: this.space, status: 'pending' },
       // NOTE: case for flatmates unit
+      // if the same unit and the same type of invitation is pending, then throw error
       { unit: this.unit, status: 'pending', userType: this.userType }
     ]
   });
+
+  if (this.userType === 'inhabitant' && !this.unit) {
+    throw new ErrorCustom('Unit is required to create flatmates(Units).', httpStatus.BAD_REQUEST);
+  }
 
   if (found && this.isNew) {
     throw new ErrorCustom('Invitation already exists', httpStatus.CONFLICT);

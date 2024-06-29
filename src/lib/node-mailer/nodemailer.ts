@@ -47,7 +47,7 @@ export async function sendVerificationEmail(verificationEmail: VerificationEmail
   const { user, authToken } = verificationEmail;
   try {
     const fullname = `${user.name} ${user.surname}`;
-    const linkUrl = `${vars.frontendUrl}/auth/verify-email/${authToken.linkId}`;
+    const linkUrl = `${vars.verifEmailRootFrontend}/${authToken.linkId}`;
     // get root path of the project
     const html = await ejs.renderFile(`${EMAIL_TEMPLATE_PATH}/auth-token-type/${authToken.type}.ejs`, { fullname, linkUrl, authToken });
     const subjectKey = authToken.type || 'default';
@@ -58,7 +58,6 @@ export async function sendVerificationEmail(verificationEmail: VerificationEmail
       subject: subject[subjectKey],
       html
     });
-    console.log(result);
     return result;
   } catch (error) {
     console.log(error);

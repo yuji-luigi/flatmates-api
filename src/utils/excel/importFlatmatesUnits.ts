@@ -95,9 +95,6 @@ export async function handleImportFlatmates({
           await updatingUnit.save();
           result.push(updatingUnit);
 
-          const newAuthToken = await AuthToken.create({
-            type: 'invitation'
-          });
           const displayName = unitSpaceExcel.Inquilino || unitSpaceExcel.Proprietario;
           const foundInvitation = await Invitation.findOne({
             unit: updatingUnit._id,
@@ -111,6 +108,9 @@ export async function handleImportFlatmates({
             await foundInvitation.save();
           }
 
+          const newAuthToken = await AuthToken.create({
+            type: 'invitation'
+          });
           await Invitation.create({
             userType: 'inhabitant',
             status: 'pending',

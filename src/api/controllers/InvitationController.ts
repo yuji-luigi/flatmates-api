@@ -38,7 +38,9 @@ export async function inviteToSpaceByUserTypeEmail(
 
     await checkCanCreateInvitation({ email, space, userType: userTypeName });
 
-    const authToken = new AuthToken();
+    const authToken = new AuthToken({
+      type: 'invitation'
+    });
 
     await authToken.save();
 

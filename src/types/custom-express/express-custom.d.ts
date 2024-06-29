@@ -125,6 +125,11 @@ export interface RequestCustom<
   params: ParamsInterface;
   maintenance?: IMaintenance;
 }
+
+export interface RequestCustomWithUser extends RequestCustom {
+  user: ReqUser;
+}
+
 export type RequestWithFiles = RequestCustom & { files: UploadedFile[] };
 
 export interface LoggedInRequest<
