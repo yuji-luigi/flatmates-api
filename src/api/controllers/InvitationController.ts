@@ -174,7 +174,6 @@ export async function preRegisterWithVerificationEmail(req: Request, res: Respon
     if (!aggregatedInvitation) {
       throw new ErrorCustom('Invitation not found', httpStatus.NOT_FOUND);
     }
-    // TODO: logic for re-registering users.
     // 1. check if the invitation is pending-register and aggregate VerificationEmail. by invitation id.
     if (aggregatedInvitation.status === 'pending-register') {
       const verificationEmail = await VerificationEmail.findOne({
@@ -199,6 +198,7 @@ export async function preRegisterWithVerificationEmail(req: Request, res: Respon
       upUser.surname = surname;
       upUser.locale = locale;
       await upUser.save();
+      await verificationEmail.save();
       await sendVerificationEmail({
         ...verificationEmail.toObject(),
         authToken: newAuthToken.toObject(),

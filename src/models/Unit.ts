@@ -29,28 +29,36 @@ export const unitSchema = new Schema<UnitInterface>(
     /** the tip space. */
     unitSpace: {
       type: Schema.Types.ObjectId,
-      ref: 'spaces'
+      ref: 'spaces',
+      required: true
     },
     /** scala in italian */
     wing: {
       type: Schema.Types.ObjectId,
+      ref: 'spaces',
       required: true
     },
     /** piano in italian */
     floor: {
       type: Schema.Types.ObjectId,
+      ref: 'spaces',
       required: true
     },
     /** the condominium */
     space: {
       type: Schema.Types.ObjectId,
-      ref: 'spaces'
+      ref: 'spaces',
+      required: true
     },
     status: {
       type: String,
       enum: unitStatus,
       default: 'idle',
       required: true
+    },
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: 'users'
     }
   },
   {

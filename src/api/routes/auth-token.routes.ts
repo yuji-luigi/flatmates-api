@@ -9,7 +9,8 @@ import {
   sendAuthTokenByIdsToClient,
   sendLinkIdToClient,
   verifyPinAndLinkId,
-  verifyPinAndSendUserToClient
+  verifyPinAndSendUserToClient,
+  verifyPinForEmailVerification
 } from '../controllers/AuthTokenController';
 import { sendNotImplemented } from '../controllers/CrudController';
 import { handleUserFromRequest } from '../../middlewares/handleUserFromRequest';
@@ -25,6 +26,7 @@ router.get('/', (_req: RequestCustom, res: Response) => {
 // not authenticated route
 router.get('/check-by-cookie', checkAuthTokenByCookie);
 router.post('/verify-pin/:linkId', verifyPinAndLinkId);
+router.post('/verify-email-verification/:linkId', verifyPinForEmailVerification);
 router.post('/verify-pin/:linkId/:idMongoose/users', verifyPinAndSendUserToClient);
 
 router.get('/maintenances/file-upload/:linkId/:idMongoose', isLoggedIn(), authUserMaintenanceByJWT);

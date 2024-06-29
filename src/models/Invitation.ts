@@ -42,6 +42,9 @@ export const invitationSchema = new Schema<InvitationInterface>(
     unit: {
       type: Schema.Types.ObjectId,
       ref: 'units'
+    },
+    acceptedAt: {
+      type: Date
     }
   },
   {

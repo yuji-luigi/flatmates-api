@@ -11,10 +11,15 @@ import { signJwt } from '../../lib/jwt/jwtUtils';
 import { JwtSignPayload } from '../../lib/jwt/jwtTypings';
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
 import { ErrorCustom } from '../../lib/ErrorCustom';
-import { auth } from 'google-auth-library';
-import { Auth } from 'googleapis';
 import { generateNonceCode, generateRandomStringByLength, replaceSpecialChars } from '../../utils/functions';
-import { AnyBulkWriteOperation, BulkOperationBase } from 'mongodb';
+import { AnyBulkWriteOperation } from 'mongodb';
+import VerificationEmail from '../../models/VerificationEmail';
+import User from '../../models/User';
+import Invitation from '../../models/Invitation';
+import AccessPermission from '../../models/AccessPermission';
+import Unit from '../../models/Unit';
+import { IUser } from '../../types/mongoose-types/model-types/user-interface';
+import { InvitationInterface } from '../../types/mongoose-types/model-types/invitation-interface';
 
 const entity = 'authTokens';
 //= ===============================================================================
@@ -108,38 +113,101 @@ export const verifyPinAndSendBooleanToClient = async (req: RequestCustom, res: R
 };
 
 // for checking the nonce is valid to linkId
+export const verifyPinForEmailVerification = async (req: RequestCustom, res: Response) => {
+  try {
+    // const session = await startSession();
+    // session.startTransaction();
+    // verified is when authToken is found. so this is not necessary variable now.
+
+    const authToken = await verifyAuthTokenByNonceAndLinkId({ linkId: req.params.linkId, nonce: req.body.nonce });
+
+    const results: { user: IUser; invitation: InvitationInterface }[] = await VerificationEmail.aggregate([
+      { $match: { authToken: authToken._id } },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      {
+        $lookup: {
+          from: 'invitations',
+          localField: 'invitation',
+          foreignField: '_id',
+          as: 'invitation'
+        }
+      },
+      {
+        $unwind: '$user'
+      },
+      {
+        $unwind: '$invitation'
+      },
+      {
+        $project: {
+          authToken: 1,
+          user: { _id: 1, active: 1 },
+          invitation: { _id: 1, status: 1 }
+        }
+      }
+    ]);
+    if (results.length === 0) {
+      throw new ErrorCustom(_MSG.INVALID_ACCESS, httpStatus.FORBIDDEN);
+    }
+
+    const [result] = results;
+    const { user, invitation } = result;
+
+    /**
+     * 1. activate user.
+     * 2.
+     */
+
+    const _updatedUser = await User.updateOne({ _id: user._id }, { active: true }, { new: true, runValidators: true }); /* .session(session) */
+    const _updatedInvitation = await Invitation.updateOne(
+      { _id: invitation._id },
+      { status: 'completed-register', acceptedAt: new Date() },
+      { new: true, runValidators: true }
+    ); /* .session(session) */
+    const _updatedUnit = await Unit.updateOne({ _id: invitation._id }, { user: user._id }, { new: true, runValidators: true });
+
+    // await session.commitTransaction();
+    // session.endSession();
+
+    // TODO: 1.SEND THANK YOU FOR REGISTERING WELCOME EMAIL
+    // TODO: 1 connect user and space.(Create AccessPermission)
+    const _newAC = AccessPermission.create({
+      user: user._id,
+      space: invitation.space,
+      role: invitation.userType
+    });
+
+    // TODO: 2. give jwt token to user
+    res.cookie('auth-token', stringifyAuthToken(authToken), sensitiveCookieOptions);
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: _MSG.SUCCESS,
+      data: 'verified'
+    });
+  } catch (err) {
+    logger.error(err.stack);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: err.message || err,
+      success: false
+    });
+  }
+};
+
+// for checking the nonce is valid to linkId
 export const verifyPinAndLinkId = async (req: RequestCustom, res: Response) => {
   try {
     // verified is when authToken is found. so this is not necessary variable now.
 
-    const authToken = await verifyAuthTokenByNonceAndLinkId({ linkId: req.params.linkId, nonce: req.body.nonce }); /* AuthToken.findOne({
-      linkId: req.params.linkId
-    });
+    const authToken = await verifyAuthTokenByNonceAndLinkId({ linkId: req.params.linkId, nonce: req.body.nonce });
 
-    if (authToken === null) {
-      throw new ErrorCustom(_MSG.OBJ_NOT_FOUND, httpStatus.NOT_FOUND);
-    }
-    if (authToken.nonce !== +req.body.nonce) {
-      throw new ErrorCustom(_MSG.INVALID_PIN, httpStatus.BAD_REQUEST);
-    }
-    if (!authToken.active || authToken.expiresAt < new Date()) {
-      throw new ErrorCustom(_MSG.EXPIRED, httpStatus.BAD_REQUEST);
-    }
-    // validatedAt is earlier than 15 minutes ago throw error
-    if (authToken.validatedAt && authToken.validatedAt < new Date(Date.now() - 1000 * 60 * 15)) {
-      throw new ErrorCustom(
-        'qr-code is expired. Please contact administrator and re-generate the qr-code along with 6 digits code.' ,
-        httpStatus.BAD_REQUEST
-      );
-    }
-    // 30 minutes after validation, the qr-code will expired
-    if (authToken.validatedAt < new Date(Date.now() - 1000 * 60 * 30)) {
-      throw new ErrorCustom(_MSG.EXPIRED, httpStatus.BAD_REQUEST);
-    }
-    if (!authToken.validatedAt) {
-      authToken.validatedAt = new Date();
-      await authToken.save();
-    } */
     // case 1: pin not verified
     res.cookie('auth-token', stringifyAuthToken(authToken), sensitiveCookieOptions);
 

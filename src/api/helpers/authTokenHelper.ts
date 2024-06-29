@@ -1,4 +1,4 @@
-import AuthToken from '../../models/AuthToken';
+import AuthToken, { AuthTokenDocument } from '../../models/AuthToken';
 import Invitation from '../../models/Invitation';
 
 import { RequestCustom } from '../../types/custom-express/express-custom';
@@ -31,7 +31,7 @@ export async function verifyPinFromRequest(req: RequestCustom): Promise<{ verifi
   return { verified: found, authToken: data };
 }
 
-export async function verifyAuthTokenByNonceAndLinkId({ nonce, linkId }: { nonce: string; linkId: string }) {
+export async function verifyAuthTokenByNonceAndLinkId({ nonce, linkId }: { nonce: string; linkId: string }): Promise<AuthTokenDocument> {
   const authToken = await AuthToken.findOne({
     linkId
   });
@@ -52,6 +52,7 @@ export async function verifyAuthTokenByNonceAndLinkId({ nonce, linkId }: { nonce
       httpStatus.BAD_REQUEST
     );
   }
+
   // 30 minutes after validation, the qr-code will expired
   if (authToken.validatedAt < new Date(Date.now() - 1000 * 60 * 30)) {
     throw new ErrorCustom(_MSG.EXPIRED, httpStatus.BAD_REQUEST);
@@ -204,7 +205,7 @@ export async function getInvitationByAuthTokenLinkId(
       }
     }
   ];
-  const [invitation] = await AuthToken.aggregate<InvitationByLinkId | undefined>([
+  const invitations = await AuthToken.aggregate<InvitationByLinkId | undefined>([
     {
       $match: {
         linkId: linkId
@@ -270,6 +271,7 @@ export async function getInvitationByAuthTokenLinkId(
     error.message = 'error finding invitation';
     throw new ErrorCustom(error, httpStatus.INTERNAL_SERVER_ERROR);
   });
+  const invitation = invitations[0];
   if (options.hydrate && invitation) {
     const mongooseInvitation = Invitation.hydrate(invitation);
     return mongooseInvitation;
