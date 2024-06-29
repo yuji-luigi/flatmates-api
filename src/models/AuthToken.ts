@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import autoPopulate from 'mongoose-autopopulate';
 import { generateNonceCode, generateRandomStringByLength, replaceSpecialChars } from '../utils/functions';
 import { AuthTokenInterface } from '../types/mongoose-types/model-types/auth-token-interface';
+import { generateSecureRandomString } from '../lib/random-generator/generateRandomStrings';
 
 const { Schema } = mongoose;
 
@@ -10,7 +11,7 @@ export const authTokenSchema = new Schema<AuthTokenInterface>(
   {
     linkId: {
       type: String,
-      default: () => replaceSpecialChars(generateRandomStringByLength(80))
+      default: () => generateSecureRandomString(80)
     },
     nonce: {
       type: Number,
