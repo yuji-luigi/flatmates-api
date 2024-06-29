@@ -138,7 +138,20 @@ export const verifyEmailRegisterInhabitant = async (req: RequestCustom, res: Res
           from: 'invitations',
           localField: 'invitation',
           foreignField: '_id',
-          as: 'invitation'
+          as: 'invitation',
+          pipeline: [
+            {
+              $lookup: {
+                from: 'units',
+                localField: 'unit',
+                foreignField: '_id',
+                as: ' unit'
+              }
+            },
+            {
+              $unwind: '$unit'
+            }
+          ]
         }
       },
       {
@@ -150,15 +163,16 @@ export const verifyEmailRegisterInhabitant = async (req: RequestCustom, res: Res
       {
         $project: {
           authToken: 1,
+          unit: '$invitation.unit._id',
           user: { _id: 1, active: 1 },
-          invitation: { _id: 1, status: 1, space: 1, userType: 1 }
+          invitation: { _id: 1, status: 1, space: 1, userType: 1, unit: 1 }
         }
       }
     ]);
     if (results.length === 0) {
       throw new ErrorCustom(_MSG.INVALID_ACCESS, httpStatus.FORBIDDEN);
     }
-
+    // TODO: TOP EXPIRATION LOGIC
     const [result] = results;
     const { user, invitation } = result;
 
@@ -168,12 +182,12 @@ export const verifyEmailRegisterInhabitant = async (req: RequestCustom, res: Res
      */
 
     const _updatedUser = await User.updateOne({ _id: user._id }, { active: true }, { new: true, runValidators: true }); /* .session(session) */
+    const _updatedUnit = await Unit.updateOne({ _id: invitation.unit }, { user: user._id }, { new: true, runValidators: true });
     const _updatedInvitation = await Invitation.updateOne(
       { _id: invitation._id },
       { status: 'completed-register', acceptedAt: new Date() },
       { new: true, runValidators: true }
     ); /* .session(session) */
-    const _updatedUnit = await Unit.updateOne({ _id: invitation._id }, { user: user._id }, { new: true, runValidators: true });
 
     // await session.commitTransaction();
     // session.endSession();
