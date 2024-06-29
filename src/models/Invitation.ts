@@ -37,7 +37,8 @@ export const invitationSchema = new Schema<InvitationInterface>(
     },
     authToken: {
       type: Schema.Types.ObjectId,
-      ref: 'authTokens'
+      ref: 'authTokens',
+      required: true
     },
     unit: {
       type: Schema.Types.ObjectId,
