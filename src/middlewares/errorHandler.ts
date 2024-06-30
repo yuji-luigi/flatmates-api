@@ -6,7 +6,7 @@ import logger from '../lib/logger';
 export const errorLogger = (error: ErrorCustom, _request: Request, _response: Response, next: NextFunction) => {
   logger.error(`error ${error.stack || error.message}`);
 
-  error.internalLog && logger.error(`error ${error.stack || error.message}`);
+  error.internalLog && logger.error(`error ${error.internalLog}`);
   next(error); // calling next middleware
 };
 

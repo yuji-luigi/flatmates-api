@@ -20,8 +20,8 @@ import AccessPermission from '../../models/AccessPermission';
 import Unit from '../../models/Unit';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { InvitationInterface } from '../../types/mongoose-types/model-types/invitation-interface';
-import { RoleCache, roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
-import { auth } from 'google-auth-library';
+import { RoleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
+import { checkForCurrentPermission, checkForPermissions } from '../../middlewares/isLoggedIn';
 
 const entity = 'authTokens';
 //= ===============================================================================
@@ -296,9 +296,12 @@ export const confirmAuthTokenByTypeAndCookie = async (req: RequestCustom, res: R
   }
 };
 
-export const renewAuthTokensByParams = async (req: RequestCustom, res: Response, next: NextFunction) => {
+export const renewAuthTokensByParams = async (req: RequestCustomWithUser, res: Response, next: NextFunction) => {
   try {
     const { _id } = req.query;
+
+    await checkForPermissions(['super_admin', 'system_admin', 'property_manager'], req.user, req.body.space);
+
     const authTokens = await AuthToken.find({
       _id
     });

@@ -17,7 +17,7 @@ export const isLoggedIn = (roles?: RoleName[]) => async (req: RequestCustom, _re
       }
       if (roles?.length) {
         const spaceId = user.currentSpace?._id?.toString(); /* || req.params.spaceId || req.params.idMongoose || req.params.parentId; */
-        await checkForPermission(roles, user, spaceId);
+        await checkForCurrentPermission(roles, user, spaceId);
       }
 
       return next();
@@ -37,7 +37,7 @@ export function isSuperAdmin(req: RequestCustom, _res: Response, next: NextFunct
 }
 
 /** @throws ErrorCustom. check for roles array and user.currentAccessPermission.role */
-async function checkForPermission(roles: RoleName[], user: ReqUser, spaceId: string | undefined | null) {
+export async function checkForCurrentPermission(roles: RoleName[], user: ReqUser, spaceId: string | undefined | null) {
   if (!spaceId) {
     throw new ErrorCustom(_MSG.ERRORS.INTERNAL_SERVER_ERROR, httpStatus.INTERNAL_SERVER_ERROR, 'SpaceId is not defined somehow... This is a bug.');
   }
@@ -57,6 +57,35 @@ async function checkForPermission(roles: RoleName[], user: ReqUser, spaceId: str
   const allAncestorAndSelf = [...space.parentIds, spaceId];
   // case user passed the permission control
   if (user.currentAccessPermission && allAncestorAndSelf.includes(user.currentAccessPermission.space.toString())) {
+    return;
+  }
+  throw new ErrorCustom(_MSG.NOT_AUTHORIZED, httpStatus.UNAUTHORIZED);
+}
+
+/** @throws ErrorCustom. check for roles array and user.currentAccessPermission.role */
+export async function checkForPermissions(roles: RoleName[], user: ReqUser, spaceId: string | undefined | null) {
+  if (!spaceId) {
+    throw new ErrorCustom(_MSG.ERRORS.INTERNAL_SERVER_ERROR, httpStatus.INTERNAL_SERVER_ERROR, 'SpaceId is not defined somehow... This is a bug.');
+  }
+  if (!user.accessPermissions?.length) {
+    throw new ErrorCustom(_MSG.NOT_AUTHORIZED, httpStatus.UNAUTHORIZED);
+  }
+  const roleIds = roleCache.allRoles.filter((role) => roles.includes(role.name)).map((role) => role._id.toString());
+
+  // get users permission role of the space passed in then compare it with the roles passed in.
+  const accessPermissionOfSpace = user.accessPermissions.find((ac) => ac.space.toString() === spaceId);
+  const permissionRoleIdOfSpace = accessPermissionOfSpace?.role.toString();
+  if (permissionRoleIdOfSpace && !roleIds.includes(permissionRoleIdOfSpace)) {
+    throw new ErrorCustom(_MSG.NOT_AUTHORIZED, httpStatus.UNAUTHORIZED, 'access failed for role filtering.');
+  }
+  // TODO: CHECK IF THIS WOKS  WITH POSTMAN OR OTHER CLIENTS.
+  const space = await Space.findById(spaceId);
+  if (!space) {
+    throw new ErrorCustom(_MSG.ERRORS.INTERNAL_SERVER_ERROR, httpStatus.INTERNAL_SERVER_ERROR, 'Space not found');
+  }
+  const allAncestorAndSelf = [...space.parentIds, spaceId];
+  // case user passed the permission control
+  if (accessPermissionOfSpace && allAncestorAndSelf.includes(accessPermissionOfSpace.space.toString())) {
     return;
   }
   throw new ErrorCustom(_MSG.NOT_AUTHORIZED, httpStatus.UNAUTHORIZED);

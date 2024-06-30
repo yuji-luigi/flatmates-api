@@ -58,6 +58,9 @@ const vars = {
 export const rootDir = process.cwd();
 export const assetsDir = path.join(rootDir, 'src', 'assets');
 
+/** one day in milliseconds */
+export const oneDay = 24 * 60 * 60 * 1000;
+
 export const basicCookieOptions = {
   sameSite: true,
   maxAge: vars.jwtExpirationInterval * 1000,

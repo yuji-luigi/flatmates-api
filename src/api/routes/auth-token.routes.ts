@@ -37,8 +37,8 @@ router.post('/maintenances/file-upload/:linkId/:idMongoose', authUserMaintenance
 
 router.use(handleUserFromRequest);
 router.use(queryHandler);
+router.post('/renew', renewAuthTokensByParams);
 
-router.post('/renew', isLoggedIn(['property_manager', 'system_admin']), renewAuthTokensByParams);
 //TODO: VERIFY AND REMOVE
 router.get('/qr-code/:entity/:idMongoose', sendAuthTokenByIdsToClient);
 

@@ -6,6 +6,7 @@ import { UserImportExcel } from '../../types/excel/UserImportExcel';
 import Invitation from '../../models/Invitation';
 import AuthToken from '../../models/AuthToken';
 import { ObjectId } from 'mongodb';
+import { oneDay } from '../globalVariables';
 
 export async function handleImportFlatmates({
   excelData,
@@ -107,9 +108,10 @@ export async function handleImportFlatmates({
             foundInvitation.status = foundInvitation.status === 'pending' ? 'outdated' : foundInvitation.status;
             await foundInvitation.save();
           }
-
+          const expiresAt = new Date(Date.now() + oneDay * 30);
           const newAuthToken = await AuthToken.create({
-            type: 'invitation'
+            type: 'invitation',
+            expiresAt
           });
           await Invitation.create({
             userType: 'inhabitant',
