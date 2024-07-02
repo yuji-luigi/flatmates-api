@@ -99,14 +99,14 @@ export async function acceptInvitationByLogin(req: Request, res: Response, next:
     // TODO:USE THE HANDLER PASSING ALWAYS THE SAME ARGUMENTS FOR EACH CASE. SO TYPESCRIPT DOES NOT THROW ERROR(COULD BE AVOIDED BY USING ANY OR TYPE_GUARD)
 
     if (aggregatedInvitation.userType === 'inhabitant' && aggregatedInvitation.unit) {
-      await handleAcceptInhabitantInvitationByLogin({ invitation: aggregatedInvitation, user, authTokenCookie: req.cookies.authToken, linkId });
+      await handleAcceptInhabitantInvitationByLogin({ invitation: aggregatedInvitation, user, authTokenCookie: req.cookies['auth-token'], linkId });
     } else {
       // check email in all other cases.(for now)
       if (aggregatedInvitation.email !== email) {
         throw new ErrorCustom('Email does not match with invitation email', httpStatus.BAD_REQUEST);
       }
+      await handleAcceptInvitationWithoutUnit(aggregatedInvitation, user);
     }
-    await handleAcceptInvitationWithoutUnit(aggregatedInvitation, user);
     const invitation = await findAndUpdateInvitationStatus(aggregatedInvitation, 'accepted');
 
     handleSetCookieOnInvitationSuccess(res, invitation, user);
@@ -114,7 +114,8 @@ export async function acceptInvitationByLogin(req: Request, res: Response, next:
     res.status(httpStatus.OK).json({
       success: true,
       data: {
-        message: 'Invitation accepted successfully'
+        message: 'Invitation accepted successfully',
+        userType: invitation.userType // now passing userType string to log user in from frontend /auth/invitation/login?redirect=linkIdxxx
       }
     });
   } catch (error) {

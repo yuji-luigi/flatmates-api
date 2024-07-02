@@ -312,7 +312,8 @@ export const renewAuthTokensByParams = async (req: RequestCustomWithUser, res: R
           $set: {
             expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
             nonce: generateNonceCode(),
-            linkId: replaceSpecialChars(generateRandomStringByLength(80))
+            linkId: replaceSpecialChars(generateRandomStringByLength(80)),
+            active: true
             // validatedAt: null as any
           },
 
