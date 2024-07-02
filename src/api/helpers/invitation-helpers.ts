@@ -5,13 +5,15 @@ import { RoleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
 import AccessPermission from '../../models/AccessPermission';
 import Invitation from '../../models/Invitation';
 import { InvitationInterface, invitationStatus } from '../../types/mongoose-types/model-types/invitation-interface';
-import { IUser } from '../../types/mongoose-types/model-types/user-interface';
+import { IUser, UserBase } from '../../types/mongoose-types/model-types/user-interface';
 import { getInvitationByAuthTokenLinkId, InvitationByLinkId } from './authTokenHelper';
 import { JWTPayload } from '../../lib/jwt/JwtPayload';
-import { Response } from 'express';
+import { NextFunction, Response } from 'express';
 import { handleSetCookiesFromPayload } from '../../lib/jwt/jwtUtils';
-import { RoleName } from '../../types/mongoose-types/model-types/role-interface';
+import { RoleName, UserType } from '../../types/mongoose-types/model-types/role-interface';
 import User from '../../models/User';
+import AuthToken from '../../models/AuthToken';
+import { connectInhabitantFromInvitation } from '../../lib/mongoose/multi-model/connectInhabitantFromInvitation';
 
 /**
  * @description email is optional for register route
@@ -27,28 +29,6 @@ export async function handleFindPendingInvitationByLinkIdAndEmail(linkId: undefi
     throw new ErrorCustom('We could not find your invitation. Email must be the invited email. Please check your email.', httpStatus.NOT_FOUND);
   }
   return aggregatedInvitation;
-}
-
-/**
- * @description create accessPermission and userRegistry for the user
- */
-export async function handleAcceptInvitation(aggregatedInvitation: InvitationByLinkId, user: ReqUser | IUser) {
-  // create accessPermission
-  if (!RoleCache[aggregatedInvitation.userType]?._id) {
-    throw new ErrorCustom('Cache is not initialized yet for some reason', httpStatus.NOT_FOUND);
-  }
-
-  await AccessPermission.create({
-    user: user._id,
-    space: aggregatedInvitation.space,
-    role: RoleCache[aggregatedInvitation.userType]?._id
-  });
-
-  // await UserRegistry.create({
-  //   user: user._id,
-  //   space: aggregatedInvitation.space,
-  //   role: RoleCache[aggregatedInvitation.userType]._id
-  // });
 }
 
 export async function findAndUpdateInvitationStatus(aggregatedInvitation: InvitationByLinkId, _status: invitationStatus) {
@@ -87,4 +67,77 @@ export async function checkCanCreateInvitation({ email, space, userType }: { ema
     }
   }
   return true;
+}
+type SpecificFunction = {
+  inhabitant: (param: { invitation: InvitationByLinkId; user: UserBase; authTokenCookie: string; linkId: string }) => void;
+  // maintainer: (a: number) => void;
+  // property_manager: (a: Record<string, void>) => void;
+  // super_admin: (a: string) => void;
+};
+
+// Define a base function type for the fallback
+type BaseFunction = (res: Response, next: NextFunction, invitation: InvitationByLinkId, user: UserBase) => Promise<boolean>;
+
+// Define the InvitationHandler type
+type InvitationHandler = {
+  [K in UserType]: K extends keyof SpecificFunction ? SpecificFunction[K] : BaseFunction;
+};
+
+// Define the invitationByUserTypeHandler object with the correct type
+export const invitationByUserTypeHandler: InvitationHandler = {
+  inhabitant: handleAcceptInhabitantInvitationByLogin,
+  maintainer: function () {
+    throw new Error('Function not implemented.');
+  },
+  property_manager: function () {
+    throw new Error('Function not implemented.');
+  },
+  system_admin: function () {
+    throw new Error('Function not implemented.');
+  },
+  super_admin: function () {
+    throw new Error('Function not implemented.');
+  }
+};
+
+export async function handleAcceptInhabitantInvitationByLogin({
+  invitation,
+  user,
+  authTokenCookie,
+  linkId
+}: {
+  invitation: InvitationByLinkId;
+  user: UserBase;
+  authTokenCookie: string;
+  linkId: string;
+}) {
+  const decodedAuthToken = JSON.parse(decodeURIComponent(authTokenCookie));
+  const sentNonce = decodedAuthToken.nonce;
+  const authToken = await AuthToken.findOne({
+    linkId,
+    nonce: sentNonce
+  });
+  // 1. check authToken cookie and compare nonce
+  if (!authToken) {
+    throw new ErrorCustom('Invalid nonce', httpStatus.BAD_REQUEST);
+  }
+  // 2. get space, unit,
+  await connectInhabitantFromInvitation({ authToken, invitation, user, invitationStatus: 'accepted' });
+  // 3. create accessPermission
+}
+
+/**
+ * @description create accessPermission and userRegistry for the user
+ */
+export async function handleAcceptInvitationWithoutUnit(aggregatedInvitation: InvitationByLinkId, user: ReqUser | IUser) {
+  // create accessPermission
+  if (!RoleCache[aggregatedInvitation.userType]?._id) {
+    throw new ErrorCustom('Cache is not initialized yet for some reason', httpStatus.NOT_FOUND);
+  }
+
+  await AccessPermission.create({
+    user: user._id,
+    space: aggregatedInvitation.space,
+    role: RoleCache[aggregatedInvitation.userType]?._id
+  });
 }

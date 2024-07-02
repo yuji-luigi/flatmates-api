@@ -4,8 +4,6 @@ import autoPopulate from 'mongoose-autopopulate';
 import { generateNonceCode, generateRandomStringByLength, replaceSpecialChars } from '../utils/functions';
 import { AuthTokenInterface } from '../types/mongoose-types/model-types/auth-token-interface';
 import { generateSecureRandomString } from '../lib/random-generator/generateRandomStrings';
-import httpStatus from 'http-status';
-import { ErrorCustom } from '../lib/ErrorCustom';
 
 const { Schema } = mongoose;
 

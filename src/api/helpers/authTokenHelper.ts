@@ -6,7 +6,7 @@ import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { _MSG } from '../../utils/messages';
 import logger from '../../lib/logger';
 import { ObjectId } from 'mongodb';
-import { Document } from 'mongoose';
+import { Document, PipelineStage } from 'mongoose';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
 import { RoleName } from '../../types/mongoose-types/model-types/role-interface';
@@ -159,11 +159,12 @@ type InvitationStatusQuery = invitationStatus | { $or: invitationStatus[] } | { 
 
 export interface InvitationByLinkId {
   _id: ObjectId;
-  // email: string;
+  email: string | undefined;
   userType: RoleName;
   status: InvitationStatusQuery;
   createdBy: { email: string; surname: string; name: string };
   space: { _id: ObjectId; name: string; address: string };
+  unit: ObjectId;
 }
 
 // Overload signatures
@@ -224,6 +225,15 @@ export async function getInvitationByAuthTokenLinkId(
             }
           },
           { $unwind: '$space' },
+          // {
+          //   $lookup: {
+          //     from: 'units',
+          //     localField: 'unit',
+          //     foreignField: '_id',
+          //     as: 'unit'
+          //   }
+          // },
+          // { $unwind: { path: '$unit', preserveNullAndEmptyArrays: true } },
           {
             $lookup: {
               from: 'users',
@@ -248,7 +258,7 @@ export async function getInvitationByAuthTokenLinkId(
     {
       $project: {
         _id: 1,
-        // email: 1,
+        email: 1,
         userType: 1,
         status: 1,
         createdBy: {
@@ -256,6 +266,7 @@ export async function getInvitationByAuthTokenLinkId(
           surname: 1,
           email: 1
         },
+        unit: 1,
         space: {
           name: 1,
           _id: 1,
@@ -275,3 +286,108 @@ export async function getInvitationByAuthTokenLinkId(
 
   return invitation as undefined | InvitationByLinkId;
 }
+
+// export async function _(
+//   linkId: undefined | string,
+//   options: {
+//     additionalMatchFields?: Record<string, string | undefined>;
+//     invitationStatus?: invitationStatus | { $or: invitationStatus[] } | { $and: invitationStatus[] } | { $in: invitationStatus[] };
+//     hydrate?: boolean;
+//   } = {}
+// ): Promise<InvitationByLinkId | (InvitationInterface & Document) | undefined> {
+//   const invitationStatusPP = options.invitationStatus && [
+//     {
+//       $match: {
+//         status: options.invitationStatus,
+//         ...(options.additionalMatchFields || {})
+//       }
+//     }
+//   ];
+//   const invitations = await AuthToken.aggregate<InvitationByLinkId | undefined>([...getBasePipelines({ linkId, invitationStatusPP })]).catch(
+//     (error) => {
+//       error.message = 'error finding invitation';
+//       throw new ErrorCustom(error, httpStatus.INTERNAL_SERVER_ERROR);
+//     }
+//   );
+//   const invitation = invitations[0];
+//   if (options.hydrate && invitation) {
+//     const mongooseInvitation = Invitation.hydrate(invitation);
+//     return mongooseInvitation;
+//   }
+
+//   return invitation as undefined | InvitationByLinkId;
+// }
+
+// const getBasePipelines = ({ linkId, invitationStatusPP }: { linkId: string; invitationStatusPP: InvitationStatusQuery[] }): PipelineStage[] => [
+//   {
+//     $match: {
+//       linkId: linkId
+//     }
+//   },
+//   {
+//     $lookup: {
+//       from: 'invitations',
+//       localField: '_id',
+//       foreignField: 'authToken',
+//       as: 'invitation',
+//       pipeline: [
+//         ...(invitationStatusPP || []),
+//         {
+//           $lookup: {
+//             from: 'spaces',
+//             localField: 'space',
+//             foreignField: '_id',
+//             as: 'space'
+//           }
+//         },
+//         { $unwind: '$space' },
+//         // {
+//         //   $lookup: {
+//         //     from: 'units',
+//         //     localField: 'unit',
+//         //     foreignField: '_id',
+//         //     as: 'unit'
+//         //   }
+//         // },
+//         // { $unwind: { path: '$unit', preserveNullAndEmptyArrays: true } },
+//         {
+//           $lookup: {
+//             from: 'users',
+//             localField: 'createdBy',
+//             foreignField: '_id',
+//             as: 'createdBy'
+//           }
+//         },
+//         { $unwind: { path: '$createdBy', preserveNullAndEmptyArrays: true } }
+//       ]
+//     }
+//   },
+//   {
+//     $unwind: { path: '$invitation', preserveNullAndEmptyArrays: true }
+//   },
+//   {
+//     $match: { invitation: { $exists: true, $ne: null } } // again filter out null values. returns empty array if null.
+//   },
+//   {
+//     $replaceRoot: { newRoot: '$invitation' }
+//   },
+//   {
+//     $project: {
+//       _id: 1,
+//       email: 1,
+//       userType: 1,
+//       status: 1,
+//       createdBy: {
+//         name: 1,
+//         surname: 1,
+//         email: 1
+//       },
+//       unit: 1,
+//       space: {
+//         name: 1,
+//         _id: 1,
+//         address: 1
+//       }
+//     }
+//   }
+// ];

@@ -14,14 +14,12 @@ import { ErrorCustom } from '../../lib/ErrorCustom';
 import { generateNonceCode, generateRandomStringByLength, replaceSpecialChars } from '../../utils/functions';
 import { AnyBulkWriteOperation } from 'mongodb';
 import VerificationEmail from '../../models/VerificationEmail';
-import User from '../../models/User';
 import Invitation from '../../models/Invitation';
-import AccessPermission from '../../models/AccessPermission';
 import Unit from '../../models/Unit';
 import { IUser } from '../../types/mongoose-types/model-types/user-interface';
 import { InvitationInterface } from '../../types/mongoose-types/model-types/invitation-interface';
-import { RoleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
-import { checkForCurrentPermission, checkForPermissions } from '../../middlewares/isLoggedIn';
+import { checkForPermissions } from '../../middlewares/isLoggedIn';
+import { connectInhabitantFromInvitation } from '../../lib/mongoose/multi-model/connectInhabitantFromInvitation';
 
 const entity = 'authTokens';
 //= ===============================================================================
@@ -115,6 +113,7 @@ export const verifyPinAndSendBooleanToClient = async (req: RequestCustom, res: R
 };
 
 // for checking the nonce is valid to linkId
+// TODO:
 export const verifyEmailRegisterInhabitant = async (req: RequestCustom, res: Response) => {
   try {
     // const session = await startSession();
@@ -186,29 +185,30 @@ export const verifyEmailRegisterInhabitant = async (req: RequestCustom, res: Res
      * 1. activate user.
      * 2.
      */
+    // TODO: check if it works without problem
+    await connectInhabitantFromInvitation({ invitation, user, authToken });
+    // await User.updateOne({ _id: user._id }, { active: true }, { new: true, runValidators: true }); /* .session(session) */
+    // await Unit.updateOne({ _id: invitation.unit }, { user: user._id }, { new: true, runValidators: true });
+    // await Invitation.updateOne(
+    //   { _id: invitation._id },
+    //   { status: 'completed-register', acceptedAt: new Date() },
+    //   { new: true, runValidators: true }
+    // ); /* .session(session) */
 
-    await User.updateOne({ _id: user._id }, { active: true }, { new: true, runValidators: true }); /* .session(session) */
-    await Unit.updateOne({ _id: invitation.unit }, { user: user._id }, { new: true, runValidators: true });
-    await Invitation.updateOne(
-      { _id: invitation._id },
-      { status: 'completed-register', acceptedAt: new Date() },
-      { new: true, runValidators: true }
-    ); /* .session(session) */
+    // // await session.commitTransaction();
+    // // session.endSession();
 
-    // await session.commitTransaction();
-    // session.endSession();
+    // // TODO: 1.SEND THANK YOU FOR REGISTERING WELCOME EMAIL
+    // // TODO: 1 connect user and space.(Create AccessPermission)
+    // await AccessPermission.create({
+    //   user: user._id,
+    //   space: invitation.space,
+    //   role: RoleCache[invitation.userType]
+    // });
 
-    // TODO: 1.SEND THANK YOU FOR REGISTERING WELCOME EMAIL
-    // TODO: 1 connect user and space.(Create AccessPermission)
-    await AccessPermission.create({
-      user: user._id,
-      space: invitation.space,
-      role: RoleCache[invitation.userType]
-    });
-
-    authToken.active = false;
-    authToken.validatedAt = new Date();
-    await authToken.save();
+    // authToken.active = false;
+    // authToken.validatedAt = new Date();
+    // await authToken.save();
     // res.cookie('auth-token', stringifyAuthToken(authToken), sensitiveCookieOptions);
 
     res.status(httpStatus.OK).json({

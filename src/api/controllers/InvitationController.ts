@@ -3,11 +3,12 @@ import httpStatus from 'http-status';
 import User from '../../models/User';
 import { ErrorCustom } from '../../lib/ErrorCustom';
 import {
-  handleAcceptInvitation,
   findAndUpdateInvitationStatus,
   handleFindPendingInvitationByLinkIdAndEmail,
   handleSetCookieOnInvitationSuccess,
-  checkCanCreateInvitation
+  checkCanCreateInvitation,
+  handleAcceptInhabitantInvitationByLogin,
+  handleAcceptInvitationWithoutUnit
 } from '../helpers/invitation-helpers';
 import { getInvitationByAuthTokenLinkId } from '../helpers/authTokenHelper';
 import { ReqUser } from '../../lib/jwt/jwtTypings';
@@ -90,9 +91,22 @@ export async function acceptInvitationByLogin(req: Request, res: Response, next:
       throw new ErrorCustom('Incorrect password', httpStatus.UNAUTHORIZED);
     }
     // 2 find and auth by invitation authToken
-    const aggregatedInvitation = await handleFindPendingInvitationByLinkIdAndEmail(linkId, email);
+    const aggregatedInvitation = await getInvitationByAuthTokenLinkId(linkId, { invitationStatus: 'pending' });
+    if (!aggregatedInvitation) {
+      throw new ErrorCustom('Invitation not found', httpStatus.NOT_FOUND);
+    }
+    // TODO: handle connect inhabitant and unit by logging in from qrcode
+    // TODO:USE THE HANDLER PASSING ALWAYS THE SAME ARGUMENTS FOR EACH CASE. SO TYPESCRIPT DOES NOT THROW ERROR(COULD BE AVOIDED BY USING ANY OR TYPE_GUARD)
 
-    await handleAcceptInvitation(aggregatedInvitation, user);
+    if (aggregatedInvitation.userType === 'inhabitant' && aggregatedInvitation.unit) {
+      await handleAcceptInhabitantInvitationByLogin({ invitation: aggregatedInvitation, user, authTokenCookie: req.cookies.authToken, linkId });
+    } else {
+      // check email in all other cases.(for now)
+      if (aggregatedInvitation.email !== email) {
+        throw new ErrorCustom('Email does not match with invitation email', httpStatus.BAD_REQUEST);
+      }
+    }
+    await handleAcceptInvitationWithoutUnit(aggregatedInvitation, user);
     const invitation = await findAndUpdateInvitationStatus(aggregatedInvitation, 'accepted');
 
     handleSetCookieOnInvitationSuccess(res, invitation, user);
@@ -144,7 +158,7 @@ export async function acceptInvitationByRegistering(req: Request, res: Response,
       surname
     });
 
-    await handleAcceptInvitation(aggregatedInvitation, user);
+    await handleAcceptInvitationWithoutUnit(aggregatedInvitation, user);
     const invitation = await findAndUpdateInvitationStatus(aggregatedInvitation, 'accepted');
 
     handleSetCookieOnInvitationSuccess(res, invitation, user);
@@ -257,7 +271,7 @@ export async function acceptInvitationByLoggedUserAndLinkId(req: Request & { use
       throw new ErrorCustom('Invalid User or Invitation access', httpStatus.UNAUTHORIZED);
     }
     const aggregatedInvitation = await handleFindPendingInvitationByLinkIdAndEmail(linkId, user.email);
-    await handleAcceptInvitation(aggregatedInvitation, user);
+    await handleAcceptInvitationWithoutUnit(aggregatedInvitation, user);
     const invitation = await findAndUpdateInvitationStatus(aggregatedInvitation, 'accepted');
     handleSetCookieOnInvitationSuccess(res, invitation, user);
 
