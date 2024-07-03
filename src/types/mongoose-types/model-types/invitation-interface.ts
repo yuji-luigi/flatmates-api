@@ -4,13 +4,15 @@ import { RoleName } from './role-interface';
 
 /** accepted and completed-register meaning end of life cycle of the invitation (new field acceptedAt) */
 export const invitationStatuses = ['pending', 'accepted', 'declined', 'outdated', 'pending-register', 'completed-register'] as const;
-
+export const invitationTypes = ['qrcode', 'via-email'] as const;
+export type InvitationType = (typeof invitationTypes)[number];
 export type invitationStatus = (typeof invitationStatuses)[number];
 
 export interface _InvitationInterface extends MongooseBaseModel {
   email: string;
   cell?: string;
   userType: RoleName;
+  type: InvitationType;
   status: invitationStatus;
   space: ObjectId;
   createdBy: ObjectId;

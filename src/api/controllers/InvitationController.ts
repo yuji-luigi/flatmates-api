@@ -15,7 +15,7 @@ import {
 import { getInvitationByAuthTokenLinkId } from '../helpers/authTokenHelper';
 import { ReqUser } from '../../lib/jwt/jwtTypings';
 import AuthToken from '../../models/AuthToken';
-import { roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
+import { RoleCache, roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
 import { createInvitationEmail } from '../../lib/node-mailer/createInvitationMail';
 import Invitation from '../../models/Invitation';
 import { RequestCustom } from '../../types/custom-express/express-custom';
@@ -28,6 +28,7 @@ import VerificationEmail from '../../models/VerificationEmail';
 import { checkAuthTokenByCookie } from './AuthTokenController';
 import { connect } from 'http2';
 import { connectInhabitantFromInvitation } from '../../lib/mongoose/multi-model/connectInhabitantFromInvitation';
+import AccessPermission from '../../models/AccessPermission';
 
 export async function inviteToSpaceByUserTypeEmail(
   req: RequestCustom & { user: ReqUser; params: { userType: string } },
@@ -165,9 +166,9 @@ export async function acceptInvitationByRegistering(req: Request, res: Response,
         {
           $match: {
             status: {
-              $in: ['pending', 'pending-register'],
-              acceptedAt: { $exists: false }
-            }
+              $in: ['pending', 'pending-register']
+            },
+            acceptedAt: { $exists: false }
           }
         }
       ]
@@ -189,15 +190,22 @@ export async function acceptInvitationByRegistering(req: Request, res: Response,
       if (invitation.email !== email) {
         throw new ErrorCustom('Invitation not found for the email. Email must be the same email you got invitation.', httpStatus.BAD_REQUEST);
       }
-      const user = await User.create({
+      const user = new User({
         email,
         password,
         name,
-        surname
+        surname,
+        active: true
       });
 
-      const hydratedInvitation = await Invitation.hydrate(invitation).populate('authToken');
-      await handleAcceptInvitationWithoutUnit(invitation, user);
+      await AccessPermission.create({
+        user: user._id,
+        space: invitation.space,
+        role: RoleCache[invitation.userType]._id
+      });
+      await Invitation.updateOne({ _id: invitation._id }, { status: 'accepted' }, { runValidators: true });
+      await user.save();
+      // await handleAcceptInvitationWithoutUnit(invitation, user);
       // const invitation = await findAndUpdateInvitationStatus(aggregatedInvitation, 'accepted');
     }
 
