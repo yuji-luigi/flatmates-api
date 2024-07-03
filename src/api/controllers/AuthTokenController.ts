@@ -113,7 +113,7 @@ export const verifyPinAndSendBooleanToClient = async (req: RequestCustom, res: R
 };
 
 // for checking the nonce is valid to linkId
-// TODO:
+// TODO: THIS MOVETO POST /invitations/register/:linkId. handle invitations depends on invitation.userType.
 export const verifyEmailRegisterInhabitant = async (req: RequestCustom, res: Response) => {
   try {
     // const session = await startSession();
@@ -186,7 +186,8 @@ export const verifyEmailRegisterInhabitant = async (req: RequestCustom, res: Res
      * 2.
      */
     // TODO: check if it works without problem
-    await connectInhabitantFromInvitation({ invitation, user, authToken });
+    await connectInhabitantFromInvitation({ invitation, user });
+    // TODO: update auth token to be inactive
     // await User.updateOne({ _id: user._id }, { active: true }, { new: true, runValidators: true }); /* .session(session) */
     // await Unit.updateOne({ _id: invitation.unit }, { user: user._id }, { new: true, runValidators: true });
     // await Invitation.updateOne(

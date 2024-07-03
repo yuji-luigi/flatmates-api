@@ -8,7 +8,9 @@ import {
   handleSetCookieOnInvitationSuccess,
   checkCanCreateInvitation,
   handleAcceptInhabitantInvitationByLogin,
-  handleAcceptInvitationWithoutUnit
+  handleAcceptInvitationWithoutUnit,
+  aggregateAuthTokenInvitationByLinkId,
+  checkAuthTokenByCookieToken
 } from '../helpers/invitation-helpers';
 import { getInvitationByAuthTokenLinkId } from '../helpers/authTokenHelper';
 import { ReqUser } from '../../lib/jwt/jwtTypings';
@@ -23,6 +25,9 @@ import { ObjectId } from 'bson';
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
 import { Document } from 'mongoose';
 import VerificationEmail from '../../models/VerificationEmail';
+import { checkAuthTokenByCookie } from './AuthTokenController';
+import { connect } from 'http2';
+import { connectInhabitantFromInvitation } from '../../lib/mongoose/multi-model/connectInhabitantFromInvitation';
 
 export async function inviteToSpaceByUserTypeEmail(
   req: RequestCustom & { user: ReqUser; params: { userType: string } },
@@ -99,7 +104,7 @@ export async function acceptInvitationByLogin(req: Request, res: Response, next:
     // TODO:USE THE HANDLER PASSING ALWAYS THE SAME ARGUMENTS FOR EACH CASE. SO TYPESCRIPT DOES NOT THROW ERROR(COULD BE AVOIDED BY USING ANY OR TYPE_GUARD)
 
     if (aggregatedInvitation.userType === 'inhabitant' && aggregatedInvitation.unit) {
-      await handleAcceptInhabitantInvitationByLogin({ invitation: aggregatedInvitation, user, authTokenCookie: req.cookies['auth-token'], linkId });
+      await handleAcceptInhabitantInvitationByLogin({ invitation: aggregatedInvitation, user, authTokenCookie: req.cookies['auth-token'] });
     } else {
       // check email in all other cases.(for now)
       if (aggregatedInvitation.email !== email) {
@@ -145,7 +150,70 @@ export async function declineInvitationByLinkId(req: Request, res: Response, nex
   }
 }
 
+// TODO: MOVE AUTH_TOKEN LOGIC TO HERE. ALSO ENDPOINT FROM FRONTEND TO BE CHANGED
 export async function acceptInvitationByRegistering(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { linkId } = req.params;
+    const { email, password, name, surname, password2, locale } = req.body;
+
+    if (password !== password2) {
+      throw new ErrorCustom('Passwords do not match', httpStatus.BAD_REQUEST);
+    }
+
+    const authTokenInvitation = await aggregateAuthTokenInvitationByLinkId(linkId, {
+      invitationPipelines: [
+        {
+          $match: {
+            status: {
+              $in: ['pending', 'pending-register'],
+              acceptedAt: { $exists: false }
+            }
+          }
+        }
+      ]
+    });
+    const { invitation, authToken } = authTokenInvitation || {};
+
+    if (!invitation) {
+      throw new ErrorCustom('Invitation not found', httpStatus.NOT_FOUND);
+    }
+    if (invitation?.userType === 'inhabitant' && invitation?.unit) {
+      checkAuthTokenByCookieToken(authToken, req.cookies['auth-token']);
+      throw new ErrorCustom('needs to be implemented', httpStatus.NOT_IMPLEMENTED);
+      // await connectInhabitantFromInvitation({
+      //   invitation,
+      //   invitationStatus: 'completed-register'
+      // });
+    }
+    if (invitation?.userType !== 'inhabitant') {
+      if (invitation.email !== email) {
+        throw new ErrorCustom('Invitation not found for the email. Email must be the same email you got invitation.', httpStatus.BAD_REQUEST);
+      }
+      const user = await User.create({
+        email,
+        password,
+        name,
+        surname
+      });
+
+      const hydratedInvitation = await Invitation.hydrate(invitation).populate('authToken');
+      await handleAcceptInvitationWithoutUnit(invitation, user);
+      // const invitation = await findAndUpdateInvitationStatus(aggregatedInvitation, 'accepted');
+    }
+
+    // handleSetCookieOnInvitationSuccess(res, invitation, user);
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      data: {
+        message: 'Invitation accepted successfully'
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+export async function __acceptInvitationByRegistering(req: Request, res: Response, next: NextFunction) {
   try {
     const { linkId } = req.params;
     const { email, password, name, surname } = req.body;

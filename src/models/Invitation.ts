@@ -62,10 +62,31 @@ invitationSchema.pre('save', async function (next) {
   const found = await Invitation.findOne({
     $or: [
       // NOTE: case for property_manager and maintainer
-      { $and: [{ email: { $exists: true } }, { email: this.email }], space: this.space, status: 'pending' },
+      {
+        $and: [
+          {
+            email: { $exists: true }
+          },
+          { email: this.email }
+        ],
+        space: this.space,
+        status: 'pending'
+      },
+
       // NOTE: case for flatmates unit
       // if the same unit and the same type of invitation is pending, then throw error
-      { unit: this.unit, status: 'pending', userType: this.userType }
+      {
+        $and: [
+          {
+            unit: { $exists: true }
+          },
+          {
+            unit: this.unit
+          }
+        ],
+        status: 'pending',
+        userType: this.userType
+      }
     ]
   });
 

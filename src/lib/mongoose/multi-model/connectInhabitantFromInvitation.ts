@@ -12,12 +12,12 @@ import { RoleCache } from '../mongoose-cache/role-cache';
 export async function connectInhabitantFromInvitation({
   invitation,
   user,
-  authToken,
+  // authToken,
   invitationStatus = 'completed-register'
 }: {
   invitation: InvitationByLinkId | InvitationInterface;
   user: UserBase;
-  authToken: AuthTokenDocument;
+  // authToken: AuthTokenDocument;
   invitationStatus?: invitationStatus;
 }) {
   await User.updateOne({ _id: user._id }, { active: true }, { new: true, runValidators: true }); /* .session(session) */
@@ -39,7 +39,7 @@ export async function connectInhabitantFromInvitation({
     role: RoleCache[invitation.userType]
   });
 
-  authToken.active = false;
-  authToken.validatedAt = new Date();
-  await authToken.save();
+  // authToken.active = false;
+  // authToken.validatedAt = new Date();
+  // await authToken.save();
 }
