@@ -116,6 +116,7 @@ export async function handleImportFlatmates({
           await Invitation.create({
             userType: 'inhabitant',
             status: 'pending',
+            type: 'qrcode',
             unit: updatingUnit._id,
             space: currentSpace._id,
             createdBy,

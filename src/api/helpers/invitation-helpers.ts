@@ -195,10 +195,12 @@ export async function aggregateAuthTokenInvitationByLinkId(
     {
       $project: {
         _id: 0,
-        authToken: { _id: '$_id', linkId: '$linkId', nonce: '$nonce', expiresAt: '$expiresAt' },
+        authToken: { _id: '$_id', linkId: '$linkId', nonce: '$nonce', expiresAt: '$expiresAt', type: '$type' },
         invitation: 1
       }
     }
   ]);
   return results[0];
 }
+
+// all the fieds of AuthToken schema

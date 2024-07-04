@@ -411,6 +411,7 @@ export async function generateNewAuthTokenInvitationForUnit(req: RequestCustomWi
       status: 'pending',
       unit: foundUnit._id,
       space: foundUnit.space,
+      type: 'qrcode',
       createdBy: req.user._id,
       authToken: newAuthToken._id,
       displayName: foundUnit.tenantName || foundUnit.ownerName

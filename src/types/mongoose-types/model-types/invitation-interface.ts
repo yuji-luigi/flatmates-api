@@ -4,7 +4,13 @@ import { RoleName } from './role-interface';
 
 /** accepted and completed-register meaning end of life cycle of the invitation (new field acceptedAt) */
 export const invitationStatuses = ['pending', 'accepted', 'declined', 'outdated', 'pending-register', 'completed-register'] as const;
+export const invitationStatusEnum = invitationStatuses.reduce((acc, status) => {
+  acc[status] = status;
+  return acc;
+}, {} as Record<invitationStatus, invitationStatus>);
+
 export const invitationTypes = ['qrcode', 'via-email'] as const;
+
 export type InvitationType = (typeof invitationTypes)[number];
 export type invitationStatus = (typeof invitationStatuses)[number];
 

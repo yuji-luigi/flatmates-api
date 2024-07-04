@@ -25,10 +25,8 @@ import { ObjectId } from 'bson';
 import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
 import { Document } from 'mongoose';
 import VerificationEmail from '../../models/VerificationEmail';
-import { checkAuthTokenByCookie } from './AuthTokenController';
-import { connect } from 'http2';
-import { connectInhabitantFromInvitation } from '../../lib/mongoose/multi-model/connectInhabitantFromInvitation';
 import AccessPermission from '../../models/AccessPermission';
+import { createNewUserAndUnitFromInvitation } from '../../lib/mongoose/multi-model/createNewUserAndUnitFromInvitation';
 
 export async function inviteToSpaceByUserTypeEmail(
   req: RequestCustom & { user: ReqUser; params: { userType: string } },
@@ -61,6 +59,7 @@ export async function inviteToSpaceByUserTypeEmail(
       space,
       userType: userType?.name,
       authToken,
+      type: 'via-email',
       createdBy: req.user._id
     });
 
@@ -160,6 +159,13 @@ export async function acceptInvitationByRegistering(req: Request, res: Response,
     if (password !== password2) {
       throw new ErrorCustom('Passwords do not match', httpStatus.BAD_REQUEST);
     }
+    const newUser = new User({
+      email,
+      password,
+      name,
+      surname,
+      locale
+    });
 
     const authTokenInvitation = await aggregateAuthTokenInvitationByLinkId(linkId, {
       invitationPipelines: [
@@ -180,11 +186,10 @@ export async function acceptInvitationByRegistering(req: Request, res: Response,
     }
     if (invitation?.userType === 'inhabitant' && invitation?.unit) {
       checkAuthTokenByCookieToken(authToken, req.cookies['auth-token']);
-      throw new ErrorCustom('needs to be implemented', httpStatus.NOT_IMPLEMENTED);
-      // await connectInhabitantFromInvitation({
-      //   invitation,
-      //   invitationStatus: 'completed-register'
-      // });
+      await createNewUserAndUnitFromInvitation({
+        invitation,
+        user: newUser
+      });
     }
     if (invitation?.userType !== 'inhabitant') {
       if (invitation.email !== email) {
@@ -208,9 +213,14 @@ export async function acceptInvitationByRegistering(req: Request, res: Response,
       // await handleAcceptInvitationWithoutUnit(invitation, user);
       // const invitation = await findAndUpdateInvitationStatus(aggregatedInvitation, 'accepted');
     }
-
+    const foundAuthToken = await AuthToken.findById(authToken);
+    if (!foundAuthToken) {
+      throw new ErrorCustom('You are registered.', httpStatus.NOT_FOUND);
+    }
+    foundAuthToken.active = false;
+    foundAuthToken.validatedAt = new Date();
+    await foundAuthToken.save();
     // handleSetCookieOnInvitationSuccess(res, invitation, user);
-
     res.status(httpStatus.OK).json({
       success: true,
       data: {
