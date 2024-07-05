@@ -27,6 +27,7 @@ import { Document } from 'mongoose';
 import VerificationEmail from '../../models/VerificationEmail';
 import AccessPermission from '../../models/AccessPermission';
 import { createNewUserAndUnitFromInvitation } from '../../lib/mongoose/multi-model/createNewUserAndUnitFromInvitation';
+import { connectInhabitantFromInvitation } from '../../lib/mongoose/multi-model/connectInhabitantFromInvitation';
 
 export async function inviteToSpaceByUserTypeEmail(
   req: RequestCustom & { user: ReqUser; params: { userType: string } },
@@ -96,23 +97,40 @@ export async function acceptInvitationByLogin(req: Request, res: Response, next:
       throw new ErrorCustom('Incorrect password', httpStatus.UNAUTHORIZED);
     }
     // 2 find and auth by invitation authToken
-    const aggregatedInvitation = await getInvitationByAuthTokenLinkId(linkId, { invitationStatus: 'pending' });
-    if (!aggregatedInvitation) {
+    const authTokenInvitation = await aggregateAuthTokenInvitationByLinkId(linkId, {
+      invitationPipelines: [
+        {
+          $match: {
+            status: {
+              $in: ['pending', 'pending-register']
+            },
+            acceptedAt: { $exists: false }
+          }
+        }
+      ]
+    });
+    const { invitation, authToken } = authTokenInvitation || {};
+    if (!invitation) {
       throw new ErrorCustom('Invitation not found', httpStatus.NOT_FOUND);
     }
     // TODO: handle connect inhabitant and unit by logging in from qrcode
     // TODO:USE THE HANDLER PASSING ALWAYS THE SAME ARGUMENTS FOR EACH CASE. SO TYPESCRIPT DOES NOT THROW ERROR(COULD BE AVOIDED BY USING ANY OR TYPE_GUARD)
 
-    if (aggregatedInvitation.userType === 'inhabitant' && aggregatedInvitation.unit) {
-      await handleAcceptInhabitantInvitationByLogin({ invitation: aggregatedInvitation, user, authTokenCookie: req.cookies['auth-token'] });
+    if (invitation.userType === 'inhabitant' && invitation.unit) {
+      checkAuthTokenByCookieToken(authToken, req.cookies['auth-token']);
+      await connectInhabitantFromInvitation({
+        invitation: invitation,
+        user,
+        invitationStatus: 'accepted'
+      });
     } else {
       // check email in all other cases.(for now)
-      if (aggregatedInvitation.email !== email) {
+      if (invitation.email !== email) {
         throw new ErrorCustom('Email does not match with invitation email', httpStatus.BAD_REQUEST);
       }
-      await handleAcceptInvitationWithoutUnit(aggregatedInvitation, user);
+      await handleAcceptInvitationWithoutUnit(invitation, user);
     }
-    const invitation = await findAndUpdateInvitationStatus(aggregatedInvitation, 'accepted');
+    await findAndUpdateInvitationStatus(invitation, 'accepted');
 
     handleSetCookieOnInvitationSuccess(res, invitation, user);
 

@@ -15,6 +15,7 @@ import User from '../../models/User';
 import AuthToken from '../../models/AuthToken';
 import { connectInhabitantFromInvitation } from '../../lib/mongoose/multi-model/connectInhabitantFromInvitation';
 import { PipelineStage } from 'mongoose';
+import { logger } from '../../lib/logger';
 
 /**
  * @description email is optional for register route
@@ -32,7 +33,7 @@ export async function handleFindPendingInvitationByLinkIdAndEmail(linkId: undefi
   return aggregatedInvitation;
 }
 
-export async function findAndUpdateInvitationStatus(aggregatedInvitation: InvitationByLinkId, _status: invitationStatus) {
+export async function findAndUpdateInvitationStatus(aggregatedInvitation: InvitationByLinkId | InvitationInterface, _status: invitationStatus) {
   const invitation = await Invitation.findById(aggregatedInvitation._id);
   if (!invitation) {
     throw new ErrorCustom('Invitation not found', httpStatus.NOT_FOUND);
@@ -124,7 +125,7 @@ export async function handleAcceptInhabitantInvitationByLogin({
 }: // authTokenCookie,
 // linkId
 {
-  invitation: InvitationByLinkId;
+  invitation: InvitationByLinkId | InvitationInterface;
   user: UserBase;
   authTokenCookie: string;
   // linkId: string;

@@ -186,7 +186,11 @@ export const verifyEmailRegisterInhabitant = async (req: RequestCustom, res: Res
      * 2.
      */
     // TODO: check if it works without problem
-    await connectInhabitantFromInvitation({ invitation, user });
+    await connectInhabitantFromInvitation({
+      invitation,
+      user,
+      invitationStatus: 'completed-register'
+    });
     // TODO: update auth token to be inactive
     // await User.updateOne({ _id: user._id }, { active: true }, { new: true, runValidators: true }); /* .session(session) */
     // await Unit.updateOne({ _id: invitation.unit }, { user: user._id }, { new: true, runValidators: true });
@@ -401,6 +405,9 @@ export async function generateNewAuthTokenInvitationForUnit(req: RequestCustomWi
     const foundUnit = await Unit.findById(req.params.idMongoose);
     if (!foundUnit) {
       throw new ErrorCustom(_MSG.NOT_FOUND_ID(entity, req.params.idMongoose || 'non specificato'), httpStatus.NOT_FOUND);
+    }
+    if (foundUnit.user) {
+      throw new ErrorCustom('Unità già occupata', httpStatus.CONFLICT);
     }
     const newAuthToken = await AuthToken.create({
       type: 'invitation'

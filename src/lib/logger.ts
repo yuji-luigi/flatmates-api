@@ -83,7 +83,7 @@ const options = {
 };
 
 // your centralized logger object
-const logger = winston.createLogger({
+const _logger = winston.createLogger({
   transports: [
     new winston.transports.Console(options.console)
     // new winston.transports.File(options.file),
@@ -93,36 +93,37 @@ const logger = winston.createLogger({
   exitOnError: false // do not exit on handled exceptions
 });
 
-logger.stream({
+_logger.stream({
   write(message: string): void {
-    logger.info(message);
+    _logger.info(message);
   }
 });
 
 export const silly = function (...args: any) {
-  logger.silly.apply(logger, formatLogArguments(args));
+  _logger.silly.apply(_logger, formatLogArguments(args));
 };
 
 export const debug = function (...args: any) {
-  logger.debug.apply(logger, formatLogArguments(args));
+  _logger.debug.apply(_logger, formatLogArguments(args));
 };
 
 export const info = function (...args: any) {
-  logger.info.apply(logger, formatLogArguments(args));
+  _logger.info.apply(_logger, formatLogArguments(args));
 };
 
 export const warn = function (...args: any) {
-  logger.warn.apply(logger, formatLogArguments(args));
+  _logger.warn.apply(_logger, formatLogArguments(args));
 };
 
 export const error = function (...args: any) {
-  logger.error.apply(logger, formatLogArguments(args));
+  _logger.error.apply(_logger, formatLogArguments(args));
 };
 
-export const { stream } = logger;
+export const { stream } = _logger;
 
 const _ = { silly, debug, info, warn, error };
 export default _;
+export const logger = _;
 
 /**
  * Attempts to add file and line number info to the given log arguments.

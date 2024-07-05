@@ -25,9 +25,9 @@ const setUserInRequest = (req: RequestCustom, res: Response, next: NextFunction)
     if (info) {
       throw info;
     }
-    if (!reqUser) {
-      throw new Error('user not found');
-    }
+    // if (!reqUser) {
+    //   throw new Error('user not found');
+    // }
 
     req.user = reqUser;
     return next();

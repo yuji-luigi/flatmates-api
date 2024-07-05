@@ -13,6 +13,7 @@ import { queryHandler } from '../../middlewares/handleSetQuery';
 import { handleUserFromRequest } from '../../middlewares/handleUserFromRequest';
 
 const router = express.Router();
+router.use(handleUserFromRequest);
 
 router.get('/by-linkId/:linkId', getInvitationByLinkIdAndSendToClient);
 
@@ -24,7 +25,6 @@ router.post('/decline/:linkId', declineInvitationByLinkId);
 router.post('/register/:linkId', acceptInvitationByRegistering);
 router.post('/pre-register-with-email-verification/:linkId', preRegisterWithVerificationEmail);
 
-router.use(handleUserFromRequest);
 router.use(queryHandler);
 
 router.post('/:userType', inviteToSpaceByUserTypeEmail);

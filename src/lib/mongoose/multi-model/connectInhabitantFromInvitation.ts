@@ -1,13 +1,13 @@
 import { invitationStatus } from '../../../types/mongoose-types/model-types/invitation-interface';
 import { InvitationByLinkId } from '../../../api/helpers/authTokenHelper';
 import AccessPermission from '../../../models/AccessPermission';
-import { AuthTokenDocument } from '../../../models/AuthToken';
 import Invitation from '../../../models/Invitation';
 import Unit from '../../../models/Unit';
 import User from '../../../models/User';
 import { InvitationInterface } from '../../../types/mongoose-types/model-types/invitation-interface';
 import { UserBase } from '../../../types/mongoose-types/model-types/user-interface';
 import { RoleCache } from '../mongoose-cache/role-cache';
+import { logger } from '../../logger';
 
 export async function connectInhabitantFromInvitation({
   invitation,
@@ -18,7 +18,7 @@ export async function connectInhabitantFromInvitation({
   invitation: InvitationByLinkId | InvitationInterface;
   user: UserBase;
   // authToken: AuthTokenDocument;
-  invitationStatus?: invitationStatus;
+  invitationStatus: invitationStatus;
 }) {
   await User.updateOne({ _id: user._id }, { active: true }, { new: true, runValidators: true }); /* .session(session) */
   await Unit.updateOne({ _id: invitation.unit }, { user: user._id }, { new: true, runValidators: true });
@@ -37,6 +37,8 @@ export async function connectInhabitantFromInvitation({
     user: user._id,
     space: invitation.space,
     role: RoleCache[invitation.userType]
+  }).catch((err) => {
+    logger.error(err);
   });
 
   // authToken.active = false;
