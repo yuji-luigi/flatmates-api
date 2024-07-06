@@ -7,7 +7,6 @@ import {
   handleFindPendingInvitationByLinkIdAndEmail,
   handleSetCookieOnInvitationSuccess,
   checkCanCreateInvitation,
-  handleAcceptInhabitantInvitationByLogin,
   handleAcceptInvitationWithoutUnit,
   aggregateAuthTokenInvitationByLinkId,
   checkAuthTokenByCookieToken
@@ -22,12 +21,11 @@ import { RequestCustom } from '../../types/custom-express/express-custom';
 import { _MSG } from '../../utils/messages';
 import { sendEmail, sendVerificationEmail } from '../../lib/node-mailer/nodemailer';
 import { ObjectId } from 'bson';
-import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
-import { Document } from 'mongoose';
 import VerificationEmail from '../../models/VerificationEmail';
 import AccessPermission from '../../models/AccessPermission';
-import { createNewUserAndUnitFromInvitation } from '../../lib/mongoose/multi-model/createNewUserAndUnitFromInvitation';
 import { connectInhabitantFromInvitation } from '../../lib/mongoose/multi-model/connectInhabitantFromInvitation';
+import { sendNewVerifyEmailUnitNewUser } from '../../lib/mongoose/multi-model/sendNewVerifyEmailUnitinhabitant';
+import { send } from 'process';
 
 export async function inviteToSpaceByUserTypeEmail(
   req: RequestCustom & { user: ReqUser; params: { userType: string } },
@@ -173,17 +171,9 @@ export async function acceptInvitationByRegistering(req: Request, res: Response,
   try {
     const { linkId } = req.params;
     const { email, password, name, surname, password2, locale } = req.body;
-
     if (password !== password2) {
       throw new ErrorCustom('Passwords do not match', httpStatus.BAD_REQUEST);
     }
-    const newUser = new User({
-      email,
-      password,
-      name,
-      surname,
-      locale
-    });
 
     const authTokenInvitation = await aggregateAuthTokenInvitationByLinkId(linkId, {
       invitationPipelines: [
@@ -202,32 +192,95 @@ export async function acceptInvitationByRegistering(req: Request, res: Response,
     if (!invitation) {
       throw new ErrorCustom('Invitation not found', httpStatus.NOT_FOUND);
     }
+    const newUser = new User({
+      email,
+      password,
+      name,
+      surname,
+      locale
+    });
+
     if (invitation?.userType === 'inhabitant' && invitation?.unit) {
       checkAuthTokenByCookieToken(authToken, req.cookies['auth-token']);
-      await createNewUserAndUnitFromInvitation({
-        invitation,
-        user: newUser
+
+      if (invitation.status === 'pending-register') {
+        await sendNewVerifyEmailUnitNewUser({ newUser, invitation });
+
+        // const verificationEmail = await VerificationEmail.findOne({
+        //   invitation: invitation._id
+        // });
+        // if (!verificationEmail) {
+        //   throw new ErrorCustom('Verification email not found', httpStatus.NOT_FOUND);
+        // }
+
+        // const upUser = await User.findById(verificationEmail.user);
+        // if (!upUser) {
+        //   throw new ErrorCustom('User not found', httpStatus.NOT_FOUND);
+        // }
+        // await AuthToken.deleteOne({ _id: verificationEmail.authToken });
+        // const newAuthToken = await AuthToken.create({
+        //   type: 'email-verify'
+        // });
+        // verificationEmail.authToken = newAuthToken._id;
+        // upUser.email = email;
+        // upUser.password = password;
+        // upUser.name = name;
+        // upUser.surname = surname;
+        // upUser.locale = locale;
+        // await upUser.save();
+        // await verificationEmail.save();
+        // await sendVerificationEmail({
+        //   ...verificationEmail.toObject(),
+        //   authToken: newAuthToken.toObject(),
+        //   user: upUser.toObject()
+        // });
+      } else {
+        sendNewVerifyEmailUnitNewUser({ newUser, invitation });
+
+        // const user = new User({
+        //   email,
+        //   password,
+        //   name,
+        //   surname,
+        //   locale
+        // });
+        // // 1. create authTokens for user
+        // const authToken = (await AuthToken.create({
+        //   type: 'email-verify'
+        // })) as Document & AuthTokenInterface & { type: 'email-verify' };
+        // const newVerificationEmail = await VerificationEmail.create({
+        //   user,
+        //   invitation: invitation._id,
+        //   authToken: authToken._id
+        // });
+        // // 2. create email options and send email with the options
+        // await sendVerificationEmail({
+        //   ...newVerificationEmail.toObject(),
+        //   authToken: authToken.toObject(),
+        //   user: user.toObject()
+        // });
+        // await user.save();
+        // await findAndUpdateInvitationStatus(invitation, 'pending-register');
+      }
+      return res.status(httpStatus.OK).json({
+        success: true,
+        data: {
+          message: 'Invitation accepted successfully'
+        }
       });
     }
     if (invitation?.userType !== 'inhabitant') {
       if (invitation.email !== email) {
         throw new ErrorCustom('Invitation not found for the email. Email must be the same email you got invitation.', httpStatus.BAD_REQUEST);
       }
-      const user = new User({
-        email,
-        password,
-        name,
-        surname,
-        active: true
-      });
 
       await AccessPermission.create({
-        user: user._id,
+        user: newUser._id,
         space: invitation.space,
         role: RoleCache[invitation.userType]._id
       });
       await Invitation.updateOne({ _id: invitation._id }, { status: 'accepted' }, { runValidators: true });
-      await user.save();
+      await newUser.save();
       // await handleAcceptInvitationWithoutUnit(invitation, user);
       // const invitation = await findAndUpdateInvitationStatus(aggregatedInvitation, 'accepted');
     }
@@ -279,83 +332,83 @@ export async function __acceptInvitationByRegistering(req: Request, res: Respons
   }
 }
 
-export async function preRegisterWithVerificationEmail(req: Request, res: Response, next: NextFunction) {
+export async function preRegisterWithVerificationEmail(_req: Request, res: Response, next: NextFunction) {
   try {
-    const { linkId } = req.params;
-    const { email, password, name, surname, password2, locale } = req.body;
+    // const { linkId } = req.params;
+    // const { email, password, name, surname, password2, locale } = req.body;
 
-    if (password !== password2) {
-      throw new ErrorCustom('Passwords do not match', httpStatus.BAD_REQUEST);
-    }
+    // if (password !== password2) {
+    //   throw new ErrorCustom('Passwords do not match', httpStatus.BAD_REQUEST);
+    // }
 
-    const aggregatedInvitation = await getInvitationByAuthTokenLinkId(linkId, {
-      invitationStatus: { $in: ['pending', 'pending-register'] }
-    });
+    // const aggregatedInvitation = await getInvitationByAuthTokenLinkId(linkId, {
+    //   invitationStatus: { $in: ['pending', 'pending-register'] }
+    // });
 
-    if (!aggregatedInvitation) {
-      throw new ErrorCustom('Invitation not found', httpStatus.NOT_FOUND);
-    }
+    // if (!aggregatedInvitation) {
+    //   throw new ErrorCustom('Invitation not found', httpStatus.NOT_FOUND);
+    // }
     // 1. check if the invitation is pending-register and aggregate VerificationEmail. by invitation id.
-    if (aggregatedInvitation.status === 'pending-register') {
-      const verificationEmail = await VerificationEmail.findOne({
-        invitation: aggregatedInvitation._id
-      });
-      if (!verificationEmail) {
-        throw new ErrorCustom('Verification email not found', httpStatus.NOT_FOUND);
-      }
+    // if (aggregatedInvitation.status === 'pending-register') {
+    //   const verificationEmail = await VerificationEmail.findOne({
+    //     invitation: aggregatedInvitation._id
+    //   });
+    //   if (!verificationEmail) {
+    //     throw new ErrorCustom('Verification email not found', httpStatus.NOT_FOUND);
+    //   }
 
-      const upUser = await User.findById(verificationEmail.user);
-      if (!upUser) {
-        throw new ErrorCustom('User not found', httpStatus.NOT_FOUND);
-      }
-      await AuthToken.deleteOne({ _id: verificationEmail.authToken });
-      const newAuthToken = await AuthToken.create({
-        type: 'email-verify'
-      });
-      verificationEmail.authToken = newAuthToken._id;
-      upUser.email = email;
-      upUser.password = password;
-      upUser.name = name;
-      upUser.surname = surname;
-      upUser.locale = locale;
-      await upUser.save();
-      await verificationEmail.save();
-      await sendVerificationEmail({
-        ...verificationEmail.toObject(),
-        authToken: newAuthToken.toObject(),
-        user: upUser.toObject()
-      });
-    } else {
-      const user = new User({
-        email,
-        password,
-        name,
-        surname,
-        locale
-      });
+    //   const upUser = await User.findById(verificationEmail.user);
+    //   if (!upUser) {
+    //     throw new ErrorCustom('User not found', httpStatus.NOT_FOUND);
+    //   }
+    //   await AuthToken.deleteOne({ _id: verificationEmail.authToken });
+    //   const newAuthToken = await AuthToken.create({
+    //     type: 'email-verify'
+    //   });
+    //   verificationEmail.authToken = newAuthToken._id;
+    //   upUser.email = email;
+    //   upUser.password = password;
+    //   upUser.name = name;
+    //   upUser.surname = surname;
+    //   upUser.locale = locale;
+    //   await upUser.save();
+    //   await verificationEmail.save();
+    //   await sendVerificationEmail({
+    //     ...verificationEmail.toObject(),
+    //     authToken: newAuthToken.toObject(),
+    //     user: upUser.toObject()
+    //   });
+    // } else {
+    //   const user = new User({
+    //     email,
+    //     password,
+    //     name,
+    //     surname,
+    //     locale
+    //   });
 
-      // 1. create authTokens for user
-      const authToken = (await AuthToken.create({
-        type: 'email-verify'
-      })) as Document & AuthTokenInterface & { type: 'email-verify' };
+    //   // 1. create authTokens for user
+    //   const authToken = (await AuthToken.create({
+    //     type: 'email-verify'
+    //   })) as Document & AuthTokenInterface & { type: 'email-verify' };
 
-      const newVerificationEmail = await VerificationEmail.create({
-        user,
-        invitation: aggregatedInvitation._id,
-        authToken: authToken._id
-      });
+    //   const newVerificationEmail = await VerificationEmail.create({
+    //     user,
+    //     invitation: aggregatedInvitation._id,
+    //     authToken: authToken._id
+    //   });
 
-      // 2. create email options and send email with the options
+    //   // 2. create email options and send email with the options
 
-      await sendVerificationEmail({
-        ...newVerificationEmail.toObject(),
-        authToken: authToken.toObject(),
-        user: user.toObject()
-      });
+    //   await sendVerificationEmail({
+    //     ...newVerificationEmail.toObject(),
+    //     authToken: authToken.toObject(),
+    //     user: user.toObject()
+    //   });
 
-      await user.save();
-      await findAndUpdateInvitationStatus(aggregatedInvitation, 'pending-register');
-    }
+    //   await user.save();
+    //   await findAndUpdateInvitationStatus(aggregatedInvitation, 'pending-register');
+    // }
 
     res.status(httpStatus.OK).json({
       success: true,
