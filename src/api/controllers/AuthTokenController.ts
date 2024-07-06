@@ -13,13 +13,9 @@ import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-
 import { ErrorCustom } from '../../lib/ErrorCustom';
 import { generateNonceCode, generateRandomStringByLength, replaceSpecialChars } from '../../utils/functions';
 import { AnyBulkWriteOperation } from 'mongodb';
-import VerificationEmail from '../../models/VerificationEmail';
 import Invitation from '../../models/Invitation';
 import Unit from '../../models/Unit';
-import { IUser } from '../../types/mongoose-types/model-types/user-interface';
-import { InvitationInterface } from '../../types/mongoose-types/model-types/invitation-interface';
-import { checkForPermissions } from '../../middlewares/isLoggedIn';
-import { connectInhabitantFromInvitation } from '../../lib/mongoose/multi-model/connectInhabitantFromInvitation';
+import { checkUserPermissionOfSpace } from '../../middlewares/isLoggedIn';
 
 const entity = 'authTokens';
 //= ===============================================================================
@@ -50,7 +46,6 @@ export const sendQrCodeByEntityAndIdMongoose = async (req: Request, res: Respons
   }
 };
 
-// TODO: VERIFY AND REMOVE. BUT RETURNS ONLY LINKID TO CLIENT WICTH IS PAYLOAD OF THE REQUEST
 export const sendAuthTokenByIdsToClient = async (req: Request, res: Response) => {
   try {
     const { linkId, idMongoose } = req.params;
@@ -108,124 +103,6 @@ export const verifyPinAndSendBooleanToClient = async (req: RequestCustom, res: R
     logger.error(_MSG.INVALID_ACCESS, err.message);
     res.status(err).json({
       message: err.message || err
-    });
-  }
-};
-
-// for checking the nonce is valid to linkId
-// TODO: THIS MOVETO POST /invitations/register/:linkId. handle invitations depends on invitation.userType.
-export const verifyEmailRegisterInhabitant = async (req: RequestCustom, res: Response) => {
-  try {
-    // const session = await startSession();
-    // session.startTransaction();
-    // verified is when authToken is found. so this is not necessary variable now.
-
-    // const authToken = await verifyAuthTokenByNonceAndLinkId({ linkId: req.params.linkId, nonce: req.body.nonce });
-    const authToken = await AuthToken.findOne({ linkId: req.params.linkId });
-    if (!authToken) throw new ErrorCustom(_MSG.INVALID_ACCESS, httpStatus.FORBIDDEN);
-
-    if (!authToken.active || authToken.isNotValidValidatedAt()) {
-      throw new ErrorCustom('Tuo account é già attivato.', httpStatus.FORBIDDEN);
-    }
-
-    const results: { user: IUser; invitation: InvitationInterface }[] = await VerificationEmail.aggregate([
-      { $match: { authToken: authToken._id } },
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'user',
-          foreignField: '_id',
-          as: 'user'
-        }
-      },
-      {
-        $lookup: {
-          from: 'invitations',
-          localField: 'invitation',
-          foreignField: '_id',
-          as: 'invitation',
-          pipeline: [
-            {
-              $lookup: {
-                from: 'units',
-                localField: 'unit',
-                foreignField: '_id',
-                as: ' unit'
-              }
-            },
-            {
-              $unwind: '$unit'
-            }
-          ]
-        }
-      },
-      {
-        $unwind: '$user'
-      },
-      {
-        $unwind: '$invitation'
-      },
-      {
-        $project: {
-          authToken: 1,
-          unit: '$invitation.unit._id',
-          user: { _id: 1, active: 1 },
-          invitation: { _id: 1, status: 1, space: 1, userType: 1, unit: 1 }
-        }
-      }
-    ]);
-    if (results.length === 0) {
-      throw new ErrorCustom(_MSG.INVALID_ACCESS, httpStatus.FORBIDDEN);
-    }
-    // TODO: TOP EXPIRATION LOGIC
-    const [result] = results;
-    const { user, invitation } = result;
-
-    /**
-     * 1. activate user.
-     * 2.
-     */
-    // TODO: check if it works without problem
-    await connectInhabitantFromInvitation({
-      invitation,
-      user,
-      invitationStatus: 'completed-register'
-    });
-    // TODO: update auth token to be inactive
-    // await User.updateOne({ _id: user._id }, { active: true }, { new: true, runValidators: true }); /* .session(session) */
-    // await Unit.updateOne({ _id: invitation.unit }, { user: user._id }, { new: true, runValidators: true });
-    // await Invitation.updateOne(
-    //   { _id: invitation._id },
-    //   { status: 'completed-register', acceptedAt: new Date() },
-    //   { new: true, runValidators: true }
-    // ); /* .session(session) */
-
-    // // await session.commitTransaction();
-    // // session.endSession();
-
-    // // TODO: 1.SEND THANK YOU FOR REGISTERING WELCOME EMAIL
-    // // TODO: 1 connect user and space.(Create AccessPermission)
-    // await AccessPermission.create({
-    //   user: user._id,
-    //   space: invitation.space,
-    //   role: RoleCache[invitation.userType]
-    // });
-
-    // authToken.active = false;
-    // authToken.validatedAt = new Date();
-    // await authToken.save();
-    // res.cookie('auth-token', stringifyAuthToken(authToken), sensitiveCookieOptions);
-
-    res.status(httpStatus.OK).json({
-      success: true,
-      message: _MSG.SUCCESS,
-      data: 'verified'
-    });
-  } catch (err) {
-    logger.error(err.stack);
-    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-      message: err.message || err,
-      success: false
     });
   }
 };
@@ -305,7 +182,7 @@ export const renewAuthTokensByParams = async (req: RequestCustomWithUser, res: R
   try {
     const { _id } = req.query;
 
-    await checkForPermissions(['super_admin', 'system_admin', 'property_manager'], req.user, req.body.space);
+    await checkUserPermissionOfSpace(['super_admin', 'system_admin', 'property_manager'], req.user, req.body.space);
 
     const authTokens = await AuthToken.find({
       _id
@@ -375,30 +252,6 @@ export const verifyPinAndSendUserToClient = async (req: RequestCustom, res: Resp
     });
   }
 };
-
-// TODO: DEPRECATE THIS?
-export async function generateNewAuthTokenForEntity(req: RequestCustom, res: Response) {
-  try {
-    const foundAuthTokens = await AuthToken.find({
-      docHolder: {
-        instanceId: req.params.idMongoose,
-        entity: req.params.entity
-      }
-    });
-    res.status(httpStatus.OK).json({
-      success: true,
-      collection: entity,
-      data: foundAuthTokens
-    });
-  } catch (error) {
-    logger.error(error);
-    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-      success: false,
-      collection: entity,
-      message: error.message || error
-    });
-  }
-}
 
 export async function generateNewAuthTokenInvitationForUnit(req: RequestCustomWithUser, res: Response, next: NextFunction) {
   try {

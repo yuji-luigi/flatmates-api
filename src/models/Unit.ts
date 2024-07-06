@@ -44,7 +44,7 @@ export const unitSchema = new Schema<UnitInterface>(
       ref: 'spaces',
       required: true
     },
-    /** the condominium */
+    /** the condominium: always required used in aggregation look up without preserve null flag.(removeUserFromUnit function.) */
     space: {
       type: Schema.Types.ObjectId,
       ref: 'spaces',
