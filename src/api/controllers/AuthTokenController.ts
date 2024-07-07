@@ -266,15 +266,11 @@ export async function generateNewAuthTokenInvitationForUnit(req: RequestCustomWi
       type: 'invitation'
     });
 
-    const _newInvitation = await Invitation.create({
-      userType: 'inhabitant',
-      status: 'pending',
-      unit: foundUnit._id,
+    const _newInvitation = await Invitation.createForUnit({
+      unit: foundUnit,
       space: foundUnit.space,
-      type: 'qrcode',
       createdBy: req.user._id,
-      authToken: newAuthToken._id,
-      displayName: foundUnit.tenantName || foundUnit.ownerName
+      authToken: newAuthToken._id
     }).catch(async (error) => {
       logger.error(error.stack || error);
       await newAuthToken.deleteOne();

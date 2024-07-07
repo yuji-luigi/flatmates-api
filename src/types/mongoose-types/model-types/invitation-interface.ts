@@ -3,7 +3,7 @@ import { MongooseBaseModel } from './base-types/base-model-interface';
 import { RoleName } from './role-interface';
 
 /** accepted and completed-register meaning end of life cycle of the invitation (new field acceptedAt) */
-export const invitationStatuses = ['pending', 'accepted', 'declined', 'outdated', 'pending-register', 'completed-register'] as const;
+export const invitationStatuses = ['pending', 'accepted', 'declined', 'outdated', 'pending-email-verification', 'completed-register'] as const;
 export const invitationStatusEnum = invitationStatuses.reduce((acc, status) => {
   acc[status] = status;
   return acc;
@@ -17,7 +17,9 @@ export type invitationStatus = (typeof invitationStatuses)[number];
 export interface _InvitationInterface extends MongooseBaseModel {
   email: string;
   cell?: string;
+  /** used to save the userType to save. also to switch in register/login by invitation logic.(invitations routes) */
   userType: RoleName;
+  /** is not being used. If we use it will be used with user type and type nested switch.*/
   type: InvitationType;
   status: invitationStatus;
   space: ObjectId;

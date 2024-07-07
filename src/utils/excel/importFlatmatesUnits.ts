@@ -113,19 +113,28 @@ export async function handleImportFlatmates({
             type: 'invitation',
             expiresAt
           });
-          await Invitation.create({
-            userType: 'inhabitant',
-            status: 'pending',
-            type: 'qrcode',
-            unit: updatingUnit._id,
-            space: currentSpace._id,
+          await Invitation.createForUnit({
+            unit: updatingUnit,
+            space: currentSpace._id as ObjectId,
             createdBy,
-            displayName,
             authToken: newAuthToken._id
           }).catch(async (error) => {
             logger.error(error.stack || error);
             await newAuthToken.deleteOne();
           });
+          // await Invitation.create({
+          //   userType: 'inhabitant',
+          //   status: 'pending',
+          //   type: 'qrcode',
+          //   unit: updatingUnit._id,
+          //   space: currentSpace._id,
+          //   createdBy,
+          //   displayName,
+          //   authToken: newAuthToken._id
+          // }).catch(async (error) => {
+          //   logger.error(error.stack || error);
+          //   await newAuthToken.deleteOne();
+          // });
         }
       }
     }

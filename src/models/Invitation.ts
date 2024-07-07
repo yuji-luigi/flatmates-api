@@ -2,10 +2,14 @@ import mongoose from 'mongoose';
 import { InvitationInterface, invitationStatuses } from '../types/mongoose-types/model-types/invitation-interface';
 import { ErrorCustom } from '../lib/ErrorCustom';
 import httpStatus from 'http-status';
+import { UnitInterface } from '../types/mongoose-types/model-types/unit-interface';
+import { IUser, UserBase } from '../types/mongoose-types/model-types/user-interface';
+import { ObjectId } from 'bson';
+import { ReqUser } from '../lib/jwt/jwtTypings';
 
 const { Schema } = mongoose;
 
-export const invitationSchema = new Schema<InvitationInterface>(
+export const invitationSchema = new Schema<InvitationInterface, any, any, any, any, InvitaionStatics>(
   {
     // data who created invitation
     createdBy: {
@@ -60,7 +64,32 @@ export const invitationSchema = new Schema<InvitationInterface>(
   }
 );
 
-invitationSchema.statics = {};
+const invitationStatics = {
+  createForUnit: async function ({
+    unit,
+    space,
+    createdBy,
+    authToken
+  }: {
+    unit: UnitInterface;
+    space: ObjectId;
+    createdBy: ObjectId;
+    authToken: ObjectId;
+  }) {
+    await this.create({
+      userType: 'inhabitant',
+      status: 'pending',
+      unit: unit._id,
+      space: space,
+      type: 'qrcode',
+      createdBy,
+      authToken,
+      displayName: unit.tenantName || unit.ownerName
+    });
+  }
+};
+type InvitaionStatics = typeof invitationStatics;
+invitationSchema.statics = invitationStatics;
 
 invitationSchema.pre('save', async function (next) {
   const found = await Invitation.findOne({

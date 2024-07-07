@@ -8,7 +8,7 @@ import httpStatus from 'http-status';
 import User from '../../../models/User';
 import { ErrorCustom } from '../../ErrorCustom';
 
-export async function sendNewVerifyEmailUnitNewUser({ newUser, invitation }: { newUser: Document & IUser; invitation: InvitationInterface }) {
+export async function sendExistingVerifyEmailUnitInhabitant({ newUser, invitation }: { newUser: Document & IUser; invitation: InvitationInterface }) {
   const verificationEmail = await VerificationEmail.findOne({
     invitation: invitation._id
   });

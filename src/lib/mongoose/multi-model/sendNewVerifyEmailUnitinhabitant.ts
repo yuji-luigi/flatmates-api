@@ -28,5 +28,5 @@ export async function sendNewVerifyEmailUnitNewUser({ newUser, invitation }: { n
   });
 
   await newUser.save();
-  await findAndUpdateInvitationStatus(invitation, 'pending-register');
+  await findAndUpdateInvitationStatus(invitation, 'pending-email-verification');
 }

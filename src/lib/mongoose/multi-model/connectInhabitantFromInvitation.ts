@@ -20,19 +20,10 @@ export async function connectInhabitantFromInvitation({
   // authToken: AuthTokenDocument;
   invitationStatus: invitationStatus;
 }) {
-  await User.updateOne({ _id: user._id }, { active: true }, { new: true, runValidators: true }); /* .session(session) */
+  await User.updateOne({ _id: user._id }, { active: true }, { new: true, runValidators: true });
   await Unit.updateOne({ _id: invitation.unit }, { user: user._id }, { new: true, runValidators: true });
-  await Invitation.updateOne(
-    { _id: invitation._id },
-    { status: invitationStatus, acceptedAt: new Date() },
-    { new: true, runValidators: true }
-  ); /* .session(session) */
+  await Invitation.updateOne({ _id: invitation._id }, { status: invitationStatus, acceptedAt: new Date() }, { new: true, runValidators: true });
 
-  // await session.commitTransaction();
-  // session.endSession();
-
-  // TODO: 1.SEND THANK YOU FOR REGISTERING WELCOME EMAIL
-  // TODO: 1 connect user and space.(Create AccessPermission)
   await AccessPermission.create({
     user: user._id,
     space: invitation.space,
@@ -40,8 +31,4 @@ export async function connectInhabitantFromInvitation({
   }).catch((err) => {
     logger.error(err);
   });
-
-  // authToken.active = false;
-  // authToken.validatedAt = new Date();
-  // await authToken.save();
 }
