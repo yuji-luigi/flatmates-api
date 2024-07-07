@@ -205,69 +205,16 @@ export async function acceptInvitationByRegistering(req: Request, res: Response,
 
       if (invitation.status === 'pending-register') {
         await sendNewVerifyEmailUnitNewUser({ newUser, invitation });
-
-        // const verificationEmail = await VerificationEmail.findOne({
-        //   invitation: invitation._id
-        // });
-        // if (!verificationEmail) {
-        //   throw new ErrorCustom('Verification email not found', httpStatus.NOT_FOUND);
-        // }
-
-        // const upUser = await User.findById(verificationEmail.user);
-        // if (!upUser) {
-        //   throw new ErrorCustom('User not found', httpStatus.NOT_FOUND);
-        // }
-        // await AuthToken.deleteOne({ _id: verificationEmail.authToken });
-        // const newAuthToken = await AuthToken.create({
-        //   type: 'email-verify'
-        // });
-        // verificationEmail.authToken = newAuthToken._id;
-        // upUser.email = email;
-        // upUser.password = password;
-        // upUser.name = name;
-        // upUser.surname = surname;
-        // upUser.locale = locale;
-        // await upUser.save();
-        // await verificationEmail.save();
-        // await sendVerificationEmail({
-        //   ...verificationEmail.toObject(),
-        //   authToken: newAuthToken.toObject(),
-        //   user: upUser.toObject()
-        // });
       } else {
         sendNewVerifyEmailUnitNewUser({ newUser, invitation });
-
-        // const user = new User({
-        //   email,
-        //   password,
-        //   name,
-        //   surname,
-        //   locale
-        // });
-        // // 1. create authTokens for user
-        // const authToken = (await AuthToken.create({
-        //   type: 'email-verify'
-        // })) as Document & AuthTokenInterface & { type: 'email-verify' };
-        // const newVerificationEmail = await VerificationEmail.create({
-        //   user,
-        //   invitation: invitation._id,
-        //   authToken: authToken._id
-        // });
-        // // 2. create email options and send email with the options
-        // await sendVerificationEmail({
-        //   ...newVerificationEmail.toObject(),
-        //   authToken: authToken.toObject(),
-        //   user: user.toObject()
-        // });
-        // await user.save();
-        // await findAndUpdateInvitationStatus(invitation, 'pending-register');
       }
-      return res.status(httpStatus.OK).json({
+      res.status(httpStatus.OK).json({
         success: true,
         data: {
           message: 'Invitation accepted successfully'
         }
       });
+      return;
     }
     if (invitation?.userType !== 'inhabitant') {
       if (invitation.email !== email) {
