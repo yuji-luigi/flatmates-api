@@ -16,7 +16,8 @@ export async function sendNewVerifyEmailUnitNewUser({ newUser, invitation }: { n
   const newVerificationEmail = await VerificationEmail.create({
     user: newUser,
     invitation: invitation._id,
-    authToken: authToken._id
+    authToken: authToken._id,
+    type: 'unit-register-email-verification'
   });
 
   // 2. create email options and send email with the options

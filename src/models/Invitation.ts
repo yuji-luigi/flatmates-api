@@ -1,15 +1,14 @@
-import mongoose from 'mongoose';
+import mongoose, { Document, Model } from 'mongoose';
 import { InvitationInterface, invitationStatuses } from '../types/mongoose-types/model-types/invitation-interface';
 import { ErrorCustom } from '../lib/ErrorCustom';
 import httpStatus from 'http-status';
 import { UnitInterface } from '../types/mongoose-types/model-types/unit-interface';
-import { IUser, UserBase } from '../types/mongoose-types/model-types/user-interface';
 import { ObjectId } from 'bson';
-import { ReqUser } from '../lib/jwt/jwtTypings';
 
 const { Schema } = mongoose;
-
-export const invitationSchema = new Schema<InvitationInterface, any, any, any, any, InvitaionStatics>(
+type InvitationDocument = InvitationInterface & Document;
+type InvitationModel = Model<InvitationDocument> & InvitationStatics;
+export const invitationSchema = new Schema<InvitationInterface, any, any, any, any, InvitationStatics>(
   {
     // data who created invitation
     createdBy: {
@@ -56,6 +55,9 @@ export const invitationSchema = new Schema<InvitationInterface, any, any, any, a
     },
     acceptedAt: {
       type: Date
+    },
+    deletedAt: {
+      type: Date
     }
   },
   {
@@ -88,7 +90,7 @@ const invitationStatics = {
     });
   }
 };
-type InvitaionStatics = typeof invitationStatics;
+type InvitationStatics = typeof invitationStatics;
 invitationSchema.statics = invitationStatics;
 
 invitationSchema.pre('save', async function (next) {
@@ -140,5 +142,5 @@ invitationSchema.pre('save', async function (next) {
   next();
 });
 
-const Invitation = mongoose.model('invitations', invitationSchema);
+const Invitation = mongoose.model<InvitationDocument, InvitationModel>('invitations', invitationSchema);
 export default Invitation;

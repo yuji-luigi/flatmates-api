@@ -1,6 +1,6 @@
 import httpStatus from 'http-status';
 import logger from '../../lib/logger';
-import { Response } from 'express';
+import { NextFunction, Response } from 'express';
 import { ParamsInterface, RequestCustom as RequestCustomRoot } from '../../types/custom-express/express-custom';
 import { _MSG } from '../../utils/messages';
 import Space from '../../models/Space';
@@ -16,8 +16,9 @@ import Invitation from '../../models/Invitation';
 import { RoleName } from '../../types/mongoose-types/model-types/role-interface';
 import { Error } from 'mongoose';
 import { convertExcelToJson } from '../../utils/excel/excelHelper';
-import { handleImportFlatmates } from '../../utils/excel/importFlatmatesUnits';
+import { handleImportFlatmates } from '../../utils/excel/import-flatmates/importFlatmatesUnits';
 import { UserImportExcel } from '../../types/excel/UserImportExcel';
+import { updateExpiredOrPendingInvitationsOfCurrentSpaceToBeExpired } from '../helpers/invitation-helpers';
 const entity = 'users';
 
 interface RequestCustom extends RequestCustomRoot {
@@ -376,7 +377,7 @@ export async function getUserByUserTypeAssignedSpaces(maintainerId: string) {
   }
 }
 
-export async function importFlatmatesFromClient(req: RequestCustom, res: Response) {
+export async function importFlatmatesFromClient(req: RequestCustom, res: Response, next: NextFunction) {
   try {
     const { currentSpace } = req.user;
     if (!currentSpace) throw new ErrorCustom('Select the space first to get the users of the space', httpStatus.UNAUTHORIZED);
@@ -385,7 +386,7 @@ export async function importFlatmatesFromClient(req: RequestCustom, res: Respons
       throw new ErrorCustom('No excel or file detected', httpStatus.BAD_REQUEST);
     }
     const data = convertExcelToJson<UserImportExcel>(req.files.file);
-
+    await updateExpiredOrPendingInvitationsOfCurrentSpaceToBeExpired(currentSpace._id);
     const units = await handleImportFlatmates({ excelData: data, currentSpace, createdBy: req.user._id });
 
     res.status(httpStatus.OK).json({
@@ -393,8 +394,9 @@ export async function importFlatmatesFromClient(req: RequestCustom, res: Respons
       collection: entity,
       data: units
     });
-  } catch (err) {
-    logger.error(err.message || err);
-    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: err.message || err });
+  } catch (error) {
+    logger.error(error.stack || error);
+    next(error);
+    // res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: err.message || err });
   }
 }

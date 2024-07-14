@@ -5,6 +5,8 @@ import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-
 import { RequestCustomWithUser } from '../../types/custom-express/express-custom';
 import { checkUserPermissionOfSpace } from '../../middlewares/isLoggedIn';
 import { ObjectId } from 'bson';
+import AccessPermission from '../../models/AccessPermission';
+import { roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
 
 export async function sendUnitsWithAuthToken(req: Request, res: Response, next: NextFunction) {
   try {
@@ -34,7 +36,17 @@ export async function sendUnitsWithAuthToken(req: Request, res: Response, next: 
         $lookup: {
           from: 'invitations',
           let: { unitId: '$_id' },
-          pipeline: [{ $match: { $expr: { $eq: ['$unit', '$$unitId'] } } }],
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$unit', '$$unitId'] },
+                status: { $in: ['pending', 'pending-email-verification'] }
+              }
+            },
+            // TODO: DELETE ALL THE PENDING STATUS AT THE CREATION OF NEW INVITATION IF NOT UPDATE THE EXISTING ONE.(SHOULD BE CREATION OF AUTH TOKEN OR INVITATION.)
+            { $sort: { createdAt: -1 } },
+            { $limit: 1 }
+          ],
           as: 'invitation'
         }
       },
@@ -113,13 +125,20 @@ export async function removeUserFromUnit(req: RequestCustomWithUser, res: Respon
       { $unwind: '$space' }
     ]);
     await checkUserPermissionOfSpace(['system_admin', 'property_manager'], req.user, unit.space._id.toString());
+
     const updated = await Unit.findOneAndUpdate(
       {
         _id: unit._id
       },
       { $unset: { user: '' } },
       { runValidators: true, new: true }
-    );
+    ).populate({ path: 'space', select: 'name address' });
+
+    // if there are no other units in the space, remove the accessPermission as inhabitant from the space
+    const otherUnits = await Unit.find({ user: req.user?._id, space: unit.space._id });
+    if (otherUnits.length === 0) {
+      await AccessPermission.deleteMany({ user: req.user?._id, space: unit.space._id, role: roleCache.get('inhabitant')._id });
+    }
 
     res.status(httpStatus.OK).json({
       message: 'User removed from unit',

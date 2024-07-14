@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { Document, Model } from 'mongoose';
 import {
   emailVerificationStatuses,
   VerificationEmailInterface,
@@ -6,6 +6,8 @@ import {
 } from '../types/mongoose-types/model-types/verification-email-interface';
 
 const { Schema } = mongoose;
+export type VerificationEmailDocument = VerificationEmailInterface & Document;
+export type InvitationModel = Model<VerificationEmailDocument>;
 
 export const VerificationEmailSchema = new Schema<VerificationEmailInterface>(
   {

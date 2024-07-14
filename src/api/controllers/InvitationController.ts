@@ -17,7 +17,7 @@ import AuthToken from '../../models/AuthToken';
 import { RoleCache, roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
 import { createInvitationEmail } from '../../lib/node-mailer/createInvitationMail';
 import Invitation from '../../models/Invitation';
-import { RequestCustom } from '../../types/custom-express/express-custom';
+import { RequestCustom, RequestCustomWithUser } from '../../types/custom-express/express-custom';
 import { _MSG } from '../../utils/messages';
 import { sendEmail } from '../../lib/node-mailer/nodemailer';
 import { ObjectId } from 'bson';
@@ -25,6 +25,7 @@ import AccessPermission from '../../models/AccessPermission';
 import { connectInhabitantFromInvitation } from '../../lib/mongoose/multi-model/connectInhabitantFromInvitation';
 import { sendNewVerifyEmailUnitNewUser } from '../../lib/mongoose/multi-model/sendNewVerifyEmailUnitinhabitant';
 import { sendExistingVerifyEmailUnitInhabitant } from '../../lib/mongoose/multi-model/sendExistingVerifyEmailUnitInhabitant';
+import { translationResources } from '../../lib/node-mailer/translations';
 
 export async function inviteToSpaceByUserTypeEmail(
   req: RequestCustom & { user: ReqUser; params: { userType: string } },
@@ -335,9 +336,10 @@ export async function getInvitationByLinkIdAndSendToClient(req: Request, res: Re
   }
 }
 
-export async function sendAuthTokenOfUnitFromInvitation(req: Request, res: Response, next: NextFunction) {
+export async function sendAuthTokenOfUnitFromInvitation(req: RequestCustomWithUser, res: Response, next: NextFunction) {
   try {
     const { status } = req.query;
+    const translations = translationResources[req.user.locale];
     const authTokens = await AuthToken.aggregate([
       {
         $lookup: {
@@ -356,7 +358,6 @@ export async function sendAuthTokenOfUnitFromInvitation(req: Request, res: Respo
       },
       { $unwind: { path: '$invitation', preserveNullAndEmptyArrays: true } },
       {
-        // at least invitation field is present
         $match: {
           invitation: { $exists: true }
         }
@@ -366,10 +367,58 @@ export async function sendAuthTokenOfUnitFromInvitation(req: Request, res: Respo
           _id: 1,
           active: 1,
           linkId: 1,
-          nonce: 1
+          nonce: 1,
+          invitationStatus: '$invitation.status'
+        }
+      },
+      {
+        $addFields: {
+          _id: {
+            $cond: {
+              if: { $eq: ['$invitationStatus', 'pending-email-verification'] },
+              then: '',
+              else: '$_id'
+            }
+          },
+          linkId: {
+            $cond: {
+              if: { $eq: ['$invitationStatus', 'pending-email-verification'] },
+              then: '',
+              else: '$linkId'
+            }
+          },
+          nonce: {
+            $cond: {
+              if: { $eq: ['$invitationStatus', 'pending-email-verification'] },
+              then: '',
+              else: '$nonce'
+            }
+          },
+          active: {
+            $cond: {
+              if: { $eq: ['$invitationStatus', 'pending-email-verification'] },
+              then: true,
+              else: '$active'
+            }
+          },
+          isAvailable: {
+            $cond: {
+              if: { $eq: ['$invitationStatus', 'pending-email-verification'] },
+              then: false,
+              else: true
+            }
+          },
+          message: {
+            $cond: {
+              if: { $eq: ['$invitationStatus', 'pending-email-verification'] },
+              then: translations('User is registering. QR-Code is not available'),
+              else: ''
+            }
+          }
         }
       }
     ]);
+
     // NOTE: don't destructure for debug purposes. (was returning array with all the authTokens) added existing check
     const authToken = authTokens[0];
     // console.log(JSON.stringify(authToken, null, 2));
@@ -380,4 +429,51 @@ export async function sendAuthTokenOfUnitFromInvitation(req: Request, res: Respo
   } catch (error) {
     next(error);
   }
+}
+
+export interface QRCodeAddFieldsStage {
+  $addFields: {
+    _id: {
+      $cond: {
+        if: { $eq: ['$invitationStatus', 'pending-email-verification'] };
+        then: string;
+        else: '$_id';
+      };
+    };
+    linkId: {
+      $cond: {
+        if: { $eq: ['$invitationStatus', 'pending-email-verification'] };
+        then: string;
+        else: '$linkId';
+      };
+    };
+    nonce: {
+      $cond: {
+        if: { $eq: ['$invitationStatus', 'pending-email-verification'] };
+        then: string;
+        else: '$nonce';
+      };
+    };
+    active: {
+      $cond: {
+        if: { $eq: ['$invitationStatus', 'pending-email-verification'] };
+        then: true;
+        else: '$active';
+      };
+    };
+    isAvailable: {
+      $cond: {
+        if: { $eq: ['$invitationStatus', 'pending-email-verification'] };
+        then: true;
+        else: false;
+      };
+    };
+    message: {
+      $cond: {
+        if: { $eq: ['$invitationStatus', 'pending-email-verification'] };
+        then: string;
+        else: string;
+      };
+    };
+  };
 }
