@@ -115,6 +115,14 @@ export async function verifyEmailByLinkId(req: Request, res: Response, next: Nex
       throw new ErrorCustom(_MSG.INVALID_ACCESS, httpStatus.FORBIDDEN);
     }
 
+    await VerificationEmail.updateOne(
+      {
+        _id: result._id
+      },
+      { status: 'verified' },
+      { runValidators: true }
+    );
+
     await AuthToken.updateOne(
       {
         _id: authToken._id
