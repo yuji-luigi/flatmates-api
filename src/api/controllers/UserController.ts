@@ -473,3 +473,23 @@ async function findAndModifyUserBase(req: RequestCustom) {
   // const updatedModel = await foundUser.save();
   return foundUser;
 }
+
+export async function changeLocale(req: RequestCustom, res: Response) {
+  try {
+    const { locale } = req.body;
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      throw new Error('User not found');
+    }
+    user.set({ locale });
+    await user.save();
+    res.status(httpStatus.OK).json({
+      success: true,
+      collection: 'users',
+      data: user
+    });
+  } catch (error) {
+    logger.error(error.message || error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message || error });
+  }
+}

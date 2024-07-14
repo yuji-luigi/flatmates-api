@@ -9,7 +9,8 @@ import {
   sendUsersToClient,
   updateUserById,
   registerUserOnBoardingAndSendUserToClient,
-  sendAuthTokenOfUserToClient
+  sendAuthTokenOfUserToClient,
+  changeLocale
 } from '../controllers/UserController';
 import { RequestCustom as RequestCustomRoot } from '../../types/custom-express/express-custom';
 import { deleteCrudObjectByIdAndSendDataWithPagination } from '../controllers/DataTableController';
@@ -55,6 +56,8 @@ router.get('/with-pagination', isLoggedIn([SUPER_ADMIN]), sendUsersToClient);
 router.get('/:idMongoose/send-token-email', isLoggedIn(), sendTokenEmail);
 
 router.get('/:idMongoose/auth-tokens', isLoggedIn(), sendAuthTokenOfUserToClient);
+
+router.post('/change-locale', isLoggedIn(), changeLocale);
 
 router.post('/with-pagination', isLoggedIn(), createUserAndSendDataWithPagination);
 router.post('/import-excel', isLoggedIn(), importExcelFromClient);

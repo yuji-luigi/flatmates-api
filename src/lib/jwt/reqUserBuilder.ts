@@ -6,6 +6,15 @@ import { roleCache } from '../mongoose/mongoose-cache/role-cache';
 import { ErrorCustom } from '../ErrorCustom';
 import { _MSG } from '../../utils/messages';
 
+export type ReqUserBuilderArgs = {
+  user: UserBaseOptionalPassword;
+  currentSpace: CurrentSpace | null;
+  userType: RoleName | undefined;
+  accessPermissions: AccessPermissionCache[];
+  currentAccessPermission: AccessPermissionCache | undefined;
+  loggedAs: RoleName;
+};
+
 export const reqUserBuilder = ({
   user,
   currentSpace,
@@ -13,14 +22,7 @@ export const reqUserBuilder = ({
   loggedAs,
   accessPermissions,
   currentAccessPermission
-}: {
-  user: UserBaseOptionalPassword;
-  currentSpace: CurrentSpace;
-  userType: RoleName | undefined;
-  accessPermissions: AccessPermissionCache[];
-  currentAccessPermission?: AccessPermissionCache;
-  loggedAs: RoleName;
-}): ReqUser => {
+}: ReqUserBuilderArgs): ReqUser => {
   if (!userType) {
     throw new ErrorCustom('User type is not defined.', 500);
   }

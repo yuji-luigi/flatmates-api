@@ -4,8 +4,8 @@ import vars from '../../utils/globalVariables';
 import User from '../../models/User';
 import Space from '../../models/Space';
 import { isAdminOfSpace } from '../../middlewares/auth-middlewares';
-import { reqUserBuilder } from './reqUserBuilder';
-import { CurrentSpace, JwtSignPayload, JwtSignPayloadWithAccessCtrlAndSpaceDetail, ReqUser } from './jwtTypings';
+import { reqUserBuilder, ReqUserBuilderArgs } from './reqUserBuilder';
+import { JwtSignPayload, JwtSignPayloadWithAccessCtrlAndSpaceDetail, ReqUser } from './jwtTypings';
 import { accessPermissionsCache } from '../mongoose/mongoose-cache/access-permission-cache';
 import AccessController from '../../models/AccessPermission';
 import logger from '../logger';
@@ -71,10 +71,15 @@ const resolveUserJwt = async (resolvedJwt: JwtSignPayload | JwtSignPayloadWithAc
         spaceCache.set(aCtrl.space.toString(), space);
       }
     }
-
-    const currentSpace: CurrentSpace = {
-      isAdminOfSpace: false
+    const reqUserPayload: ReqUserBuilderArgs = {
+      user: leanUser,
+      loggedAs: resolvedJwt.loggedAs,
+      userType: resolvedJwt.userType,
+      accessPermissions,
+      currentAccessPermission: undefined,
+      currentSpace: null
     };
+
     // case space field in jwt and also is truthy. prepare set space info in req.user
     if ('spaceId' in resolvedJwt && resolvedJwt.spaceId) {
       if (accessPermissions.length && !accessPermissions.map((aCtrl) => aCtrl.space.toString()).includes(resolvedJwt.spaceId)) {
@@ -83,22 +88,19 @@ const resolveUserJwt = async (resolvedJwt: JwtSignPayload | JwtSignPayloadWithAc
 
       const space = spaceCache.getWithoutException(resolvedJwt.spaceId);
       if (space) {
-        currentSpace.name = space.name;
-        currentSpace._id = space._id;
+        reqUserPayload.currentSpace = {
+          name: space.name,
+          _id: space._id,
+          isAdminOfSpace: isAdminOfSpace({ space, currentUser: leanUser })
+        };
       }
-      leanUser.isAdminOfCurrentSpace = isAdminOfSpace({ space, currentUser: leanUser });
     }
 
-    const currentAccessPermission = accessPermissions.find((aCtrl) => aCtrl.space.toString() === currentSpace._id?.toString());
+    reqUserPayload.currentAccessPermission = accessPermissions.find(
+      (aCtrl) => aCtrl.space.toString() === reqUserPayload.currentSpace?._id?.toString()
+    );
 
-    const reqUser = reqUserBuilder({
-      user: leanUser,
-      currentSpace,
-      loggedAs: resolvedJwt.loggedAs,
-      userType: resolvedJwt.userType,
-      accessPermissions,
-      currentAccessPermission
-    });
+    const reqUser = reqUserBuilder(reqUserPayload);
 
     return done(null, reqUser);
   } catch (error) {
