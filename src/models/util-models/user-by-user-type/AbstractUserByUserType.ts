@@ -113,6 +113,7 @@ export abstract class AbstractUserByUserType {
           name: 1,
           surname: 1,
           email: 1,
+          active: 1,
           // role: '$userRole.name',
           // isPublicProfile: '$userRegistry.isPublic',
           cover: {

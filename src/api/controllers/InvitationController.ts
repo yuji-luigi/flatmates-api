@@ -226,6 +226,8 @@ export async function acceptInvitationByRegistering(req: Request, res: Response,
         role: RoleCache[invitation.userType]._id
       });
       await Invitation.updateOne({ _id: invitation._id }, { status: 'accepted' }, { runValidators: true });
+
+      newUser.active = true;
       await newUser.save();
       // await handleAcceptInvitationWithoutUnit(invitation, user);
       // const invitation = await findAndUpdateInvitationStatus(aggregatedInvitation, 'accepted');
