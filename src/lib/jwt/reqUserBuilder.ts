@@ -5,6 +5,7 @@ import { AccessPermissionCache } from '../../types/mongoose-types/model-types/ac
 import { roleCache } from '../mongoose/mongoose-cache/role-cache';
 import { ErrorCustom } from '../ErrorCustom';
 import { _MSG } from '../../utils/messages';
+import { isAdminOfSpace } from '../../middlewares/auth-middlewares';
 
 export type ReqUserBuilderArgs = {
   user: UserBaseOptionalPassword;
@@ -13,6 +14,7 @@ export type ReqUserBuilderArgs = {
   accessPermissions: AccessPermissionCache[];
   currentAccessPermission: AccessPermissionCache | undefined;
   loggedAs: RoleName;
+  isAdminOfSpace: boolean;
 };
 
 export const reqUserBuilder = ({
@@ -21,7 +23,8 @@ export const reqUserBuilder = ({
   userType,
   loggedAs,
   accessPermissions,
-  currentAccessPermission
+  currentAccessPermission,
+  isAdminOfSpace
 }: ReqUserBuilderArgs): ReqUser => {
   if (!userType) {
     throw new ErrorCustom('User type is not defined.', 500);
@@ -38,7 +41,8 @@ export const reqUserBuilder = ({
     accessPermissions,
     currentAccessPermission,
     loggedAs: currentRole,
-    userType: prevRole
+    userType: prevRole,
+    isAdminOfSpace
   };
   return jwtReturnObject;
 };

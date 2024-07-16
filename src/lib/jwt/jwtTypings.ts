@@ -8,7 +8,6 @@ export type CurrentSpace = {
   _id: ObjectId;
   organizationId?: ObjectId;
   // set value in runtime. set in check function
-  isAdminOfSpace: boolean;
 };
 
 // not jwt this is type of the req.user
@@ -18,7 +17,7 @@ export type ReqUser = UserBaseOptionalPassword & {
   accessPermissions?: AccessPermissionCache[];
   currentAccessPermission?: AccessPermissionCache;
   /** admin = system_admin */
-  isAdminOfCurrentSpace?: boolean;
+  isAdminOfSpace?: boolean;
 } & { currentSpace?: CurrentSpace | null };
 
 export type JwtSignPayload = {

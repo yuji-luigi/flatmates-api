@@ -34,7 +34,7 @@ export async function inviteToSpaceByUserTypeEmail(
 ) {
   try {
     // need to check if the user is system_admin of the space or super admin
-    if (!req.user.isAdminOfCurrentSpace && !req.user.isSuperAdmin) {
+    if (!req.user.isAdminOfSpace && !req.user.isSuperAdmin) {
       throw new ErrorCustom(_MSG.NOT_AUTHORIZED, httpStatus.UNAUTHORIZED);
     }
     const { userType: userTypeName } = req.params;

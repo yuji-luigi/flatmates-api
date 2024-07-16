@@ -77,7 +77,8 @@ const resolveUserJwt = async (resolvedJwt: JwtSignPayload | JwtSignPayloadWithAc
       userType: resolvedJwt.userType,
       accessPermissions,
       currentAccessPermission: undefined,
-      currentSpace: null
+      currentSpace: null,
+      isAdminOfSpace: false
     };
 
     // case space field in jwt and also is truthy. prepare set space info in req.user
@@ -90,9 +91,9 @@ const resolveUserJwt = async (resolvedJwt: JwtSignPayload | JwtSignPayloadWithAc
       if (space) {
         reqUserPayload.currentSpace = {
           name: space.name,
-          _id: space._id,
-          isAdminOfSpace: isAdminOfSpace({ space, currentUser: leanUser })
+          _id: space._id
         };
+        reqUserPayload.isAdminOfSpace = isAdminOfSpace({ space, currentUser: leanUser });
       }
     }
 
