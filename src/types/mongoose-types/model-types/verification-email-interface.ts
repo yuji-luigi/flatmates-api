@@ -9,9 +9,12 @@ export interface VerificationEmailInterface extends MongooseBaseModel {
   user: ObjectId;
   authToken: ObjectId;
   status: EmailVerificationStatus;
+  type: VerificationEmailType;
 }
 
-export const emailVerificationStatuses = ['pending', 'verified', 'outdated'] as const;
+export const verificationEmailTypes = ['email-verify', 'email-change', 'password-forgot', 'unit-register-email-verification'] as const;
+export type VerificationEmailType = (typeof verificationEmailTypes)[number];
+export const emailVerificationStatuses = ['pending', 'verified', 'expired'] as const;
 
 export type EmailVerificationStatus = (typeof emailVerificationStatuses)[number];
 

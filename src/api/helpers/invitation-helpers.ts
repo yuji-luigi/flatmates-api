@@ -14,6 +14,9 @@ import { RoleName, UserType } from '../../types/mongoose-types/model-types/role-
 import User from '../../models/User';
 import AuthToken from '../../models/AuthToken';
 import { connectInhabitantFromInvitation } from '../../lib/mongoose/multi-model/connectInhabitantFromInvitation';
+import { PipelineStage } from 'mongoose';
+import { ObjectId } from 'bson';
+import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
 
 /**
  * @description email is optional for register route
@@ -31,7 +34,7 @@ export async function handleFindPendingInvitationByLinkIdAndEmail(linkId: undefi
   return aggregatedInvitation;
 }
 
-export async function findAndUpdateInvitationStatus(aggregatedInvitation: InvitationByLinkId, _status: invitationStatus) {
+export async function findAndUpdateInvitationStatus(aggregatedInvitation: InvitationByLinkId | InvitationInterface, _status: invitationStatus) {
   const invitation = await Invitation.findById(aggregatedInvitation._id);
   if (!invitation) {
     throw new ErrorCustom('Invitation not found', httpStatus.NOT_FOUND);
@@ -100,36 +103,43 @@ export const invitationByUserTypeHandler: InvitationHandler = {
   }
 };
 
-export async function handleAcceptInhabitantInvitationByLogin({
-  invitation,
-  user,
-  authTokenCookie,
-  linkId
-}: {
-  invitation: InvitationByLinkId;
-  user: UserBase;
-  authTokenCookie: string;
-  linkId: string;
-}) {
+/**
+ * check decoded json pased cookies['auth-token] and authToken and throw error if does not match
+ * this step is necessary in pages after inserting nonce.(since we don't request user to input the nonce anymore.)
+ * @throws ErrorCustom when the nonce does not match
+ *  */
+export function checkAuthTokenByCookieToken(authToken: InvitationAuthToken['authToken'] | undefined, authTokenCookie: string) {
+  if (!authToken) {
+    throw new ErrorCustom('Invalid access', httpStatus.BAD_REQUEST, 'authToken is not found by linkId');
+  }
   const decodedAuthToken = JSON.parse(decodeURIComponent(authTokenCookie));
   const sentNonce = decodedAuthToken.nonce;
-  const authToken = await AuthToken.findOne({
-    linkId,
-    nonce: sentNonce
-  });
-  // 1. check authToken cookie and compare nonce
-  if (!authToken) {
+  if (sentNonce !== authToken.nonce || authToken.linkId !== decodedAuthToken.linkId) {
     throw new ErrorCustom('Invalid nonce', httpStatus.BAD_REQUEST);
   }
+  return true;
+}
+
+export async function handleAcceptInhabitantInvitationByLogin({
+  invitation,
+  user
+}: // authTokenCookie,
+// linkId
+{
+  invitation: InvitationByLinkId | InvitationInterface;
+  user: UserBase;
+  authTokenCookie: string;
+  // linkId: string;
+}) {
   // 2. get space, unit,
-  await connectInhabitantFromInvitation({ authToken, invitation, user, invitationStatus: 'accepted' });
+  await connectInhabitantFromInvitation({ invitation, user, invitationStatus: 'accepted' });
   // 3. create accessPermission
 }
 
 /**
  * @description create accessPermission and userRegistry for the user
  */
-export async function handleAcceptInvitationWithoutUnit(aggregatedInvitation: InvitationByLinkId, user: ReqUser | IUser) {
+export async function handleAcceptInvitationWithoutUnit(aggregatedInvitation: InvitationByLinkId | InvitationInterface, user: ReqUser | IUser) {
   // create accessPermission
   if (!RoleCache[aggregatedInvitation.userType]?._id) {
     throw new ErrorCustom('Cache is not initialized yet for some reason', httpStatus.NOT_FOUND);
@@ -140,4 +150,166 @@ export async function handleAcceptInvitationWithoutUnit(aggregatedInvitation: In
     space: aggregatedInvitation.space,
     role: RoleCache[aggregatedInvitation.userType]?._id
   });
+}
+
+type InvitationAuthToken = {
+  authToken: { _id: string; linkId: string; nonce: string; expiresAt: Date };
+  invitation: InvitationInterface;
+};
+export async function aggregateAuthTokenInvitationByLinkId(
+  linkId: string | undefined,
+  options?: {
+    invitationPipelines?: Exclude<PipelineStage, PipelineStage.Merge | PipelineStage.Out>[];
+  }
+): Promise<InvitationAuthToken | undefined> {
+  const results = await AuthToken.aggregate<InvitationAuthToken | undefined>([
+    {
+      $match: {
+        linkId: linkId
+      }
+    },
+    {
+      $lookup: {
+        from: 'invitations',
+        localField: '_id',
+        foreignField: 'authToken',
+        as: 'invitation',
+        pipeline: [
+          ...(options?.invitationPipelines || []),
+          {
+            $lookup: {
+              from: 'spaces',
+              localField: 'space',
+              foreignField: '_id',
+              as: 'space'
+            }
+          },
+          { $unwind: '$space' }
+        ]
+      }
+    },
+    {
+      $unwind: { path: '$invitation', preserveNullAndEmptyArrays: true }
+    },
+    {
+      $match: { invitation: { $exists: true, $ne: null } } // again filter out null values. returns empty array if null.
+    },
+    {
+      $project: {
+        _id: 0,
+        authToken: { _id: '$_id', linkId: '$linkId', nonce: '$nonce', expiresAt: '$expiresAt', type: '$type' },
+        invitation: 1
+      }
+    }
+  ]);
+  return results[0];
+}
+export async function updateExpiredOrPendingInvitationsOfCurrentSpaceToBeExpired(spaceId: ObjectId) {
+  const invitations = await findExpiredOrPendingInvitationsBySpaceId(spaceId);
+  const idDto = invitations.reduce<{ invitationId: ObjectId[]; authTokenId: ObjectId[] }>(
+    (acc, invitation) => {
+      acc.invitationId.push(invitation._id);
+      acc.authTokenId.push(invitation.authToken._id);
+      return acc;
+    },
+    { invitationId: [], authTokenId: [] }
+  );
+
+  await AuthToken.deleteMany({
+    _id: { $in: idDto.authTokenId }
+  });
+
+  await Invitation.deleteMany({
+    _id: { $in: idDto.invitationId }
+  });
+}
+
+async function findExpiredOrPendingInvitationsBySpaceId(spaceId: ObjectId) {
+  const [{ pendingVerifyEmailExpired, pending }] = await Invitation.aggregate([
+    {
+      $match: {
+        space: spaceId,
+        status: {
+          $in: ['pending-verify-email', 'pending']
+        }
+      }
+    },
+    {
+      $lookup: {
+        from: 'authtokens',
+        localField: 'authToken',
+        foreignField: '_id',
+        as: 'authToken'
+        //   pipeline: [
+        //     {
+        //       $match: {
+        //         expiresAt: { $lt: new Date() }
+        //       }
+        //     }
+        //   ]
+      }
+    },
+    {
+      $unwind: { path: '$authToken', preserveNullAndEmptyArrays: true }
+    },
+    {
+      $facet: {
+        pendingVerifyEmailExpired: [
+          {
+            $match: {
+              status: 'pending-verify-email',
+              'authToken.expiresAt': { $lt: new Date() }
+            }
+          }
+        ],
+        pending: [
+          {
+            $match: {
+              status: 'pending'
+            }
+          }
+        ]
+      }
+    }
+  ]);
+  const pendingOrExpiredInvitations = pending.concat(pendingVerifyEmailExpired);
+  return pendingOrExpiredInvitations as (InvitationInterface & { authToken: AuthTokenInterface })[];
+  // // Results
+  // const { pendingVerifyEmailExpired } = results[0];
+  // const { pending } = results[0];
+
+  // return await Invitation.aggregate([
+  //   {
+  //     $match: {
+  //       space: spaceId,
+  //       status: {
+  //         $in: pendingInvitationStatuses
+  //       }
+  //     }
+  //   },
+  //   {
+  //     $lookup: {
+  //       from: 'authtokens',
+  //       localField: 'authToken',
+  //       foreignField: '_id',
+  //       as: 'authToken',
+  //       pipeline: [
+  //         {
+  //           $match: {
+  //             expiresAt: { $lt: new Date() }
+  //           }
+  //         }
+  //       ]
+  //     }
+  //   },
+  //   {
+  //     $unwind: { path: '$authToken', preserveNullAndEmptyArrays: true }
+  //   },
+  //   {
+  //     $match: {
+  //       // get expired or pending invitations both
+  //       $or: [{ authToken: { $exists: true } }, { status: 'pending' }]
+  //     }
+  //   }
+  // ]);
 }

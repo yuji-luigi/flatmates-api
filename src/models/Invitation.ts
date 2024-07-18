@@ -1,11 +1,14 @@
-import mongoose from 'mongoose';
+import mongoose, { Document, Model } from 'mongoose';
 import { InvitationInterface, invitationStatuses } from '../types/mongoose-types/model-types/invitation-interface';
 import { ErrorCustom } from '../lib/ErrorCustom';
 import httpStatus from 'http-status';
+import { UnitInterface } from '../types/mongoose-types/model-types/unit-interface';
+import { ObjectId } from 'bson';
 
 const { Schema } = mongoose;
-
-export const invitationSchema = new Schema<InvitationInterface>(
+type InvitationDocument = InvitationInterface & Document;
+type InvitationModel = Model<InvitationDocument> & InvitationStatics;
+export const invitationSchema = new Schema<InvitationInterface, any, any, any, any, InvitationStatics>(
   {
     // data who created invitation
     createdBy: {
@@ -31,6 +34,10 @@ export const invitationSchema = new Schema<InvitationInterface>(
       type: String,
       required: true
     },
+    type: {
+      type: String,
+      required: true
+    },
     status: {
       type: String,
       required: true,
@@ -48,6 +55,9 @@ export const invitationSchema = new Schema<InvitationInterface>(
     },
     acceptedAt: {
       type: Date
+    },
+    deletedAt: {
+      type: Date
     }
   },
   {
@@ -56,16 +66,62 @@ export const invitationSchema = new Schema<InvitationInterface>(
   }
 );
 
-invitationSchema.statics = {};
+const invitationStatics = {
+  createForUnit: async function ({
+    unit,
+    space,
+    createdBy,
+    authToken
+  }: {
+    unit: UnitInterface;
+    space: ObjectId;
+    createdBy: ObjectId;
+    authToken: ObjectId;
+  }) {
+    await this.create({
+      userType: 'inhabitant',
+      status: 'pending',
+      unit: unit._id,
+      space: space,
+      type: 'qrcode',
+      createdBy,
+      authToken,
+      displayName: unit.tenantName || unit.ownerName
+    });
+  }
+};
+type InvitationStatics = typeof invitationStatics;
+invitationSchema.statics = invitationStatics;
 
 invitationSchema.pre('save', async function (next) {
   const found = await Invitation.findOne({
     $or: [
       // NOTE: case for property_manager and maintainer
-      { $and: [{ email: { $exists: true } }, { email: this.email }], space: this.space, status: 'pending' },
+      {
+        $and: [
+          {
+            email: { $exists: true }
+          },
+          { email: this.email }
+        ],
+        space: this.space,
+        status: 'pending'
+      },
+
       // NOTE: case for flatmates unit
       // if the same unit and the same type of invitation is pending, then throw error
-      { unit: this.unit, status: 'pending', userType: this.userType }
+      {
+        $and: [
+          {
+            unit: { $exists: true }
+          },
+          {
+            unit: this.unit
+          }
+        ],
+        status: 'pending',
+        userType: this.userType
+      }
     ]
   });
 
@@ -86,5 +142,5 @@ invitationSchema.pre('save', async function (next) {
   next();
 });
 
-const Invitation = mongoose.model('invitations', invitationSchema);
+const Invitation = mongoose.model<InvitationDocument, InvitationModel>('invitations', invitationSchema);
 export default Invitation;

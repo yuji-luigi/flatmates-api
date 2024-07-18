@@ -14,10 +14,10 @@ export interface UnitInterface extends MongooseBaseModel {
   floor: ObjectId;
   owner?: ObjectId;
   tenant?: ObjectId;
-  status: UnitStatus;
+  // status: UnitStatus;
   user?: ObjectId;
 }
 // TODO: unitStatus: idle is not meaningful name.
-export const unitStatus = ['complete-registration', 'idle', 'registration-pending'] as const;
-/** idle means unit exists but no invitation is present. No user is pending to register to the unit at the moment */
-export type UnitStatus = (typeof unitStatus)[number];
+// export const unitStatus = ['complete-registration', 'idle', 'registration-pending'] as const;
+// /** idle means unit exists but no invitation is present. No user is pending to register to the unit at the moment */
+// export type UnitStatus = (typeof unitStatus)[number];

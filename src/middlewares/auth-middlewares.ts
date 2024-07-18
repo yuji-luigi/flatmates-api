@@ -57,6 +57,6 @@ export function isAdminOfSpace({
   const isSystemAdmin = !!accessPermissions.find(
     (actrl) => actrl.space.toString() === space._id?.toString() && actrl.role.toString() === RoleCache.system_admin._id.toString()
   );
-
+  console.log('isSystemAdmin', isSystemAdmin);
   return isSystemAdmin;
 }

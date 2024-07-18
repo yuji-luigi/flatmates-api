@@ -4,11 +4,10 @@ import { AccessPermissionCache } from '../../types/mongoose-types/model-types/ac
 import { UserBaseOptionalPassword } from '../../types/mongoose-types/model-types/user-interface';
 
 export type CurrentSpace = {
-  name?: string;
-  _id?: ObjectId;
+  name: string;
+  _id: ObjectId;
   organizationId?: ObjectId;
   // set value in runtime. set in check function
-  isAdminOfSpace: boolean;
 };
 
 // not jwt this is type of the req.user
@@ -18,8 +17,8 @@ export type ReqUser = UserBaseOptionalPassword & {
   accessPermissions?: AccessPermissionCache[];
   currentAccessPermission?: AccessPermissionCache;
   /** admin = system_admin */
-  isAdminOfCurrentSpace?: boolean;
-} & { currentSpace?: CurrentSpace };
+  isAdminOfSpace?: boolean;
+} & { currentSpace?: CurrentSpace | null };
 
 export type JwtSignPayload = {
   email: string;

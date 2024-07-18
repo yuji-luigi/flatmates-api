@@ -36,7 +36,9 @@ export const authTokenSchema = new Schema<AuthTokenInterface>(
   },
   {
     methods: {
-      /**@throws ErrorCustom */
+      /**@throws ErrorCustom
+       * @description 15 min is defaylt time for validation
+       */
       isNotValidValidatedAt: function () {
         if (this.validatedAt < new Date(Date.now() - 1000 * 60 * 15)) {
           return true;

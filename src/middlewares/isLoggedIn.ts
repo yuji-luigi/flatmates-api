@@ -63,7 +63,7 @@ export async function checkForCurrentPermission(roles: RoleName[], user: ReqUser
 }
 
 /** @throws ErrorCustom. check for roles array and user.currentAccessPermission.role */
-export async function checkForPermissions(roles: RoleName[], user: ReqUser, spaceId: string | undefined | null) {
+export async function checkUserPermissionOfSpace(roles: RoleName[], user: ReqUser, spaceId: string | undefined | null) {
   if (!spaceId) {
     throw new ErrorCustom(_MSG.ERRORS.INTERNAL_SERVER_ERROR, httpStatus.INTERNAL_SERVER_ERROR, 'SpaceId is not defined somehow... This is a bug.');
   }

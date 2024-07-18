@@ -7,22 +7,25 @@ import {
   handleFindPendingInvitationByLinkIdAndEmail,
   handleSetCookieOnInvitationSuccess,
   checkCanCreateInvitation,
-  handleAcceptInhabitantInvitationByLogin,
-  handleAcceptInvitationWithoutUnit
+  handleAcceptInvitationWithoutUnit,
+  aggregateAuthTokenInvitationByLinkId,
+  checkAuthTokenByCookieToken
 } from '../helpers/invitation-helpers';
 import { getInvitationByAuthTokenLinkId } from '../helpers/authTokenHelper';
 import { ReqUser } from '../../lib/jwt/jwtTypings';
 import AuthToken from '../../models/AuthToken';
-import { roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
+import { RoleCache, roleCache } from '../../lib/mongoose/mongoose-cache/role-cache';
 import { createInvitationEmail } from '../../lib/node-mailer/createInvitationMail';
 import Invitation from '../../models/Invitation';
-import { RequestCustom } from '../../types/custom-express/express-custom';
+import { RequestCustom, RequestCustomWithUser } from '../../types/custom-express/express-custom';
 import { _MSG } from '../../utils/messages';
-import { sendEmail, sendVerificationEmail } from '../../lib/node-mailer/nodemailer';
+import { sendEmail } from '../../lib/node-mailer/nodemailer';
 import { ObjectId } from 'bson';
-import { AuthTokenInterface } from '../../types/mongoose-types/model-types/auth-token-interface';
-import { Document } from 'mongoose';
-import VerificationEmail from '../../models/VerificationEmail';
+import AccessPermission from '../../models/AccessPermission';
+import { connectInhabitantFromInvitation } from '../../lib/mongoose/multi-model/connectInhabitantFromInvitation';
+import { sendNewVerifyEmailUnitNewUser } from '../../lib/mongoose/multi-model/sendNewVerifyEmailUnitinhabitant';
+import { sendExistingVerifyEmailUnitInhabitant } from '../../lib/mongoose/multi-model/sendExistingVerifyEmailUnitInhabitant';
+import { translationResources } from '../../lib/node-mailer/translations';
 
 export async function inviteToSpaceByUserTypeEmail(
   req: RequestCustom & { user: ReqUser; params: { userType: string } },
@@ -31,7 +34,7 @@ export async function inviteToSpaceByUserTypeEmail(
 ) {
   try {
     // need to check if the user is system_admin of the space or super admin
-    if (!req.user.isAdminOfCurrentSpace && !req.user.isSuperAdmin) {
+    if (!req.user.isAdminOfSpace && !req.user.isSuperAdmin) {
       throw new ErrorCustom(_MSG.NOT_AUTHORIZED, httpStatus.UNAUTHORIZED);
     }
     const { userType: userTypeName } = req.params;
@@ -55,6 +58,7 @@ export async function inviteToSpaceByUserTypeEmail(
       space,
       userType: userType?.name,
       authToken,
+      type: 'via-email',
       createdBy: req.user._id
     });
 
@@ -91,30 +95,48 @@ export async function acceptInvitationByLogin(req: Request, res: Response, next:
       throw new ErrorCustom('Incorrect password', httpStatus.UNAUTHORIZED);
     }
     // 2 find and auth by invitation authToken
-    const aggregatedInvitation = await getInvitationByAuthTokenLinkId(linkId, { invitationStatus: 'pending' });
-    if (!aggregatedInvitation) {
+    const authTokenInvitation = await aggregateAuthTokenInvitationByLinkId(linkId, {
+      invitationPipelines: [
+        {
+          $match: {
+            status: {
+              $in: ['pending', 'pending-email-verification']
+            },
+            acceptedAt: { $exists: false }
+          }
+        }
+      ]
+    });
+    const { invitation, authToken } = authTokenInvitation || {};
+    if (!invitation) {
       throw new ErrorCustom('Invitation not found', httpStatus.NOT_FOUND);
     }
     // TODO: handle connect inhabitant and unit by logging in from qrcode
     // TODO:USE THE HANDLER PASSING ALWAYS THE SAME ARGUMENTS FOR EACH CASE. SO TYPESCRIPT DOES NOT THROW ERROR(COULD BE AVOIDED BY USING ANY OR TYPE_GUARD)
 
-    if (aggregatedInvitation.userType === 'inhabitant' && aggregatedInvitation.unit) {
-      await handleAcceptInhabitantInvitationByLogin({ invitation: aggregatedInvitation, user, authTokenCookie: req.cookies.authToken, linkId });
+    if (invitation.userType === 'inhabitant' && invitation.unit) {
+      checkAuthTokenByCookieToken(authToken, req.cookies['auth-token']);
+      await connectInhabitantFromInvitation({
+        invitation: invitation,
+        user,
+        invitationStatus: 'accepted'
+      });
     } else {
       // check email in all other cases.(for now)
-      if (aggregatedInvitation.email !== email) {
+      if (invitation.email !== email) {
         throw new ErrorCustom('Email does not match with invitation email', httpStatus.BAD_REQUEST);
       }
+      await handleAcceptInvitationWithoutUnit(invitation, user);
     }
-    await handleAcceptInvitationWithoutUnit(aggregatedInvitation, user);
-    const invitation = await findAndUpdateInvitationStatus(aggregatedInvitation, 'accepted');
+    await findAndUpdateInvitationStatus(invitation, 'accepted');
 
     handleSetCookieOnInvitationSuccess(res, invitation, user);
 
     res.status(httpStatus.OK).json({
       success: true,
       data: {
-        message: 'Invitation accepted successfully'
+        message: 'Invitation accepted successfully',
+        userType: invitation.userType // now passing userType string to log user in from frontend /auth/invitation/login?redirect=linkIdxxx
       }
     });
   } catch (error) {
@@ -144,7 +166,90 @@ export async function declineInvitationByLinkId(req: Request, res: Response, nex
   }
 }
 
+// TODO: MOVE AUTH_TOKEN LOGIC TO HERE. ALSO ENDPOINT FROM FRONTEND TO BE CHANGED
 export async function acceptInvitationByRegistering(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { linkId } = req.params;
+    const { email, password, name, surname, password2, locale } = req.body;
+    if (password !== password2) {
+      throw new ErrorCustom('Passwords do not match', httpStatus.BAD_REQUEST);
+    }
+
+    const authTokenInvitation = await aggregateAuthTokenInvitationByLinkId(linkId, {
+      invitationPipelines: [
+        {
+          $match: {
+            status: {
+              $in: ['pending', 'pending-email-verification']
+            },
+            acceptedAt: { $exists: false }
+          }
+        }
+      ]
+    });
+    const { invitation, authToken } = authTokenInvitation || {};
+
+    if (!invitation) {
+      throw new ErrorCustom('Invitation not found', httpStatus.NOT_FOUND);
+    }
+    const newUser = new User({
+      email,
+      password,
+      name,
+      surname,
+      locale
+    });
+
+    if (invitation?.userType === 'inhabitant' && invitation?.unit) {
+      checkAuthTokenByCookieToken(authToken, req.cookies['auth-token']);
+
+      if (invitation.status === 'pending-email-verification') {
+        await sendExistingVerifyEmailUnitInhabitant({ newUser, invitation });
+      } else {
+        await sendNewVerifyEmailUnitNewUser({ newUser, invitation });
+      }
+      res.status(httpStatus.OK).json({
+        success: true,
+        message: 'Verification email has been sent! Please check your email to verify your account.',
+        code: 'need-verification-email'
+      });
+      return;
+    }
+    if (invitation?.userType !== 'inhabitant') {
+      if (invitation.email !== email) {
+        throw new ErrorCustom('Invitation not found for the email. Email must be the same email you got invitation.', httpStatus.BAD_REQUEST);
+      }
+
+      await AccessPermission.create({
+        user: newUser._id,
+        space: invitation.space,
+        role: RoleCache[invitation.userType]._id
+      });
+      await Invitation.updateOne({ _id: invitation._id }, { status: 'accepted' }, { runValidators: true });
+
+      newUser.active = true;
+      await newUser.save();
+      // await handleAcceptInvitationWithoutUnit(invitation, user);
+      // const invitation = await findAndUpdateInvitationStatus(aggregatedInvitation, 'accepted');
+    }
+    const foundAuthToken = await AuthToken.findById(authToken);
+    if (!foundAuthToken) {
+      throw new ErrorCustom('You are registered.', httpStatus.NOT_FOUND);
+    }
+    foundAuthToken.active = false;
+    foundAuthToken.validatedAt = new Date();
+    await foundAuthToken.save();
+    // handleSetCookieOnInvitationSuccess(res, invitation, user);
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: 'Invitation accepted successfully',
+      code: 'invitation-accepted'
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+export async function __acceptInvitationByRegistering(req: Request, res: Response, next: NextFunction) {
   try {
     const { linkId } = req.params;
     const { email, password, name, surname } = req.body;
@@ -174,84 +279,8 @@ export async function acceptInvitationByRegistering(req: Request, res: Response,
   }
 }
 
-export async function preRegisterWithVerificationEmail(req: Request, res: Response, next: NextFunction) {
+export async function preRegisterWithVerificationEmail(_req: Request, res: Response, next: NextFunction) {
   try {
-    const { linkId } = req.params;
-    const { email, password, name, surname, password2, locale } = req.body;
-
-    if (password !== password2) {
-      throw new ErrorCustom('Passwords do not match', httpStatus.BAD_REQUEST);
-    }
-
-    const aggregatedInvitation = await getInvitationByAuthTokenLinkId(linkId, {
-      invitationStatus: { $in: ['pending', 'pending-register'] }
-    });
-
-    if (!aggregatedInvitation) {
-      throw new ErrorCustom('Invitation not found', httpStatus.NOT_FOUND);
-    }
-    // 1. check if the invitation is pending-register and aggregate VerificationEmail. by invitation id.
-    if (aggregatedInvitation.status === 'pending-register') {
-      const verificationEmail = await VerificationEmail.findOne({
-        invitation: aggregatedInvitation._id
-      });
-      if (!verificationEmail) {
-        throw new ErrorCustom('Verification email not found', httpStatus.NOT_FOUND);
-      }
-
-      const upUser = await User.findById(verificationEmail.user);
-      if (!upUser) {
-        throw new ErrorCustom('User not found', httpStatus.NOT_FOUND);
-      }
-      await AuthToken.deleteOne({ _id: verificationEmail.authToken });
-      const newAuthToken = await AuthToken.create({
-        type: 'email-verify'
-      });
-      verificationEmail.authToken = newAuthToken._id;
-      upUser.email = email;
-      upUser.password = password;
-      upUser.name = name;
-      upUser.surname = surname;
-      upUser.locale = locale;
-      await upUser.save();
-      await verificationEmail.save();
-      await sendVerificationEmail({
-        ...verificationEmail.toObject(),
-        authToken: newAuthToken.toObject(),
-        user: upUser.toObject()
-      });
-    } else {
-      const user = new User({
-        email,
-        password,
-        name,
-        surname,
-        locale
-      });
-
-      // 1. create authTokens for user
-      const authToken = (await AuthToken.create({
-        type: 'email-verify'
-      })) as Document & AuthTokenInterface & { type: 'email-verify' };
-
-      const newVerificationEmail = await VerificationEmail.create({
-        user,
-        invitation: aggregatedInvitation._id,
-        authToken: authToken._id
-      });
-
-      // 2. create email options and send email with the options
-
-      await sendVerificationEmail({
-        ...newVerificationEmail.toObject(),
-        authToken: authToken.toObject(),
-        user: user.toObject()
-      });
-
-      await user.save();
-      await findAndUpdateInvitationStatus(aggregatedInvitation, 'pending-register');
-    }
-
     res.status(httpStatus.OK).json({
       success: true,
       data: {
@@ -309,9 +338,10 @@ export async function getInvitationByLinkIdAndSendToClient(req: Request, res: Re
   }
 }
 
-export async function sendAuthTokenOfUnitFromInvitation(req: Request, res: Response, next: NextFunction) {
+export async function sendAuthTokenOfUnitFromInvitation(req: RequestCustomWithUser, res: Response, next: NextFunction) {
   try {
     const { status } = req.query;
+    const translations = translationResources[req.user.locale];
     const authTokens = await AuthToken.aggregate([
       {
         $lookup: {
@@ -330,7 +360,6 @@ export async function sendAuthTokenOfUnitFromInvitation(req: Request, res: Respo
       },
       { $unwind: { path: '$invitation', preserveNullAndEmptyArrays: true } },
       {
-        // at least invitation field is present
         $match: {
           invitation: { $exists: true }
         }
@@ -340,10 +369,58 @@ export async function sendAuthTokenOfUnitFromInvitation(req: Request, res: Respo
           _id: 1,
           active: 1,
           linkId: 1,
-          nonce: 1
+          nonce: 1,
+          invitationStatus: '$invitation.status'
+        }
+      },
+      {
+        $addFields: {
+          _id: {
+            $cond: {
+              if: { $eq: ['$invitationStatus', 'pending-email-verification'] },
+              then: '',
+              else: '$_id'
+            }
+          },
+          linkId: {
+            $cond: {
+              if: { $eq: ['$invitationStatus', 'pending-email-verification'] },
+              then: '',
+              else: '$linkId'
+            }
+          },
+          nonce: {
+            $cond: {
+              if: { $eq: ['$invitationStatus', 'pending-email-verification'] },
+              then: '',
+              else: '$nonce'
+            }
+          },
+          active: {
+            $cond: {
+              if: { $eq: ['$invitationStatus', 'pending-email-verification'] },
+              then: true,
+              else: '$active'
+            }
+          },
+          isAvailable: {
+            $cond: {
+              if: { $eq: ['$invitationStatus', 'pending-email-verification'] },
+              then: false,
+              else: true
+            }
+          },
+          message: {
+            $cond: {
+              if: { $eq: ['$invitationStatus', 'pending-email-verification'] },
+              then: translations('User is registering. QR-Code is not available'),
+              else: ''
+            }
+          }
         }
       }
     ]);
+
     // NOTE: don't destructure for debug purposes. (was returning array with all the authTokens) added existing check
     const authToken = authTokens[0];
     // console.log(JSON.stringify(authToken, null, 2));
@@ -354,4 +431,51 @@ export async function sendAuthTokenOfUnitFromInvitation(req: Request, res: Respo
   } catch (error) {
     next(error);
   }
+}
+
+export interface QRCodeAddFieldsStage {
+  $addFields: {
+    _id: {
+      $cond: {
+        if: { $eq: ['$invitationStatus', 'pending-email-verification'] };
+        then: string;
+        else: '$_id';
+      };
+    };
+    linkId: {
+      $cond: {
+        if: { $eq: ['$invitationStatus', 'pending-email-verification'] };
+        then: string;
+        else: '$linkId';
+      };
+    };
+    nonce: {
+      $cond: {
+        if: { $eq: ['$invitationStatus', 'pending-email-verification'] };
+        then: string;
+        else: '$nonce';
+      };
+    };
+    active: {
+      $cond: {
+        if: { $eq: ['$invitationStatus', 'pending-email-verification'] };
+        then: true;
+        else: '$active';
+      };
+    };
+    isAvailable: {
+      $cond: {
+        if: { $eq: ['$invitationStatus', 'pending-email-verification'] };
+        then: true;
+        else: false;
+      };
+    };
+    message: {
+      $cond: {
+        if: { $eq: ['$invitationStatus', 'pending-email-verification'] };
+        then: string;
+        else: string;
+      };
+    };
+  };
 }

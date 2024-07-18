@@ -24,6 +24,7 @@ import { queryHandler } from '../../middlewares/handleSetQuery';
 import statisticRoutes from './statistic.routes';
 import invitationRoutes from './invitation-routes';
 import unitRoutes from './unit-routes';
+import verificationEmailRoutes from './verification-email.routes';
 //= ===============================================================================
 // AUTH ROUTES
 //= ===============================================================================
@@ -34,7 +35,7 @@ router.use('/auth-tokens', authTokenRoutes);
 router.use('/upload-files', uploadFilesRoutes);
 router.use('/checks', checkRoutes);
 router.use('/statistics', statisticRoutes);
-
+router.use('/verification-emails', verificationEmailRoutes);
 // call passport jwt strategy defined in passport.ts
 // set user in req.user
 router.use(handleUserFromRequest);

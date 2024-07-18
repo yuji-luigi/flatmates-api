@@ -12,10 +12,12 @@ export const translationResources = {
         'Thank you for choosing FlatMate! Almost there to complete registration',
       'Click below and insert the code to verify your email.': 'Click below and insert the code to verify your email.',
       'Click here': 'Click here',
-      'Email Verification': 'Email Verification'
+      'Email Verification': 'Email Verification',
+      'User is registering. QR-Code is not available': 'User is registering. QR-Code is not available'
     };
-    return translations[key];
+    return translations[key] || key;
   },
+
   it: (key: string, ...args: string[]) => {
     const translations: Record<string, string> = {
       'You are invited to': `Sei stato invitato a ${args[0]}`,
@@ -30,8 +32,9 @@ export const translationResources = {
         'Grazie per aver scelto FlatMate! Quasi pronto per completare la registrazione',
       'Click below and insert the code to verify your email.': 'Clicca qui sotto e inserisci il codice per verificare la tua email.',
       'Click here': 'Clicca qui',
-      'Email Verification': 'Verifica Email'
+      'Email Verification': 'Verifica Email',
+      'User is registering. QR-Code is not available': "L'utente si sta registrando. Codice-QR non é disponibile."
     };
-    return translations[key];
+    return translations[key] || key;
   }
-};
+} as const;
