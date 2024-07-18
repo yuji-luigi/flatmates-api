@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/yuji-luigi/flatmates-api/compare/flatmates-api-v1.2.0...flatmates-api-v1.2.1) (2024-07-18)
+
+
+### Bug Fixes
+
+* docker ignore tests ([11f1dbd](https://github.com/yuji-luigi/flatmates-api/commit/11f1dbd333dd49364ea7f352f5adcf25dca5660f))
+
 ## [1.2.0](https://github.com/yuji-luigi/flatmates-api/compare/flatmates-api-v1.1.12...flatmates-api-v1.2.0) (2024-07-18)
 
 
