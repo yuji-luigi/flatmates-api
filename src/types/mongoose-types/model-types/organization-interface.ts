@@ -15,5 +15,5 @@ export interface IOrganization extends MongooseBaseModel {
   /** decides if everyone in the world can see or only under the organization. */
   isPublic: boolean;
   admins: string[] | IUser[];
-  maintainers: MaintainerInterface[];
+  maintainers: any[];
 }

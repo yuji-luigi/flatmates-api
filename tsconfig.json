@@ -1,10 +1,9 @@
 {
   "ts-node": {
-    // "transpileOnly": true, //  if you want to use ts-node without type checking
-    "files": false
+    "transpileOnly": false, // Ensure this is false to enable type checking
+    "files": true // Include all files
   },
   "compilerOptions": {
-    // "strict": true,
     "module": "commonjs",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -36,6 +35,12 @@
   },
   "include": [
     "src/**/*.ts",
-    "src/api/controllers/uploadFilesControllerNew.js"
+    // "src/api/**/*.ts",
+    // "src/api/helpers/s3Client.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    // "src/__test__",
+    "dist"
   ]
 }

@@ -1,60 +1,57 @@
-import { ObjectId } from 'mongoose';
 import logger from '../../lib/logger';
 import AuthToken from '../../models/AuthToken';
 import Space from '../../models/Space';
 import User from '../../models/User';
 import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
-import { checkDuplicateEmail } from './mongoose.helper';
-import { userExcelData } from './usersHelper';
 import { UserImportExcel } from '../../types/excel/UserImportExcel';
 
-export async function handleConstructUpdateUser({
-  excelData,
-  mainSpace,
-  organization
-}: {
-  excelData: userExcelData;
-  mainSpace: ObjectId;
-  organization: ObjectId;
-}) {
-  try {
-    const duplicateEmailFound = await checkDuplicateEmail({ model: User, email: excelData.email });
-    if (duplicateEmailFound) {
-      delete excelData.email;
-    }
-    let user = await User.findOne({
-      name: excelData.name,
-      surname: excelData.surname,
-      rootSpaces: { $in: [mainSpace] },
-      organizations: { $in: [organization] }
-    });
-    // case already imported once. update the user
-    if (user) {
-      user.set({
-        name: excelData.name,
-        surname: excelData.surname,
-        email: excelData.email,
-        rootSpaces: [mainSpace],
-        role: 'user'
-      });
-    }
-    // case new user. create new one + new authToken
-    if (!user) {
-      user = new User({
-        name: excelData.name,
-        surname: excelData.surname,
-        email: excelData.email,
-        rootSpaces: [mainSpace],
-        role: 'user',
-        organizations: [organization]
-      });
-    }
-    return user;
-  } catch (error) {
-    logger.error(error.message || error, 'error in registerUserCondominium');
-    throw new Error(error.message || error);
-  }
-}
+// export async function handleConstructUpdateUser({
+//   excelData,
+//   mainSpace,
+//   organization
+// }: {
+//   excelData: ;
+//   mainSpace: ObjectId;
+//   organization: ObjectId;
+// }) {
+//   try {
+//     const duplicateEmailFound = await checkDuplicateEmail({ model: User, email: excelData.email });
+//     if (duplicateEmailFound) {
+//       delete excelData.email;
+//     }
+//     let user = await User.findOne({
+//       name: excelData.name,
+//       surname: excelData.surname,
+//       rootSpaces: { $in: [mainSpace] },
+//       organizations: { $in: [organization] }
+//     });
+//     // case already imported once. update the user
+//     if (user) {
+//       user.set({
+//         name: excelData.name,
+//         surname: excelData.surname,
+//         email: excelData.email,
+//         rootSpaces: [mainSpace],
+//         role: 'user'
+//       });
+//     }
+//     // case new user. create new one + new authToken
+//     if (!user) {
+//       user = new User({
+//         name: excelData.name,
+//         surname: excelData.surname,
+//         email: excelData.email,
+//         rootSpaces: [mainSpace],
+//         role: 'user',
+//         organizations: [organization]
+//       });
+//     }
+//     return user;
+//   } catch (error) {
+//     logger.error(error.message || error, 'error in registerUserCondominium');
+//     throw new Error(error.message || error);
+//   }
+// }
 
 // not using now
 export async function handleCreateSpaceByUserUnit({ excelData, mainSpace }: { excelData: UserImportExcel[]; mainSpace: ISpace }) {
