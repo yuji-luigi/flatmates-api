@@ -32,8 +32,9 @@ export async function authLoginInstances({ email, password }: { email?: string; 
     }
 
     let result: { user?: typeof foundUser; maintainer?: typeof foundMaintainer } = {};
-    result = foundUser && passwordMatches({ password, loginInstance: foundUser }) ? { user: foundUser } : result;
-    result = foundMaintainer && passwordMatches({ password, loginInstance: foundMaintainer }) ? { ...result, maintainer: foundMaintainer } : result;
+    result = foundUser && (await passwordMatches({ password, loginInstance: foundUser })) ? { user: foundUser } : result;
+    result =
+      foundMaintainer && (await passwordMatches({ password, loginInstance: foundMaintainer })) ? { ...result, maintainer: foundMaintainer } : result;
     if (!('user' in result) && !('maintainer' in result)) {
       throw new APIError({
         message: 'Incorrect email or password'

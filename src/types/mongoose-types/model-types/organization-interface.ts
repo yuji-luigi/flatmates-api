@@ -1,5 +1,5 @@
 import { MongooseBaseModel } from './base-types/base-model-interface';
-import { MaintainerInterface } from './maintainer-interface';
+// import { MaintainerInterface } from './maintainer-interface';
 import { IUser } from './user-interface';
 
 export interface IOrganization extends MongooseBaseModel {

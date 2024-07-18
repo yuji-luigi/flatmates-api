@@ -16,7 +16,7 @@ export type ConverterError = APIError | expressValidation.ValidationError;
  * @public
  */
 
-const handler = (err: any, req: Request, res: Response) => {
+const handler = (err: any, _req: Request, res: Response) => {
   const response = {
     code: err.status,
     message: err.message,
@@ -37,7 +37,7 @@ const handler = (err: any, req: Request, res: Response) => {
  */
 
 const converter = (err: ErrorType, req: Request, res: Response) => {
-  let convertedError: ApiErrorConstructor;
+  let convertedError: ApiErrorConstructor = {};
   if (err instanceof expressValidation.ValidationError) {
     convertedError = new APIError({
       message: 'Validation Error',
