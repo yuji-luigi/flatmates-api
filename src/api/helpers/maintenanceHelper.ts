@@ -146,6 +146,7 @@ function createBodyForMaintenance({
   return html;
 }
 
+// TODO: not used now
 export async function createOptionsToNotifyMaintainer({
   maintenance,
   authToken
