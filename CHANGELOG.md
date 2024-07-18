@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2](https://github.com/yuji-luigi/flatmates-api/compare/flatmates-api-v1.2.1...flatmates-api-v1.2.2) (2024-07-18)
+
+
+### Bug Fixes
+
+* cicd pipeline ([072c519](https://github.com/yuji-luigi/flatmates-api/commit/072c51947a20df0303f2d88780288ccec528705b))
+
 ## [1.2.1](https://github.com/yuji-luigi/flatmates-api/compare/flatmates-api-v1.2.0...flatmates-api-v1.2.1) (2024-07-18)
 
 
