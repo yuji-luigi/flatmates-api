@@ -4,7 +4,8 @@ import { MongooseBaseModel } from './base-types/base-model-interface';
 import { IUpload } from './upload-interface';
 import { IUser } from './user-interface';
 
-export interface MaintainerInterface extends Omit<LeanMaintainer, 'entity' | 'role'>, MongooseBaseModel, LoginInstance<MaintainerInterface> {}
+export type MaintainerInterface = any;
+// export interface MaintainerInterface extends Omit<LeanMaintainer, 'entity' | 'role'>, MongooseBaseModel, LoginInstance<MaintainerInterface> {}
 
 export interface LeanMaintainer {
   _id: ObjectId;
