@@ -11,12 +11,18 @@ import mongoose from 'mongoose';
 import { UploadsThread } from '../helpers/types-uploadFileHelper';
 import { _MSG } from '../../utils/messages';
 import { ObjectId } from 'mongodb';
+import { ErrorCustom } from '../../lib/ErrorCustom';
 
 const createThread = async (req: RequestCustom, res: Response) => {
   try {
     req.body.createdBy = req.user;
     const reqBody = deleteEmptyFields(req.body);
     reqBody.user = req.user;
+    if (!req.user?.isSuperAdmin && !req.body.space) {
+      return res.send('ok');
+
+      throw new ErrorCustom('You must set the building.');
+    }
     await Thread.create(reqBody);
     req.query = {
       ...req.query,

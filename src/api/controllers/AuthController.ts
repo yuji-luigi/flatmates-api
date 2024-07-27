@@ -26,6 +26,7 @@ import { ErrorCustom } from '../../lib/ErrorCustom';
 import { MeUser } from '../../lib/MeUser';
 import AccessPermission from '../../models/AccessPermission';
 import { ReqUser } from '../../lib/jwt/jwtTypings';
+import { ISpace } from '../../types/mongoose-types/model-types/space-interface';
 
 const { cookieDomain } = vars;
 
@@ -172,15 +173,18 @@ const loginByRole = async (req: Request<{ role: RoleName }>, res: Response) => {
     const { role } = req.params as { role: RoleName };
 
     const user = await User.findOne({ email });
+
     if (!user) {
-      throw new ErrorCustom('Utente non trovato', httpStatus.NOT_FOUND);
+      throw new ErrorCustom('Si prega di controllare le credenziali', httpStatus.NOT_FOUND);
     }
     if (!(await user.passwordMatches(password))) {
-      throw new Error('Password non corrispondenti');
+      throw new Error('Si prega di controllare le credenziali');
     }
     const accessPermissions: AccessPermissionCache[] = await AccessPermission.find({
       user: user._id
     });
+
+    const spaces = [...new Set(accessPermissions.map((actrl) => actrl.space.toString()))];
 
     accessPermissionsCache.set(user._id.toString(), accessPermissions);
     const userRegistry = await UserRegistry.findOne({
@@ -195,11 +199,13 @@ const loginByRole = async (req: Request<{ role: RoleName }>, res: Response) => {
     const payload = JWTPayload.simple({
       email: user.email,
       loggedAs: role,
-      userType: role
+      userType: role,
+      ...(spaces.length === 1 ? { spaceId: spaces[0] } : {})
     });
-    resetSpaceCookies(res);
 
-    handleSetCookiesFromPayload(res, payload);
+    resetSpaceCookies(res);
+    const spacePayload = spaces.length === 1 ? await Space.findById<ISpace>(payload.spaceId) : undefined;
+    handleSetCookiesFromPayload(res, payload, spacePayload);
 
     return res.status(httpStatus.OK).json({
       success: true,

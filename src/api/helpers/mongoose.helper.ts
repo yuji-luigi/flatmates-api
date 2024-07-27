@@ -81,9 +81,9 @@ export async function aggregateWithPagination(
   const data = await mongoose.model(entity).aggregate<ResultAggregateWithPagination>([
     {
       $facet: {
-        paginatedResult: [{ $match: query }, ...customPipeline, { $skip: skip }, { $limit: limit }],
+        paginatedResult: [{ $match: resultQuery }, ...customPipeline, { $skip: skip }, { $limit: limit }],
 
-        counts: [{ $match: query }, { $count: 'total' }]
+        counts: [{ $match: resultQuery }, { $count: 'total' }]
       }
     }
   ]);

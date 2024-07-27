@@ -13,7 +13,7 @@ export const generateTokenUrl = {
 export const signJwt = (payload: string | Record<string, any>) => jwt.sign(payload, vars.jwtSecret || '', { expiresIn: vars.jwtExpirationInterval });
 
 /** @description sign payload as jwt then res.cookie with type checking. set jwt and space + organization cookie*/
-export function handleSetCookiesFromPayload(res: Response, payload: JWTPayload, space?: ISpace) {
+export function handleSetCookiesFromPayload(res: Response, payload: JWTPayload, space?: ISpace | null) {
   res.cookie('jwt', signJwt({ ...payload }), { ...sensitiveCookieOptions, httpOnly: true, sameSite: false });
   res.cookie('loggedAs', payload.loggedAs, basicCookieOptions);
   if (space) {

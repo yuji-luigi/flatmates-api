@@ -22,8 +22,9 @@ const mockUsers: Omit<UserBase, '_id' | 'slug'>[] = [
 ];
 
 export async function initSeed() {
+  //TODO: create endpoints to seed roles and users
   // await seedUsers();
-  // await seedRoles();
+  await seedRoles();
 }
 
 export const seedRoles = async () => {

@@ -5,6 +5,7 @@ import logger from '../lib/logger';
 import { Entities } from '../types/mongoose-types/model-types/Entities';
 import { entities } from '../types/mongoose-types/model-types/Entities';
 import { RequestCustom } from '../types/custom-express/express-custom';
+import { ErrorCustom } from '../lib/ErrorCustom';
 
 const invalidEntities = ['auth-tokens', 'spaces', 'uploads', 'users'];
 
@@ -19,6 +20,6 @@ export const checkEntity = (req: RequestCustom, res: Response, next: NextFunctio
   if (entities.includes(entity as Entities)) {
     return next();
   }
-  logger.warn(`invalid entity access, entity: ${entity}`);
-  res.status(httpStatus.OK).json({ message: entity });
+
+  throw new ErrorCustom(`Entity is not valid :${entity}`, httpStatus.BAD_REQUEST);
 };
