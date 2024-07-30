@@ -1,106 +1,61 @@
 import { FilterOptions } from '../../../types/mongoose-types/pipelines/pipeline-type';
 import { PipelineStage } from 'mongoose';
 import User from '../../User';
-import { createFilteredStage } from '../../../api/aggregation-helpers/pipeline';
 import { ObjectId } from 'mongodb';
 import { RoleName } from '../../../types/mongoose-types/model-types/role-interface';
 import { ErrorCustom } from '../../../lib/ErrorCustom';
 import { RoleCache } from '../../../lib/mongoose/mongoose-cache/role-cache';
-
-// placeholder for the deprecated mongoose model
+// Placeholder for the deprecated mongoose model
 // TODO: specify all the fields that are common to all user types and enable instantiation of the class.
 export abstract class AbstractUserByUserType {
   protected static roleName: RoleName;
+
   static async findById(id: ObjectId, params?: { matchStage: Record<string, any>; fieldFilterOptions?: FilterOptions }) {
-    const { matchStage = {}, fieldFilterOptions } = params || {};
-    let pipeline: PipelineStage[] = [
-      ...commonPipeline({ roleName: this.roleName }),
-      {
-        $match: {
-          'userRole.name': this.roleName,
-          _id: id,
-          ...matchStage
-        }
-      },
-      { $limit: 1 },
-      {
-        $project: {
-          _id: 1,
-          name: 1,
-          surname: 1,
-          email: 1,
-          // role: '$userRole.name',
-          // isPublicProfile: '$userRegistry.isPublic',
-          cover: {
-            url: '$avatar.url',
-            fileName: '$avatar.fileName'
-          },
-          avatar: {
-            url: '$avatar.url',
-            fileName: '$avatar.fileName'
-          },
-          spaces: '$accessPermissions.space',
-
-          slug: 1
-        }
-      }
-    ];
-
-    if (fieldFilterOptions) {
-      const filterStage = createFilteredStage(fieldFilterOptions);
-      pipeline = pipeline.concat(filterStage);
-    }
-
+    const pipeline = this.buildPipeline({
+      matchStage: { _id: id, ...(params?.matchStage || {}) },
+      fieldFilterOptions: params?.fieldFilterOptions,
+      limit: 1
+    });
     const [maintainer] = await User.aggregate(pipeline);
     return maintainer;
   }
+
   static async findOne(params?: { matchStage: Record<string, any>; fieldFilterOptions?: FilterOptions }) {
-    const { matchStage = {}, fieldFilterOptions } = params || {};
-    let pipeline: PipelineStage[] = [
-      ...commonPipeline({ roleName: this.roleName }),
-      {
-        $match: {
-          'userRole.name': this.roleName,
-          ...matchStage
-        }
-      },
-      { $limit: 1 },
-      {
-        $project: {
-          _id: 1,
-          name: 1,
-          surname: 1,
-          email: 1,
-          // role: '$userRole.name',
-          // isPublicProfile: '$userRegistry.isPublic',
-          cover: {
-            url: '$avatar.url',
-            fileName: '$avatar.fileName'
-          },
-          avatar: {
-            url: '$avatar.url',
-            fileName: '$avatar.fileName'
-          },
-          spaces: '$accessPermissions.space',
-
-          slug: 1
-        }
-      }
-    ];
-
-    if (fieldFilterOptions) {
-      const filterStage = createFilteredStage(fieldFilterOptions);
-      pipeline = pipeline.concat(filterStage);
-    }
-
+    const pipeline = this.buildPipeline({
+      matchStage: params?.matchStage,
+      fieldFilterOptions: params?.fieldFilterOptions,
+      limit: 1
+    });
     const [maintainer] = await User.aggregate(pipeline);
     return maintainer;
   }
+
   static async find(options?: { matchStage?: Record<string, any>; fieldFilterOptions?: FilterOptions; additionalPipelines?: PipelineStage[] }) {
-    const { matchStage = {}, fieldFilterOptions } = options || {};
+    const pipeline = this.buildPipeline({
+      matchStage: options?.matchStage,
+      fieldFilterOptions: options?.fieldFilterOptions,
+      additionalPipelines: options?.additionalPipelines
+    });
+
+    return await User.aggregate(pipeline).catch((e) => {
+      console.error(e.stack);
+      throw new ErrorCustom('Error fetching users by user type', 500);
+    });
+  }
+
+  protected static buildPipeline({
+    matchStage = {},
+    fieldFilterOptions,
+    additionalPipelines = [],
+    limit
+  }: {
+    matchStage?: Record<string, any>;
+    fieldFilterOptions?: FilterOptions;
+    additionalPipelines?: PipelineStage[];
+    limit?: number;
+  }): PipelineStage[] {
     const pipeline: PipelineStage[] = [
       ...commonPipeline({ roleName: this.roleName }),
-
       {
         $match: {
           'userRole.name': this.roleName,
@@ -114,8 +69,6 @@ export abstract class AbstractUserByUserType {
           surname: 1,
           email: 1,
           active: 1,
-          // role: '$userRole.name',
-          // isPublicProfile: '$userRegistry.isPublic',
           cover: {
             url: '$avatar.url',
             fileName: '$avatar.fileName'
@@ -130,6 +83,11 @@ export abstract class AbstractUserByUserType {
         }
       }
     ];
+
+    if (limit) {
+      pipeline.push({ $limit: limit });
+    }
+
     if (fieldFilterOptions) {
       Object.entries(fieldFilterOptions).forEach(([fieldPath, condition]) => {
         const filterStage: PipelineStage = {
@@ -146,19 +104,12 @@ export abstract class AbstractUserByUserType {
         pipeline.push(filterStage);
       });
     }
-    if (options?.additionalPipelines) {
-      pipeline.push(...options.additionalPipelines);
-    }
-    // pipeline.push({
-    //   $match: {
-    //     spaces: { $ne: [] } // Ensures the array is not empty
-    //   }
-    // });
 
-    return await User.aggregate(pipeline).catch((e) => {
-      console.error(e.stack);
-      throw new ErrorCustom('Error fetching users by user type', 500);
-    });
+    if (additionalPipelines.length > 0) {
+      pipeline.push(...additionalPipelines);
+    }
+
+    return pipeline;
   }
 }
 
