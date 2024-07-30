@@ -29,7 +29,7 @@ export async function initSeed() {
 
 export const seedRoles = async () => {
   for (const role of roles) {
-    await Role.create(role).catch((err) => console.error('err', err));
+    await Role.create(role).catch((_error) => null);
   }
 };
 export const seedUsers = async () => {
