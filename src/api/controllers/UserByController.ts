@@ -118,15 +118,34 @@ export const sendUserByUserTypesWithPaginationToClient = async (req: RequestCust
           space: new ObjectId(req.user.currentSpace?._id)
         }
       },
-      { $addFields: { name: 'pending_invite' } },
-      { $addFields: { surname: 'Pending Invitation' } },
+      {
+        $lookup: {
+          from: 'units',
+          localField: 'unit',
+          foreignField: '_id',
+          as: 'unitDetails'
+        }
+      },
+      {
+        $addFields: {
+          name: {
+            $cond: {
+              if: { $gt: [{ $size: '$unitDetails' }, 0] }, // Check if unitDetails array is not empty
+              then: { $arrayElemAt: ['$unitDetails.name', 0] }, // Use the name of the unit
+              else: 'pending_invite' // Default name if no unit is referenced
+            }
+          },
+          surname: 'Pending Invitation'
+        }
+      },
       {
         $project: {
           _id: 0,
           email: 1,
           active: 1,
           tel: 1,
-          name: 1
+          name: 1,
+          status: 1
         }
       }
     ]);
@@ -155,7 +174,6 @@ export const sendUserByUserTypesToClient = async (req: RequestCustom, res: Respo
       additionalPipelines: [{ $match: { spaces: { $ne: [] } } }]
     });
 
-    console.log({ [req.params.userType]: userByUserType });
     res.status(httpStatus.OK).json({
       success: true,
       collection: entity,
