@@ -18,9 +18,7 @@ const createThread = async (req: RequestCustom, res: Response) => {
     req.body.createdBy = req.user;
     const reqBody = deleteEmptyFields(req.body);
     reqBody.user = req.user;
-    if (!req.user?.isSuperAdmin && !req.body.space) {
-      return res.send('ok');
-
+    if (!req.user?.isSuperAdmin && !req.body.spaces.length) {
       throw new ErrorCustom('You must set the building.');
     }
     await Thread.create(reqBody);
