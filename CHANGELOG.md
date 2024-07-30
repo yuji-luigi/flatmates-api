@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.2.4](https://github.com/yuji-luigi/flatmates-api/compare/flatmates-api-v1.2.3...flatmates-api-v1.2.4) (2024-07-30)
+
+
+### Bug Fixes
+
+* createThread function. req.spaces check ([9153f6d](https://github.com/yuji-luigi/flatmates-api/commit/9153f6d562aa2db6f5d38cd0809d36749c05fb8a))
+* Fix login error messages and handle space selection ([a21b363](https://github.com/yuji-luigi/flatmates-api/commit/a21b363bc5ea766518da95554a5393a8095d2d9c))
+* hide error of seeder ([9b19e56](https://github.com/yuji-luigi/flatmates-api/commit/9b19e56e7040a3310dea68b40c745a6dec5bbfd0))
+* Inhabitant class has overiding find  method only for demo. AbstractUserByUserType class update for overriding the find method ([b99a853](https://github.com/yuji-luigi/flatmates-api/commit/b99a8536009f4ea2572a7c9a848d8d4a0a8f6854))
+* setting unit related name in sendUserByUserTypesWithPaginationToClient ([3ebdcc6](https://github.com/yuji-luigi/flatmates-api/commit/3ebdcc6574f7c13775656fd37499d5c3b14ce6e2))
+
 ## [1.2.3](https://github.com/yuji-luigi/flatmates-api/compare/flatmates-api-v1.2.2...flatmates-api-v1.2.3) (2024-07-18)
 
 
