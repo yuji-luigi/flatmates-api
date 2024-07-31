@@ -69,7 +69,11 @@ export async function inviteToSpaceByUserTypeEmail(
     res.status(httpStatus.OK).json({
       success: true,
       collection: 'users',
-      data: { name: 'pending_invite', email: invitation.email }
+      data: {
+        name: '',
+        email: invitation.email,
+        status: invitation.status
+      }
     });
   } catch (error) {
     next(error);

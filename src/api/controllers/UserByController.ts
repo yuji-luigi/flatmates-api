@@ -131,8 +131,8 @@ export const sendUserByUserTypesWithPaginationToClient = async (req: RequestCust
           name: {
             $cond: {
               if: { $gt: [{ $size: '$unitDetails' }, 0] }, // Check if unitDetails array is not empty
-              then: { $arrayElemAt: ['$unitDetails.name', 0] }, // Use the name of the unit
-              else: 'pending_invite' // Default name if no unit is referenced
+              then: { $arrayElemAt: ['$unitDetails.ownerName', 0] }, // Use the name of the unit
+              else: '' // Default name if no unit is referenced
             }
           },
           surname: 'Pending Invitation'
