@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.0](https://github.com/yuji-luigi/flatmates-api/compare/flatmates-api-v1.2.4...flatmates-api-v1.3.0) (2024-08-02)
+
+
+### Features
+
+* Update InvitationController and UserByController to include invitation status ([28518f3](https://github.com/yuji-luigi/flatmates-api/commit/28518f3a415fbfcc7d864688767bc67f01f0f962))
+
+
+### Bug Fixes
+
+* dashboard ([54127b8](https://github.com/yuji-luigi/flatmates-api/commit/54127b83e0eced9004a613694b01baa9a1a78f53))
+
 ## [1.2.4](https://github.com/yuji-luigi/flatmates-api/compare/flatmates-api-v1.2.3...flatmates-api-v1.2.4) (2024-07-30)
 
 
