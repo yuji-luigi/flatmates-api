@@ -65,11 +65,60 @@ export const LOOKUP_PIPELINE_STAGES: Record<Entities, PipelineStage.FacetPipelin
   accessPermissions: [],
   invitations: [],
   units: [
-    { $lookup: { from: 'spaces', localField: 'space', foreignField: '_id', as: 'space' } },
+    {
+      $lookup: {
+        from: 'spaces',
+        localField: 'space',
+        foreignField: '_id',
+        as: 'space'
+      }
+    },
     { $unwind: '$space' },
-    { $lookup: { from: 'users', localField: 'owner', foreignField: '_id', as: 'owner' } },
-    { $unwind: { path: '$owner', preserveNullAndEmptyArrays: true } },
-    { $lookup: { from: 'users', localField: 'tenant', foreignField: '_id', as: 'tenant' } },
-    { $unwind: { path: '$tenant', preserveNullAndEmptyArrays: true } }
+    {
+      $lookup: {
+        from: 'spaces',
+        localField: 'wing',
+        foreignField: '_id',
+        as: 'wing'
+      }
+    },
+    { $unwind: '$wing' },
+    {
+      $lookup: {
+        from: 'spaces',
+        localField: 'floor',
+        foreignField: '_id',
+        as: 'floor'
+      }
+    },
+    { $unwind: '$floor' },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'owner',
+        foreignField: '_id',
+        as: 'owner'
+      }
+    },
+    {
+      $unwind: {
+        path: '$owner',
+        preserveNullAndEmptyArrays: true
+      }
+    },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'tenant',
+        foreignField: '_id',
+        as: 'tenant'
+      }
+    },
+    {
+      $unwind: {
+        path: '$tenant',
+        preserveNullAndEmptyArrays: true
+      }
+    }
   ]
 };

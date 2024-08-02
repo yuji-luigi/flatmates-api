@@ -2,7 +2,7 @@ import { MongooseBaseModel } from './base-types/base-model-interface';
 import { ObjectId } from 'mongodb';
 
 export interface UnitInterface extends MongooseBaseModel {
-  name: string;
+  name: string; // TODO: DELETE THIS FIELD. ALSO UPDATE importFlatmatesUnits.ts
   ownerName: string;
   tenantName?: string;
   unitSpace: ObjectId;
