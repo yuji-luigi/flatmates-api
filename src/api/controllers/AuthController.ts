@@ -314,9 +314,11 @@ export const checkSystemAdmin = async (req: RequestCustom, res: Response) => {
     if (!RoleCache.system_admin) {
       throw new ErrorCustom('Role cache not initialized', httpStatus.INTERNAL_SERVER_ERROR);
     }
-    const foundSystemAdmin = req.user.accessPermissions.find(
-      (actrl) => actrl.space.toString() === idMongoose && actrl.role.toString() === RoleCache.system_admin?._id.toString()
-    );
+    const foundSystemAdmin =
+      req.user.isSuperAdmin ||
+      req.user.accessPermissions.find(
+        (actrl) => actrl.space.toString() === idMongoose && actrl.role.toString() === RoleCache.system_admin?._id.toString()
+      );
     if (!foundSystemAdmin) {
       throw new ErrorCustom('You are not system admin of this space', httpStatus.UNAUTHORIZED);
     }
