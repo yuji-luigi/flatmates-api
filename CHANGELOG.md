@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.1](https://github.com/yuji-luigi/flatmates-api/compare/flatmates-api-v1.3.0...flatmates-api-v1.3.1) (2024-12-01)
+
+
+### Bug Fixes
+
+* package json yarn as package manager ([5cac0ef](https://github.com/yuji-luigi/flatmates-api/commit/5cac0ef0976bda6b1cf21050e7fc17d0e5f447c3))
+* super admin is all systemAdmin ([cb7e31b](https://github.com/yuji-luigi/flatmates-api/commit/cb7e31b499ccaaea801c61575617aee17c6910de))
+
 ## [1.3.0](https://github.com/yuji-luigi/flatmates-api/compare/flatmates-api-v1.2.4...flatmates-api-v1.3.0) (2024-08-02)
 
 
